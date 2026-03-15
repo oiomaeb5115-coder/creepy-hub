@@ -3,6 +3,7 @@
   background: #0d0608;
   color: #f5f1eb;
   padding: 38px 20px 80px;
+  overflow-x: hidden;
 }
 
 .archiveShell {
@@ -126,4 +127,36 @@
   margin: 2em 0 0.8em;
   font-size: 26px;
   color: #f5f1eb;
+}
+
+@media (max-width: 640px) {
+  .archivePage {
+    padding: 24px 14px 80px;
+  }
+
+  .archiveHeader {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .archiveActions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .archiveTopLink {
+    flex: 1;
+    min-width: 100px;
+    justify-content: center;
+  }
+
+  .archiveContentCard {
+    padding: 20px 14px;
+  }
+
+  .storyDetailMetaRow {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+  }
 }
