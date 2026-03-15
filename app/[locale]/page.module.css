@@ -1,0 +1,420 @@
+.homePage {
+  min-height: 100vh;
+  color: #f5f1eb;
+  background-color: #0d0608;
+}
+
+.pageFrame {
+  width: min(100%, 1600px);
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 84px;
+  border-left: 2px solid rgba(255, 255, 255, 0.9);
+  border-right: 2px solid rgba(255, 255, 255, 0.9);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.9);
+  background-image: url("/images/ui/creepy_hub_background.png");
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+}
+
+.heroSection {
+  position: relative;
+  min-height: auto;
+  border-top: 2px solid rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  padding-bottom: 36px;
+}
+
+.heroTopButtons {
+  position: fixed;
+  top: 12px;
+  right: 22px;
+  z-index: 100;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.topTextButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: #f5f1eb;
+  text-decoration: none;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  background: rgba(13, 6, 8, 0.6);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.topTextButton:hover {
+  background: rgba(80, 20, 25, 0.7);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.heroInner {
+  position: relative;
+  z-index: 3;
+  padding: 56px 36px 36px;
+}
+
+.siteTitleWrap {
+  width: 100%;
+  max-width: 760px;
+  margin-bottom: 8px;
+}
+
+.siteTitleText {
+  margin: 0;
+  font-size: clamp(44px, 7.5vw, 92px);
+  line-height: 1.0;
+  letter-spacing: 0.08em;
+  color: #f5f1eb;
+  font-family: "装甲明朝", "Soukou Mincho", "Palatino Linotype", "Palatino", "Book Antiqua", serif;
+  text-shadow: 0 0 80px rgba(165, 60, 70, 0.35), 0 2px 6px rgba(0, 0, 0, 0.7);
+  font-weight: 400;
+}
+
+.siteTitleDot {
+  color: rgba(200, 80, 95, 0.9);
+}
+
+.topSearchRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: start;
+  margin-top: 8px;
+}
+
+.searchColumn {
+  width: 100%;
+}
+
+.searchHeadingText {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: rgba(245, 241, 235, 0.6);
+  font-family: "装甲明朝", "Soukou Mincho", "Palatino Linotype", "Palatino", serif;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.searchForm {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background: transparent;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.searchButton {
+  height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+.floatingPostButton {
+  position: fixed;
+  right: 24px;
+  bottom: 100px;
+  z-index: 20;
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  text-decoration: none;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.floatingPostButton:hover {
+  opacity: 0.85;
+  transform: scale(1.06);
+}
+
+.contentSection {
+  padding: 34px 40px 0;
+}
+
+.textSectionTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 18px;
+  padding-left: 14px;
+  border-left: 3px solid rgba(180, 70, 85, 0.75);
+}
+
+.textSectionTitleEn {
+  font-size: clamp(18px, 2.5vw, 26px);
+  letter-spacing: 0.14em;
+  color: #f5f1eb;
+  font-family: "装甲明朝", "Soukou Mincho", "Palatino Linotype", "Palatino", "Book Antiqua", serif;
+  line-height: 1.1;
+  font-weight: 400;
+}
+
+.textSectionTitleJa {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(245, 241, 235, 0.5);
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+}
+
+.horizontalScrollRow {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 8px;
+  scroll-snap-type: x proximity;
+}
+
+.horizontalScrollRow::-webkit-scrollbar {
+  height: 8px;
+}
+
+.horizontalScrollRow::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.scrollCardLink {
+  flex: 0 0 320px;
+  min-width: 320px;
+  color: inherit;
+  text-decoration: none;
+  scroll-snap-align: start;
+}
+
+.scrollCard {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.scrollCardImageWrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: transparent;
+}
+
+.scrollCardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scrollCardImagePlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.18em;
+  font-size: 0.95rem;
+}
+
+.scrollCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+.scrollCardMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.scrollCardTitle {
+  margin: 0;
+  font-size: 1.08rem;
+  line-height: 1.45;
+}
+
+.scrollCardExcerpt {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.scrollCardFooter {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  font-size: 0.84rem;
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.emptyText {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* ── Category section ── */
+
+.categoryBlock {
+  margin-bottom: 18px;
+}
+
+.categoryBlockLabel {
+  margin: 0 0 10px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: rgba(245, 241, 235, 0.4);
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+}
+
+.categoryChipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.categoryChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(13, 6, 8, 0.5);
+  color: rgba(245, 241, 235, 0.85);
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.categoryChip:hover {
+  background: rgba(80, 20, 25, 0.65);
+  border-color: rgba(200, 80, 95, 0.5);
+}
+
+.categoryEmpty {
+  font-size: 13px;
+  color: rgba(245, 241, 235, 0.35);
+}
+
+.bottomNav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, 1600px);
+  z-index: 50;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: rgba(13, 6, 8, 0.97);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+}
+
+.bottomNavItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 84px;
+  border-right: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.bottomNavItem:last-child {
+  border-right: none;
+}
+
+.bottomNavLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bottomNavLabelEn {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: rgba(245, 241, 235, 0.88);
+  font-family: "装甲明朝", "Soukou Mincho", "Palatino Linotype", "Palatino", "Book Antiqua", serif;
+  font-weight: 400;
+}
+
+.bottomNavLabelJa {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: rgba(245, 241, 235, 0.45);
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+}
+
+@media (max-width: 960px) {
+  .heroSection {
+    min-height: 420px;
+  }
+
+  .heroInner {
+    padding: 48px 18px 28px;
+  }
+
+  .siteTitleText {
+    font-size: clamp(36px, 9vw, 60px);
+  }
+
+  .topSearchRow {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .contentSection {
+    padding: 24px 16px 0;
+  }
+
+  .scrollCardLink {
+    flex: 0 0 260px;
+    min-width: 260px;
+  }
+
+  .bottomNavItem {
+    min-height: 72px;
+  }
+
+  .floatingPostButton {
+    right: 16px;
+    bottom: 92px;
+    width: 58px;
+    height: 58px;
+  }
+}

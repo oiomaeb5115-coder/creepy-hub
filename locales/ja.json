@@ -1,0 +1,71 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "stories": "怪談一覧",
+    "wiki": "オカルト辞典",
+    "profile": "プロフィール",
+    "post": "投稿する",
+    "login": "ログイン",
+    "register": "新規登録",
+    "logout": "ログアウト",
+    "bookmark": "ブックマーク",
+    "settings": "設定"
+  },
+  "home": {
+    "storySearch": "CREEPY POST — 怪談検索",
+    "wikiSearch": "OCCULT WIKI — 辞典検索",
+    "storySearchPlaceholder": "怪談を検索",
+    "wikiSearchPlaceholder": "Wikiを検索",
+    "searchButton": "検索",
+    "latestStories": "新着怪談記事",
+    "latestWiki": "新着Wiki記事",
+    "categories": "カテゴリから探す",
+    "noStories": "まだ怪談記事がありません。",
+    "noWiki": "まだWiki記事がありません。",
+    "noCategory": "カテゴリなし"
+  },
+  "story": {
+    "label": "怪談",
+    "unknownDate": "日付不明",
+    "unknownAuthor": "投稿者不明",
+    "backToHome": "← ホームへ戻る",
+    "views": "閲覧",
+    "comments": "コメント",
+    "headerTitle": "Horror Archive",
+    "headerSubtitle": "ホラー・オカルト・洒落怖・Creepypasta・映像記録を整理するアーカイブ",
+    "noContent": "本文はまだありません。",
+    "translateButton": "英語に翻訳 (AI)",
+    "translating": "翻訳中…",
+    "translateDone": "英語訳を保存しました",
+    "translateError": "翻訳に失敗しました",
+    "viewInEnglish": "英語版を見る →",
+    "viewInJapanese": "日本語版を見る →"
+  },
+  "wiki": {
+    "listTitle": "Wiki 一覧",
+    "home": "ホーム",
+    "history": "履歴",
+    "related": "関連ページ",
+    "relatedDesc": "同じ page_type の記事を簡易的に表示しています。",
+    "noRelated": "関連ページはまだありません。",
+    "noSummary": "概要はまだ設定されていません。",
+    "noContent": "本文はまだありません。",
+    "viewRelatedCategory": "関連分類を見る",
+    "randomArticle": "ランダム記事",
+    "translateButton": "英語に翻訳 (AI)",
+    "translating": "翻訳中…",
+    "translateDone": "英語訳を保存しました",
+    "translateError": "翻訳に失敗しました",
+    "viewInEnglish": "英語版を見る →",
+    "viewInJapanese": "日本語版を見る →"
+  },
+  "pageType": {
+    "general": "一般",
+    "urban_legend": "都市伝説",
+    "incident": "怪事件",
+    "work": "作品",
+    "term": "用語",
+    "person": "人物",
+    "region": "地域"
+  }
+}

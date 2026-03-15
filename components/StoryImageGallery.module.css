@@ -1,0 +1,162 @@
+.storyImageSection {
+  margin-bottom: 28px;
+}
+
+.storyImageHeading {
+  margin: 0 0 14px;
+  font-size: 18px;
+  color: #e8d8d0;
+}
+
+.storyDetailImagesScroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 10px;
+  border-radius: 12px;
+}
+
+.storyDetailImages {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  width: max-content;
+}
+
+.storyImageTrigger {
+  appearance: none;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.storyDetailImageCard {
+  width: min(72vw, 520px);
+  flex: 0 0 auto;
+  background: rgba(12, 3, 5, 0.92);
+  border: 1px solid rgba(161, 102, 108, 0.22);
+  border-radius: 12px;
+}
+
+.storyDetailImage {
+  width: 100%;
+  height: 360px;
+  object-fit: contain;
+  border-radius: 10px;
+  display: block;
+  background: #120608;
+}
+
+.storyLightboxOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.storyLightboxContent {
+  position: relative;
+  width: min(96vw, 1200px);
+  height: min(90vh, 900px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.storyLightboxImageWrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.storyLightboxImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: 12px;
+  background: #0d0608;
+}
+
+.storyLightboxClose {
+  position: absolute;
+  top: -8px;
+  right: 0;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(36, 12, 15, 0.9);
+  color: #f5f1eb;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.storyLightboxNav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(36, 12, 15, 0.88);
+  color: #f5f1eb;
+  font-size: 36px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.left {
+  left: 8px;
+}
+
+.right {
+  right: 8px;
+}
+
+.storyLightboxFooter {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(36, 12, 15, 0.9);
+  color: #e8d8d0;
+  font-size: 14px;
+}
+
+.storyDetailImagesScroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+.storyDetailImagesScroll::-webkit-scrollbar-track {
+  background: rgba(20, 5, 8, 0.7);
+  border-radius: 999px;
+}
+
+.storyDetailImagesScroll::-webkit-scrollbar-thumb {
+  background: rgba(165, 99, 104, 0.5);
+  border-radius: 999px;
+}
+
+.storyDetailImagesScroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 129, 133, 0.7);
+}
+
+@media (max-width: 760px) {
+  .storyDetailImageCard {
+    width: min(86vw, 440px);
+  }
+
+  .storyDetailImage {
+    height: 300px;
+  }
+}

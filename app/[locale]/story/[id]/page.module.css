@@ -1,0 +1,129 @@
+.archivePage {
+  min-height: 100vh;
+  background: #0d0608;
+  color: #f5f1eb;
+  padding: 38px 20px 80px;
+}
+
+.archiveShell {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.archiveHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  padding-bottom: 28px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(155, 94, 98, 0.2);
+}
+
+.archiveBreadcrumb {
+  margin: 0 0 18px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: #8a7870;
+}
+
+.archiveTitle {
+  margin: 0;
+  font-size: clamp(42px, 5vw, 62px);
+  line-height: 1.05;
+  color: #f5f1eb;
+}
+
+.archiveSubtitle {
+  margin: 18px 0 0;
+  font-size: 16px;
+  color: #a49080;
+}
+
+.archiveActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.archiveTopLink {
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 0;
+  border: 1px solid rgba(170, 108, 112, 0.32);
+  background: rgba(48, 18, 22, 0.78);
+  color: #f5f1eb;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.archiveContentCard {
+  background: linear-gradient(
+    to bottom,
+    rgba(18, 5, 8, 0.97),
+    rgba(10, 3, 5, 0.98)
+  );
+  border: 1px solid rgba(161, 102, 108, 0.24);
+  border-radius: 14px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.26);
+  padding: 30px 26px;
+}
+
+.storyDetailMetaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.storyBackButton {
+  text-decoration: none;
+  font-size: 14px;
+  color: #a49080;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(30, 10, 12, 0.6);
+  border: 1px solid rgba(160, 100, 104, 0.2);
+}
+
+.storyAuthor {
+  color: #c49090;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.storyViewCount {
+  font-size: 13px;
+  color: #8a7870;
+}
+
+.storyDetailMeta {
+  margin: 0 0 14px;
+  color: #8a7870;
+  font-size: 14px;
+}
+
+.storyDetailTitle {
+  margin: 0 0 24px;
+  font-size: clamp(30px, 4vw, 44px);
+  color: #f5f1eb;
+  line-height: 1.12;
+}
+
+.storyDetailContent p {
+  margin: 0 0 1em;
+  line-height: 1.95;
+  color: #e8e0d8;
+  font-size: 16px;
+}
+
+.storySectionTitle {
+  margin: 2em 0 0.8em;
+  font-size: 26px;
+  color: #f5f1eb;
+}

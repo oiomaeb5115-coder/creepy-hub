@@ -1,0 +1,71 @@
+{
+  "nav": {
+    "home": "Home",
+    "stories": "Stories",
+    "wiki": "Occult Wiki",
+    "profile": "Profile",
+    "post": "Post",
+    "login": "Login",
+    "register": "Sign Up",
+    "logout": "Logout",
+    "bookmark": "Bookmarks",
+    "settings": "Settings"
+  },
+  "home": {
+    "storySearch": "CREEPY POST — Search Stories",
+    "wikiSearch": "OCCULT WIKI — Search Wiki",
+    "storySearchPlaceholder": "Search horror stories",
+    "wikiSearchPlaceholder": "Search wiki",
+    "searchButton": "Search",
+    "latestStories": "Latest Horror Stories",
+    "latestWiki": "Latest Wiki Articles",
+    "categories": "Browse by Category",
+    "noStories": "No stories yet.",
+    "noWiki": "No wiki articles yet.",
+    "noCategory": "No categories"
+  },
+  "story": {
+    "label": "Story",
+    "unknownDate": "Unknown date",
+    "unknownAuthor": "Unknown author",
+    "backToHome": "← Back to Home",
+    "views": "Views",
+    "comments": "Comments",
+    "headerTitle": "Horror Archive",
+    "headerSubtitle": "Archive of horror, occult, and creepypasta stories",
+    "noContent": "No content yet.",
+    "translateButton": "Translate to English (AI)",
+    "translating": "Translating…",
+    "translateDone": "Translation saved",
+    "translateError": "Translation failed",
+    "viewInEnglish": "View in English →",
+    "viewInJapanese": "日本語版を見る →"
+  },
+  "wiki": {
+    "listTitle": "Wiki List",
+    "home": "Home",
+    "history": "History",
+    "related": "Related Pages",
+    "relatedDesc": "Articles with the same page type.",
+    "noRelated": "No related pages yet.",
+    "noSummary": "No summary available.",
+    "noContent": "No content yet.",
+    "viewRelatedCategory": "View Related Category",
+    "randomArticle": "Random Article",
+    "translateButton": "Translate to English (AI)",
+    "translating": "Translating…",
+    "translateDone": "Translation saved",
+    "translateError": "Translation failed",
+    "viewInEnglish": "View in English →",
+    "viewInJapanese": "日本語版を見る →"
+  },
+  "pageType": {
+    "general": "General",
+    "urban_legend": "Urban Legend",
+    "incident": "Strange Incident",
+    "work": "Work",
+    "term": "Term",
+    "person": "Person",
+    "region": "Region"
+  }
+}

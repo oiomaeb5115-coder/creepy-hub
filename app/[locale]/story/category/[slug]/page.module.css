@@ -1,0 +1,213 @@
+.categoryPage {
+  min-height: 100vh;
+  background: #0d0608;
+  color: #f5f1eb;
+  padding: 32px 20px 72px;
+}
+
+.categoryShell {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.categoryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  padding-bottom: 24px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid rgba(167, 108, 113, 0.16);
+}
+
+.categoryBreadcrumb {
+  margin: 0 0 14px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: #8a7870;
+}
+
+.categoryTitle {
+  margin: 0;
+  font-size: clamp(34px, 5vw, 54px);
+  line-height: 1.05;
+  color: #f5f1eb;
+}
+
+.categorySubtitle {
+  margin: 14px 0 0;
+  font-size: 16px;
+  color: #a49080;
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.topLink {
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 0;
+  border: 1px solid rgba(170, 108, 112, 0.32);
+  background: rgba(48, 18, 22, 0.78);
+  color: #f5f1eb;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardSection {
+  background: linear-gradient(
+    to bottom,
+    rgba(18, 5, 8, 0.97),
+    rgba(10, 3, 5, 0.98)
+  );
+  border: 1px solid rgba(161, 102, 108, 0.24);
+  border-radius: 14px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.26);
+  padding: 22px 20px;
+}
+
+.sectionHead {
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(155, 94, 98, 0.18);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 24px;
+  color: #f5f1eb;
+}
+
+.sectionDescription {
+  margin: 14px 0 0;
+  color: #a49080;
+  font-size: 15px;
+}
+
+.emptyText {
+  color: #8a7870;
+  font-size: 16px;
+  padding: 12px 4px;
+}
+
+.postGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.postCardLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.postCard {
+  min-height: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(165, 104, 108, 0.24);
+  background: rgba(14, 5, 7, 0.94);
+}
+
+.postCardImage {
+  width: calc(100% - 32px);
+  height: 170px;
+  object-fit: contain;
+  display: block;
+  margin: 16px auto 0;
+  border-radius: 10px;
+  background: #120608;
+  border: 1px solid rgba(145, 85, 90, 0.18);
+}
+
+.postCardImagePlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a7070;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+}
+
+.postCardBody {
+  padding: 14px 16px;
+}
+
+.postCardMetaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.postCardCategory {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(165, 104, 108, 0.3);
+  color: #f0d0d2;
+  font-size: 12px;
+  background: rgba(31, 10, 12, 0.8);
+}
+
+.postCardDate {
+  font-size: 13px;
+  color: #8a7870;
+}
+
+.postCardTitle {
+  margin: 0 0 14px;
+  font-size: 18px;
+  line-height: 1.35;
+  color: #f5f1eb;
+}
+
+.postCardExcerpt {
+  margin: 0 0 14px;
+  color: #e8e0d8;
+  line-height: 1.8;
+  min-height: 56px;
+}
+
+.postCardFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid rgba(155, 94, 98, 0.18);
+  font-size: 13px;
+  color: #8a7870;
+}
+
+.postCardViews {
+  white-space: nowrap;
+}
+
+@media (max-width: 1024px) {
+  .postGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .categoryHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .postGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .topLink {
+    width: 100%;
+  }
+}
