@@ -7,12 +7,6 @@ import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 
-type Chapter = {
-  id: number;
-  title: string;
-  body: string;
-};
-
 export default function PostPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
@@ -20,12 +14,10 @@ export default function PostPage() {
   const [categoryId, setCategoryId] = useState("");
   const [title, setTitle] = useState("");
   const [tags, setTags] = useState("");
+  const [body, setBody] = useState("");
   const [mainImage1, setMainImage1] = useState<File | null>(null);
   const [mainImage2, setMainImage2] = useState<File | null>(null);
   const [mainImage3, setMainImage3] = useState<File | null>(null);
-  const [chapters, setChapters] = useState<Chapter[]>([
-    { id: 1, title: "", body: "" },
-  ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
@@ -49,42 +41,6 @@ export default function PostPage() {
         if (data) setCategories(data as { id: number; name: string }[]);
       });
   }, [locale]);
-
-  const addChapter = () => {
-    setChapters((prev) => [...prev, { id: Date.now(), title: "", body: "" }]);
-  };
-
-  const removeChapter = (id: number) => {
-    if (chapters.length === 1) {
-      alert("章は最低1つ必要です。");
-      return;
-    }
-    setChapters((prev) => prev.filter((chapter) => chapter.id !== id));
-  };
-
-  const moveChapterUp = (index: number) => {
-    if (index === 0) return;
-    const updated = [...chapters];
-    [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
-    setChapters(updated);
-  };
-
-  const moveChapterDown = (index: number) => {
-    if (index === chapters.length - 1) return;
-    const updated = [...chapters];
-    [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
-    setChapters(updated);
-  };
-
-  const updateChapter = (
-    index: number,
-    key: "title" | "body",
-    value: string
-  ) => {
-    const updated = [...chapters];
-    updated[index][key] = value;
-    setChapters(updated);
-  };
 
   const uploadImage = async (
     file: File | null,
@@ -122,11 +78,7 @@ export default function PostPage() {
       return;
     }
 
-    const hasBody = chapters.some(
-      (chapter) => chapter.title.trim() || chapter.body.trim()
-    );
-
-    if (!hasBody) {
+    if (!body.trim()) {
       alert("本文を入力してください。");
       return;
     }
@@ -150,14 +102,6 @@ export default function PostPage() {
         return;
       }
 
-      const mergedContent = chapters
-        .map((chapter, index) => {
-          const chapterTitle = chapter.title.trim() || `章${index + 1}`;
-          const chapterBody = chapter.body.trim();
-          return `## ${chapterTitle}\n\n${chapterBody}`;
-        })
-        .join("\n\n");
-
       let imageUrl1: string | null = null;
       let imageUrl2: string | null = null;
       let imageUrl3: string | null = null;
@@ -177,7 +121,7 @@ export default function PostPage() {
 
       const insertPayload = {
         title: title.trim(),
-        content: mergedContent,
+        content: body.trim(),
         user_id: user.id,
         category_id: categoryId ? Number(categoryId) : null,
         view_count: 0,
@@ -245,7 +189,7 @@ export default function PostPage() {
             <div className={styles.sectionHead}>
               <div>
                 <h2>記事投稿</h2>
-                <p>章の追加・順序変更・画像投稿に対応しています。</p>
+                <p>画像は3枚まで投稿できます。</p>
               </div>
             </div>
 
@@ -329,72 +273,15 @@ export default function PostPage() {
 
               <div className={styles.divider} />
 
-              <div className={styles.sectionToolbar}>
-                <h3>章構成</h3>
-                <button
-                  type="button"
-                  className={styles.secondaryButton}
-                  onClick={addChapter}
-                >
-                  章を追加
-                </button>
-              </div>
-
-              <div className={styles.chapterList}>
-                {chapters.map((chapter, index) => (
-                  <div className={styles.chapterCard} key={chapter.id}>
-                    <div className={styles.chapterCardHead}>
-                      <h4>章 {index + 1}</h4>
-
-                      <div className={styles.chapterActions}>
-                        <button
-                          type="button"
-                          className={styles.miniButton}
-                          onClick={() => moveChapterUp(index)}
-                        >
-                          上へ
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.miniButton}
-                          onClick={() => moveChapterDown(index)}
-                        >
-                          下へ
-                        </button>
-                        <button
-                          type="button"
-                          className={`${styles.miniButton} ${styles.dangerButton}`}
-                          onClick={() => removeChapter(chapter.id)}
-                        >
-                          削除
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className={styles.formGroup}>
-                      <label>章タイトル</label>
-                      <input
-                        type="text"
-                        className={styles.formControl}
-                        value={chapter.title}
-                        onChange={(e) =>
-                          updateChapter(index, "title", e.target.value)
-                        }
-                      />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                      <label>本文</label>
-                      <textarea
-                        className={`${styles.formControl} ${styles.chapterTextarea}`}
-                        value={chapter.body}
-                        onChange={(e) =>
-                          updateChapter(index, "body", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-                ))}
+              <div className={styles.formGroup}>
+                <label htmlFor="body">本文</label>
+                <textarea
+                  id="body"
+                  className={`${styles.formControl} ${styles.bodyTextarea}`}
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  placeholder="ここに本文を入力してください..."
+                />
               </div>
 
               <div className={styles.submitRow}>
@@ -413,7 +300,6 @@ export default function PostPage() {
             <h3>案内</h3>
             <ul className={styles.guideList}>
               <li>画像は3枚まで投稿できます。</li>
-              <li>章は自由に追加・削除できます。</li>
               <li>ジャンルは後から増やせます。</li>
             </ul>
           </aside>

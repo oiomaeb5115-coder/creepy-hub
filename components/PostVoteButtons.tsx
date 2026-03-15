@@ -117,67 +117,101 @@ export default function PostVoteButtons({
     }
   };
 
+  const disabled = loading || submitting;
+
   return (
     <div
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: "10px",
-        padding: "8px 12px",
+        gap: "2px",
+        padding: "4px 6px",
         borderRadius: "999px",
-        border: "1px solid rgba(104, 128, 165, 0.24)",
-        background: "rgba(10, 18, 31, 0.8)",
+        border: "1px solid rgba(161, 102, 108, 0.28)",
+        background: "rgba(14, 5, 7, 0.9)",
       }}
     >
+      {/* upvote */}
       <button
         type="button"
-        disabled={loading || submitting}
+        disabled={disabled}
         onClick={() => applyVote(1)}
-        style={{
-          minWidth: "34px",
-          minHeight: "34px",
-          borderRadius: "999px",
-          border: "1px solid rgba(104, 128, 165, 0.24)",
-          background:
-            currentVote === 1 ? "rgba(84, 116, 163, 0.96)" : "rgba(11, 19, 32, 0.9)",
-          color: "#eef4ff",
-          cursor: loading || submitting ? "not-allowed" : "pointer",
-          opacity: loading || submitting ? 0.7 : 1,
-          fontWeight: 700,
-        }}
+        title="高く評価"
         aria-label="高く評価"
+        style={{
+          width: "32px",
+          height: "32px",
+          borderRadius: "999px",
+          border: "none",
+          background: "transparent",
+          color: currentVote === 1 ? "#e05c6a" : "#8a7870",
+          cursor: disabled ? "not-allowed" : "pointer",
+          opacity: disabled ? 0.6 : 1,
+          fontWeight: 700,
+          fontSize: "16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "color 0.15s, background 0.15s",
+        }}
+        onMouseEnter={(e) => {
+          if (!disabled) (e.currentTarget as HTMLButtonElement).style.background = "rgba(224,92,106,0.12)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+        }}
       >
         ▲
       </button>
 
+      {/* score */}
       <span
         style={{
           minWidth: "28px",
           textAlign: "center",
-          color: "#eef4ff",
+          color:
+            currentVote === 1
+              ? "#e05c6a"
+              : currentVote === -1
+              ? "#7a9fc2"
+              : "#c8b8b0",
           fontWeight: 700,
+          fontSize: "14px",
+          userSelect: "none",
         }}
       >
         {score}
       </span>
 
+      {/* downvote */}
       <button
         type="button"
-        disabled={loading || submitting}
+        disabled={disabled}
         onClick={() => applyVote(-1)}
-        style={{
-          minWidth: "34px",
-          minHeight: "34px",
-          borderRadius: "999px",
-          border: "1px solid rgba(104, 128, 165, 0.24)",
-          background:
-            currentVote === -1 ? "rgba(84, 116, 163, 0.96)" : "rgba(11, 19, 32, 0.9)",
-          color: "#eef4ff",
-          cursor: loading || submitting ? "not-allowed" : "pointer",
-          opacity: loading || submitting ? 0.7 : 1,
-          fontWeight: 700,
-        }}
+        title="低く評価"
         aria-label="低く評価"
+        style={{
+          width: "32px",
+          height: "32px",
+          borderRadius: "999px",
+          border: "none",
+          background: "transparent",
+          color: currentVote === -1 ? "#7a9fc2" : "#8a7870",
+          cursor: disabled ? "not-allowed" : "pointer",
+          opacity: disabled ? 0.6 : 1,
+          fontWeight: 700,
+          fontSize: "16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "color 0.15s, background 0.15s",
+        }}
+        onMouseEnter={(e) => {
+          if (!disabled) (e.currentTarget as HTMLButtonElement).style.background = "rgba(122,159,194,0.12)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+        }}
       >
         ▼
       </button>

@@ -163,11 +163,8 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
         </header>
 
         <section className={styles.archiveContentCard}>
-          <div className={styles.storyDetailMetaRow}>
-            <Link href={`/${locale}`} className={styles.storyBackButton}>
-              {dict.story.backToHome}
-            </Link>
-
+          {/* 著者・閲覧数・ホームリンク */}
+          <div className={styles.storyTopMeta}>
             {author?.username ? (
               <Link
                 href={`/${locale}/u/${author.username}`}
@@ -178,26 +175,12 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
             ) : (
               <span className={styles.storyAuthor}>{dict.story.unknownAuthor}</span>
             )}
-
-            <PostVoteButtons postId={post.id} initialScore={initialScore} />
-            <PostBookmarkButton postId={post.id} />
-
             <div className={styles.storyViewCount}>
               {dict.story.views}: {displayedViewCount}
             </div>
-
-            <TranslateButton
-              type="story"
-              id={post.id}
-              locale={locale}
-              hasTranslation={hasEnglishTranslation}
-              labels={dict.story}
-            />
-            <StoryActionButtons
-              postId={post.id}
-              authorId={post.user_id}
-              locale={locale}
-            />
+            <Link href={`/${locale}`} className={styles.storyBackButton}>
+              {dict.story.backToHome}
+            </Link>
           </div>
 
           <p className={styles.storyDetailMeta}>
@@ -209,6 +192,26 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
           <h2 className={styles.storyDetailTitle}>{displayTitle}</h2>
 
           <StoryImageGallery imageUrls={imageUrls} title={displayTitle} />
+
+          {/* Reddit風アクションバー（画像の下） */}
+          <div className={styles.storyActionBar}>
+            <div className={styles.storyActionBarLeft}>
+              <PostVoteButtons postId={post.id} initialScore={initialScore} />
+              <PostBookmarkButton postId={post.id} />
+              <TranslateButton
+                type="story"
+                id={post.id}
+                locale={locale}
+                hasTranslation={hasEnglishTranslation}
+                labels={dict.story}
+              />
+              <StoryActionButtons
+                postId={post.id}
+                authorId={post.user_id}
+                locale={locale}
+              />
+            </div>
+          </div>
 
           <div className={styles.storyDetailContent}>
             {contentLines.map((line: string, index: number) => {
