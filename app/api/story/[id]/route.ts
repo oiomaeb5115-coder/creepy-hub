@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 
 async function getAuthorizedUser(req: NextRequest) {
@@ -60,8 +61,13 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { error } = await supabase.from("post").delete().eq("id", id);
+  const { error, count } = await supabase.from("post").delete({ count: "exact" }).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (count === 0) return NextResponse.json({ error: "削除権限がないか、投稿が見つかりません（RLSブロック）" }, { status: 403 });
+
+  revalidatePath("/ja");
+  revalidatePath("/en");
+  revalidatePath("/ja/story");
 
   return NextResponse.json({ success: true });
 }
