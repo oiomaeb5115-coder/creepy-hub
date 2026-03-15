@@ -23,6 +23,65 @@ async function getAuthorizedUser(req: NextRequest) {
   return { id: userData.user.id, role: profile?.role ?? "user" };
 }
 
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const token = authHeader.slice(7);
+
+  const user = await getAuthorizedUser(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { headers: { Authorization: `Bearer ${token}` } } }
+  );
+
+  const { data: post } = await supabase
+    .from("post")
+    .select("user_id")
+    .eq("id", id)
+    .single();
+
+  if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const isAuthor = post.user_id === user.id;
+  const isAdmin = user.role === "admin";
+
+  if (!isAuthor && !isAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = await req.json();
+  const { title, content, category_id } = body;
+
+  const adminSupabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { error } = await adminSupabase
+    .from("post")
+    .update({ title, content, category_id: category_id ?? null })
+    .eq("id", id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  revalidatePath(`/ja/story/${id}`);
+  revalidatePath(`/en/story/${id}`);
+  revalidatePath("/ja");
+  revalidatePath("/en");
+
+  return NextResponse.json({ success: true });
+}
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

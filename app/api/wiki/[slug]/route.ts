@@ -23,6 +23,65 @@ async function getAuthorizedUser(req: NextRequest) {
   return { id: userData.user.id, role: profile?.role ?? "user" };
 }
 
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  const { slug } = await params;
+  const user = await getAuthorizedUser(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  const { data: page } = await supabase
+    .from("wiki_pages")
+    .select("author_id")
+    .eq("slug", slug)
+    .eq("locale", "ja")
+    .single();
+
+  if (!page) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const isAuthor = page.author_id === user.id;
+  const isAdmin = user.role === "admin";
+
+  if (!isAuthor && !isAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = await req.json();
+  const { title, subtitle, summary, content, page_type } = body;
+
+  const adminSupabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { error } = await adminSupabase
+    .from("wiki_pages")
+    .update({
+      title,
+      subtitle: subtitle || null,
+      summary,
+      content,
+      page_type,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("slug", slug)
+    .eq("locale", "ja");
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  revalidatePath(`/ja/wiki/${slug}`);
+  revalidatePath(`/en/wiki/${slug}`);
+  revalidatePath("/ja/wiki");
+
+  return NextResponse.json({ success: true });
+}
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }

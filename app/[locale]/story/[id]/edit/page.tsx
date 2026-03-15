@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { getIsAdmin } from "@/lib/auth";
+import { getIsAdmin, getAccessToken } from "@/lib/auth";
 import { genres } from "@/lib/genres";
 import BackButton from "@/components/BackButton";
 
@@ -91,16 +91,25 @@ export default function StoryEditPage() {
         .map((ch, i) => `## ${ch.title.trim() || `章${i + 1}`}\n\n${ch.body.trim()}`)
         .join("\n\n");
 
-      const { error } = await supabase
-        .from("post")
-        .update({
+      const token = await getAccessToken();
+      const res = await fetch(`/api/story/${postId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
           title: title.trim(),
           content: mergedContent,
           category_id: categoryId ? Number(categoryId) : null,
-        })
-        .eq("id", postId);
+        }),
+      });
 
-      if (error) { alert(`更新失敗: ${error.message}`); return; }
+      if (!res.ok) {
+        const json = await res.json();
+        alert(`更新失敗: ${json.error ?? res.statusText}`);
+        return;
+      }
       router.push(`/${locale}/story/${postId}`);
     } finally {
       setIsSubmitting(false);

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { getIsAdmin } from "@/lib/auth";
+import { getIsAdmin, getAccessToken } from "@/lib/auth";
 import BackButton from "@/components/BackButton";
 
 type PageType = "general" | "urban_legend" | "incident" | "work" | "region" | "term" | "person";
@@ -97,20 +97,27 @@ export default function WikiEditPage() {
         .map((ch, i) => `## ${ch.title.trim() || `章${i + 1}`}\n\n${ch.body.trim()}`)
         .join("\n\n");
 
-      const { error } = await supabase
-        .from("wiki_pages")
-        .update({
+      const token = await getAccessToken();
+      const res = await fetch(`/api/wiki/${slug}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
           title: title.trim(),
           subtitle: subtitle.trim() || null,
           summary: summary.trim(),
           content,
           page_type: pageType,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("slug", slug)
-        .eq("locale", "ja");
+        }),
+      });
 
-      if (error) { alert(`更新失敗: ${error.message}`); return; }
+      if (!res.ok) {
+        const json = await res.json();
+        alert(`更新失敗: ${json.error ?? res.statusText}`);
+        return;
+      }
       router.push(`/${locale}/wiki/${slug}`);
     } finally {
       setIsSubmitting(false);
