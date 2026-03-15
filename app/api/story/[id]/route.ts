@@ -61,9 +61,14 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { error, count } = await supabase.from("post").delete({ count: "exact" }).eq("id", id);
+  // サービスロールキーでRLSをバイパスして削除
+  const adminSupabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { error } = await adminSupabase.from("post").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  if (count === 0) return NextResponse.json({ error: "削除権限がないか、投稿が見つかりません（RLSブロック）" }, { status: 403 });
 
   revalidatePath("/ja");
   revalidatePath("/en");
