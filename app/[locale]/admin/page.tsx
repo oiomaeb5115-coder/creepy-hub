@@ -9,8 +9,17 @@ import BackButton from "@/components/BackButton";
 
 type StoryRow = { id: number; title: string | null; created_at: string | null };
 type WikiRow = { slug: string; title: string; updated_at: string | null };
+type PendingCategory = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  created_at: string | null;
+  reported_count: number;
+};
 
 type TranslateStatus = "idle" | "loading" | "done" | "error" | "exists";
+type ApproveStatus = "idle" | "loading" | "done" | "error";
 
 export default function AdminPage() {
   const params = useParams<{ locale: string }>();
@@ -20,8 +29,11 @@ export default function AdminPage() {
   const [checking, setChecking] = useState(true);
   const [stories, setStories] = useState<StoryRow[]>([]);
   const [wikis, setWikis] = useState<WikiRow[]>([]);
+  const [pendingCategories, setPendingCategories] = useState<PendingCategory[]>([]);
+  const [reportedCategories, setReportedCategories] = useState<PendingCategory[]>([]);
   const [storyStatus, setStoryStatus] = useState<Record<number, TranslateStatus>>({});
   const [wikiStatus, setWikiStatus] = useState<Record<string, TranslateStatus>>({});
+  const [approveStatus, setApproveStatus] = useState<Record<number, ApproveStatus>>({});
 
   useEffect(() => {
     const init = async () => {
@@ -65,6 +77,25 @@ export default function AdminPage() {
       const enSlugs = new Set((enWikis ?? []).map((w) => w.slug));
       const untranslatedWikis = (jaWikis ?? []).filter((w) => !enSlugs.has(w.slug));
       setWikis(untranslatedWikis);
+
+      // 審査待ちカテゴリを取得
+      const { data: pendingCats } = await supabase
+        .from("story_categories")
+        .select("id, name, slug, description, created_at, reported_count")
+        .eq("is_user_created", true)
+        .eq("approved", false)
+        .order("created_at", { ascending: false });
+      setPendingCategories((pendingCats ?? []) as PendingCategory[]);
+
+      // 報告が多いカテゴリを取得（承認済みで reported_count >= 3）
+      const { data: reportedCats } = await supabase
+        .from("story_categories")
+        .select("id, name, slug, description, created_at, reported_count")
+        .eq("is_user_created", true)
+        .eq("approved", true)
+        .gte("reported_count", 3)
+        .order("reported_count", { ascending: false });
+      setReportedCategories((reportedCats ?? []) as PendingCategory[]);
 
       setChecking(false);
     };
@@ -121,6 +152,25 @@ export default function AdminPage() {
       }
     } catch {
       setWikiStatus((prev) => ({ ...prev, [slug]: "error" }));
+    }
+  };
+
+  const approveCategory = async (categoryId: number) => {
+    setApproveStatus((prev) => ({ ...prev, [categoryId]: "loading" }));
+    try {
+      const token = await getAccessToken();
+      const res = await fetch(`/api/category/${categoryId}/approve`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setApproveStatus((prev) => ({ ...prev, [categoryId]: "done" }));
+        setPendingCategories((prev) => prev.filter((c) => c.id !== categoryId));
+      } else {
+        setApproveStatus((prev) => ({ ...prev, [categoryId]: "error" }));
+      }
+    } catch {
+      setApproveStatus((prev) => ({ ...prev, [categoryId]: "error" }));
     }
   };
 
@@ -261,6 +311,110 @@ export default function AdminPage() {
                     </tr>
                   );
                 })}
+              </tbody>
+            </table>
+          )}
+        </section>
+        {/* 審査待ちカテゴリ */}
+        <section style={sectionStyle}>
+          <h2 style={sectionTitleStyle}>
+            審査待ちカテゴリ（{pendingCategories.length}件）
+          </h2>
+          {pendingCategories.length === 0 ? (
+            <p style={emptyStyle}>審査待ちはありません</p>
+          ) : (
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>カテゴリ名</th>
+                  <th style={thStyle}>slug</th>
+                  <th style={thStyle}>説明</th>
+                  <th style={thStyle}>申請日</th>
+                  <th style={thStyle}>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingCategories.map((cat) => {
+                  const st = approveStatus[cat.id] ?? "idle";
+                  return (
+                    <tr key={cat.id} style={trStyle}>
+                      <td style={tdStyle}>{cat.name}</td>
+                      <td style={tdStyle}>
+                        <span style={{ color: "#7a6a60", fontFamily: "monospace" }}>
+                          {cat.slug}
+                        </span>
+                      </td>
+                      <td style={tdStyle}>{cat.description ?? "—"}</td>
+                      <td style={tdStyle}>
+                        {cat.created_at
+                          ? new Date(cat.created_at).toLocaleDateString("ja-JP")
+                          : "—"}
+                      </td>
+                      <td style={tdStyle}>
+                        <button
+                          style={actionButtonStyle(
+                            st === "done" ? "done" : st === "error" ? "error" : "idle"
+                          )}
+                          disabled={st === "loading" || st === "done"}
+                          onClick={() => approveCategory(cat.id)}
+                        >
+                          {st === "loading"
+                            ? "処理中..."
+                            : st === "done"
+                            ? "承認済"
+                            : st === "error"
+                            ? "再試行"
+                            : "承認する"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </section>
+
+        {/* 報告されたカテゴリ */}
+        <section style={sectionStyle}>
+          <h2 style={sectionTitleStyle}>
+            報告されたカテゴリ（{reportedCategories.length}件）
+          </h2>
+          {reportedCategories.length === 0 ? (
+            <p style={emptyStyle}>報告はありません</p>
+          ) : (
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>カテゴリ名</th>
+                  <th style={thStyle}>slug</th>
+                  <th style={thStyle}>報告数</th>
+                  <th style={thStyle}>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reportedCategories.map((cat) => (
+                  <tr key={cat.id} style={trStyle}>
+                    <td style={tdStyle}>{cat.name}</td>
+                    <td style={tdStyle}>
+                      <span style={{ color: "#7a6a60", fontFamily: "monospace" }}>
+                        {cat.slug}
+                      </span>
+                    </td>
+                    <td style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
+                      {cat.reported_count}
+                    </td>
+                    <td style={tdStyle}>
+                      <Link
+                        href={`/${locale}/story/category/${cat.slug}`}
+                        style={linkStyle}
+                        target="_blank"
+                      >
+                        確認する →
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           )}

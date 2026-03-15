@@ -136,6 +136,24 @@
   color: #f5f1eb;
 }
 
+.categoryChipNew {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border: 1px dashed rgba(161, 102, 108, 0.4);
+  background: transparent;
+  color: rgba(161, 102, 108, 0.7);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.categoryChipNew:hover {
+  background: rgba(80, 28, 34, 0.5);
+  color: #f5f1eb;
+}
+
 /* ── Sort tabs ── */
 
 .sortTabs {

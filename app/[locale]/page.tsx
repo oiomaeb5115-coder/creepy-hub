@@ -5,6 +5,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import styles from "./page.module.css";
 import HomeAuthButtons from "./HomeAuthButtons";
 import BottomNavProfileLink from "./BottomNavProfileLink";
+import AdminPendingSection from "@/components/AdminPendingSection";
 
 export const revalidate = 60;
 
@@ -413,6 +414,8 @@ export default async function HomePage({ params }: HomePageProps) {
             </div>
           </div>
         </section>
+
+        <AdminPendingSection locale={locale} />
 
         <nav className={styles.bottomNav}>
           <Link href={`/${locale}`} className={styles.bottomNavItem}>

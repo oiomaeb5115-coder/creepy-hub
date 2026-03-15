@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import CategoryReportButton from "@/components/CategoryReportButton";
 
 type StoryCategoryPageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -14,6 +15,7 @@ type StoryCategoryRow = {
   name: string;
   description: string | null;
   is_active: boolean;
+  is_user_created: boolean;
 };
 
 type PostRow = {
@@ -33,7 +35,7 @@ export default async function StoryCategoryPage({
 
   const { data: categoryData, error: categoryError } = await supabase
     .from("story_categories")
-    .select("id, slug, name, description, is_active")
+    .select("id, slug, name, description, is_active, is_user_created")
     .eq("slug", slug)
     .eq("is_active", true)
     .single();
@@ -73,6 +75,9 @@ export default async function StoryCategoryPage({
             <Link href={`/${locale}/post`} className={styles.topLink}>
               投稿する
             </Link>
+            {category.is_user_created && (
+              <CategoryReportButton categoryId={category.id} />
+            )}
           </div>
         </header>
 

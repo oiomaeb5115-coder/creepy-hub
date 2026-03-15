@@ -90,6 +90,9 @@ export default async function StoryIndex({ params, searchParams }: Props) {
                 {cat.name}
               </Link>
             ))}
+            <Link href={`/${locale}/category/create`} className={styles.categoryChipNew}>
+              ＋ カテゴリを作成
+            </Link>
           </div>
         )}
 

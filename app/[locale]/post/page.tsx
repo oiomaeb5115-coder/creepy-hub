@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { genres } from "@/lib/genres";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 
@@ -29,6 +28,7 @@ export default function PostPage() {
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -38,6 +38,16 @@ export default function PostPage() {
       }
       setAuthChecked(true);
     });
+
+    supabase
+      .from("story_categories")
+      .select("id, name")
+      .eq("is_active", true)
+      .or("is_user_created.eq.false,approved.eq.true")
+      .order("sort_order", { ascending: true })
+      .then(({ data }) => {
+        if (data) setCategories(data as { id: number; name: string }[]);
+      });
   }, [locale]);
 
   const addChapter = () => {
@@ -253,9 +263,9 @@ export default function PostPage() {
                   onChange={(e) => setCategoryId(e.target.value)}
                 >
                   <option value="">選択してください</option>
-                  {genres.map((genre) => (
-                    <option key={genre.id} value={genre.id}>
-                      {genre.name}
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
                     </option>
                   ))}
                 </select>
