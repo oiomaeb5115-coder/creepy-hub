@@ -15,27 +15,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-  const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
-
-  const handleAdminLogin = async () => {
-    if (!adminEmail || !adminPassword) return;
-    setIsSubmitting(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: adminEmail,
-        password: adminPassword,
-      });
-      if (error) {
-        alert(`管理者ログイン失敗: ${error.message}`);
-        return;
-      }
-      window.location.href = `/${locale}/admin`;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -135,28 +114,6 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          {adminEmail && adminPassword && (
-            <div style={{ marginTop: 24, paddingTop: 20, borderTop: "1px solid rgba(180,100,110,0.2)" }}>
-              <button
-                type="button"
-                onClick={handleAdminLogin}
-                disabled={isSubmitting}
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  fontSize: 13,
-                  background: "rgba(60, 10, 20, 0.8)",
-                  border: "1px solid rgba(180, 100, 110, 0.5)",
-                  color: "#d4a0a8",
-                  cursor: "pointer",
-                  borderRadius: 4,
-                  letterSpacing: "0.05em",
-                }}
-              >
-                {isSubmitting ? "ログイン中..." : "管理者としてログイン"}
-              </button>
-            </div>
-          )}
         </section>
       </div>
     </main>
