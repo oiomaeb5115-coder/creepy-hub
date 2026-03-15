@@ -26,6 +26,10 @@ textarea {
   font: inherit;
 }
 
+input[type="password"] {
+  font-family: sans-serif;
+}
+
 .site-shell {
   min-height: 100vh;
 }
