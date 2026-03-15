@@ -44,6 +44,7 @@ export default function StoryActionButtons({ postId, authorId, locale }: Props) 
         return;
       }
       router.push(`/${locale}`);
+      router.refresh();
     } finally {
       setDeleting(false);
     }
