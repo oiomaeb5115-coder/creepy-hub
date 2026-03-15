@@ -12,10 +12,6 @@
   border-left: 2px solid rgba(255, 255, 255, 0.9);
   border-right: 2px solid rgba(255, 255, 255, 0.9);
   border-bottom: 2px solid rgba(255, 255, 255, 0.9);
-  background-image: url("/images/ui/creepy_hub_background.png");
-  background-size: cover;
-  background-position: top center;
-  background-repeat: no-repeat;
 }
 
 .heroSection {
@@ -24,6 +20,34 @@
   border-top: 2px solid rgba(255, 255, 255, 0.9);
   overflow: hidden;
   padding-bottom: 36px;
+}
+
+/* 左上の大きな赤い円 */
+.heroSection::before {
+  content: "";
+  position: absolute;
+  top: -220px;
+  left: -200px;
+  width: 700px;
+  height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(140, 18, 24, 0.92) 0%, rgba(90, 8, 14, 0.82) 55%, rgba(40, 3, 6, 0.4) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 右上の小さな円 */
+.heroSection::after {
+  content: "";
+  position: absolute;
+  top: -120px;
+  right: -100px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(140, 18, 24, 0.88) 0%, rgba(80, 8, 12, 0.65) 60%, rgba(30, 2, 5, 0.2) 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .heroTopButtons {
@@ -383,6 +407,20 @@
 @media (max-width: 960px) {
   .heroSection {
     min-height: 420px;
+  }
+
+  .heroSection::before {
+    width: 480px;
+    height: 480px;
+    top: -160px;
+    left: -140px;
+  }
+
+  .heroSection::after {
+    width: 220px;
+    height: 220px;
+    top: -80px;
+    right: -70px;
   }
 
   .heroInner {
