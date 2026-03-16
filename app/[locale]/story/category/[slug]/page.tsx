@@ -6,6 +6,7 @@ import BackButton from "@/components/BackButton";
 import CategoryReportButton from "@/components/CategoryReportButton";
 import CategoryEditButton from "@/components/CategoryEditButton";
 import CategoryDeleteButton from "@/components/CategoryDeleteButton";
+import FavoriteCategoryButton from "@/components/FavoriteCategoryButton";
 
 type StoryCategoryPageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -98,6 +99,12 @@ export default async function StoryCategoryPage({
             <Link href={`/${locale}`} className={styles.topLink}>
               ホーム
             </Link>
+            <FavoriteCategoryButton
+              type="story"
+              slug={category.slug}
+              name={category.name}
+              locale={locale}
+            />
             <CategoryEditButton
               categoryId={category.id}
               createdBy={category.created_by}

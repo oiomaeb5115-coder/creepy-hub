@@ -6,9 +6,17 @@
   font-family: "装甲明朝", "Soukou Mincho", serif;
 }
 
-.storyShell {
-  max-width: 860px;
+.pageLayout {
+  max-width: 1080px;
   margin: 0 auto;
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.storyShell {
+  flex: 1;
+  min-width: 0;
 }
 
 .pageHeader {

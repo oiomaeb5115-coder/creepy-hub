@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "./wiki.module.css";
 import BackButton from "@/components/BackButton";
+import FavoriteSidebar from "@/components/FavoriteSidebar";
 
 type WikiIndexPageProps = {
   params: Promise<{ locale: string }>;
@@ -145,6 +146,8 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
 
   return (
     <main className={styles.wikiPage}>
+      <div className={styles.pageLayout}>
+      <FavoriteSidebar type="wiki" locale={locale} />
       <div className={styles.wikiShell}>
         <BackButton />
         <header className={styles.wikiHeader}>
@@ -335,6 +338,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
             </div>
           </section>
         )}
+      </div>
       </div>
     </main>
   );

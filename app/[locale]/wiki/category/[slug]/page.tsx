@@ -6,6 +6,7 @@ import BackButton from "@/components/BackButton";
 import WikiCategoryEditButton from "@/components/WikiCategoryEditButton";
 import WikiCategoryReportButton from "@/components/WikiCategoryReportButton";
 import CategoryDeleteButton from "@/components/CategoryDeleteButton";
+import FavoriteCategoryButton from "@/components/FavoriteCategoryButton";
 
 type WikiCategoryPageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -121,6 +122,12 @@ export default async function WikiCategoryPage({
             <Link href={`/${locale}/wiki`} className={styles.topLink}>
               Wiki 一覧
             </Link>
+            <FavoriteCategoryButton
+              type="wiki"
+              slug={safeCategory.slug}
+              name={safeCategory.name}
+              locale={locale}
+            />
             <WikiCategoryEditButton
               categoryId={safeCategory.id}
               createdBy={safeCategory.created_by}

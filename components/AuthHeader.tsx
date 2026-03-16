@@ -98,8 +98,23 @@ export default function AuthHeader({ locale }: AuthHeaderProps) {
              プロフィール
           </Link>
 
-          <Link href={`/${locale}/bookmarks`}>
-              保存
+          <Link
+            href={`/${locale}/bookmark`}
+            style={{
+              minHeight: "46px",
+              padding: "0 18px",
+              borderRadius: "10px",
+              border: "1px solid rgba(108, 132, 170, 0.32)",
+              background: "rgba(28, 42, 64, 0.78)",
+              color: "#eff4ff",
+              fontWeight: 700,
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            保存済み
           </Link>
 
 

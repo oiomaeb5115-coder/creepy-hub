@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import FavoriteSidebar from "@/components/FavoriteSidebar";
 
 export const dynamic = "force-dynamic";
 
@@ -77,6 +78,8 @@ export default async function StoryIndex({ params, searchParams }: Props) {
 
   return (
     <main className={styles.storyPage}>
+      <div className={styles.pageLayout}>
+      <FavoriteSidebar type="story" locale={locale} />
       <div className={styles.storyShell}>
         <BackButton />
         <header className={styles.pageHeader}>
@@ -191,6 +194,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
             })}
           </div>
         )}
+      </div>
       </div>
     </main>
   );

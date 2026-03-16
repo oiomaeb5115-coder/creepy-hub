@@ -7,9 +7,17 @@
   overflow-x: hidden;
 }
 
-.wikiShell {
-  max-width: 860px;
+.pageLayout {
+  max-width: 1080px;
   margin: 0 auto;
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.wikiShell {
+  flex: 1;
+  min-width: 0;
 }
 
 .wikiHeader {

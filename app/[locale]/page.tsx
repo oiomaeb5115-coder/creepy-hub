@@ -49,6 +49,12 @@ type StoryCategoryRow = {
   name_en: string | null;
 };
 
+type WikiCategoryRow = {
+  id: number;
+  slug: string;
+  name: string;
+};
+
 const wikiPageTypeKeys = [
   "urban_legend",
   "incident",
@@ -283,7 +289,7 @@ export default async function HomePage({ params }: HomePageProps) {
         .order("created_at", { ascending: false })
         .limit(12);
 
-  const [latestStoriesResult, latestWikiResult, storyCategoriesResult] = await Promise.all([
+  const [latestStoriesResult, latestWikiResult, storyCategoriesResult, wikiCategoriesResult] = await Promise.all([
     storiesQuery,
 
     supabase
@@ -300,6 +306,13 @@ export default async function HomePage({ params }: HomePageProps) {
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .limit(20),
+
+    supabase
+      .from("categories")
+      .select("id, slug, name")
+      .eq("locale", locale)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false }),
   ]);
 
   const latestStories = (latestStoriesResult.data ?? []).map((p: any) => ({
@@ -314,6 +327,7 @@ export default async function HomePage({ params }: HomePageProps) {
   })) as StoryPost[];
   const latestWiki = (latestWikiResult.data ?? []) as WikiPost[];
   const storyCategories = (storyCategoriesResult.data ?? []) as StoryCategoryRow[];
+  const wikiCategories = (wikiCategoriesResult.data ?? []) as WikiCategoryRow[];
 
   return (
     <main className={styles.homePage}>
@@ -438,6 +452,15 @@ export default async function HomePage({ params }: HomePageProps) {
                   className={styles.categoryChip}
                 >
                   {dict.pageType[key]}
+                </Link>
+              ))}
+              {wikiCategories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/${locale}/wiki/category/${cat.slug}`}
+                  className={styles.categoryChip}
+                >
+                  {cat.name}
                 </Link>
               ))}
             </div>
