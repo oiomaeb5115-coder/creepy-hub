@@ -156,9 +156,6 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
             <Link href={`/${locale}`} className={styles.archiveTopLink}>
               {dict.nav.home}
             </Link>
-            <Link href={`/${locale}/post`} className={styles.archiveTopLink}>
-              {dict.nav.post}
-            </Link>
           </div>
         </header>
 

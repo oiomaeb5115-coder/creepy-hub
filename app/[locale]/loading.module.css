@@ -1,0 +1,94 @@
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.page {
+  min-height: 100vh;
+  background: #0d0608;
+  padding: 32px 20px 100px;
+  overflow: hidden;
+}
+
+.shell {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.bone {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+/* ページヘッダー部 */
+.headerArea {
+  padding-bottom: 20px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid rgba(167, 108, 113, 0.15);
+}
+
+.titleBone {
+  composes: bone;
+  height: 32px;
+  width: 55%;
+  margin-bottom: 10px;
+}
+
+.subtitleBone {
+  composes: bone;
+  height: 14px;
+  width: 30%;
+}
+
+/* カードリスト */
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cardMeta {
+  composes: bone;
+  height: 11px;
+  width: 35%;
+}
+
+.cardTitle {
+  composes: bone;
+  height: 20px;
+  width: 80%;
+}
+
+.cardBody {
+  composes: bone;
+  height: 14px;
+  width: 100%;
+}
+
+.cardBodyShort {
+  composes: bone;
+  height: 14px;
+  width: 60%;
+}
+
+.cardFooter {
+  composes: bone;
+  height: 11px;
+  width: 20%;
+  margin-top: 4px;
+}

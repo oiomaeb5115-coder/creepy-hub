@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { translateWikiToEnglish } from "@/lib/claude";
+import { translateWikiToEnglish } from "@/lib/googleTranslate";
 import { requireAdmin } from "@/lib/apiAuth";
 
 export async function POST(req: NextRequest) {
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ alreadyTranslated: true });
   }
 
-  // Claude APIで翻訳
+  // Google Translate APIで翻訳
   let translated;
   try {
     translated = await translateWikiToEnglish({

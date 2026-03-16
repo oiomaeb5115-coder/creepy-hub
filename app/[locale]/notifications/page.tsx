@@ -23,12 +23,20 @@ type PendingCategory = {
   created_at: string | null;
 };
 
+type ProfileRow = {
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+};
+
 export default function NotificationsPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [actorNames, setActorNames] = useState<Record<string, string>>({});
   const [postTitles, setPostTitles] = useState<Record<number, string>>({});
@@ -49,6 +57,14 @@ export default function NotificationsPage() {
       const token = await getAccessToken();
       const adminFlag = await getIsAdmin();
       setIsAdmin(adminFlag);
+
+      // Fetch own profile
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("username, display_name, avatar_url, bio")
+        .eq("id", session.user.id)
+        .single();
+      setProfile((profileData as ProfileRow | null) ?? null);
 
       // Fetch notifications
       const { data: notifData } = await supabase
@@ -129,9 +145,79 @@ export default function NotificationsPage() {
 
         <header style={{ marginBottom: 28 }}>
           <p style={{ fontSize: 11, letterSpacing: "0.15em", color: "#7a6a60", margin: "0 0 4px" }}>
+            ACCOUNT
+          </p>
+          <h1 style={{ fontSize: 20, color: "#e8d8d0", margin: "0 0 16px" }}>プロフィール</h1>
+
+          {/* Profile summary */}
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            padding: "14px 16px",
+            background: "rgba(20,10,12,0.6)",
+            border: "1px solid rgba(180,100,110,0.18)",
+            borderRadius: 8,
+            marginBottom: 12,
+          }}>
+            {profile?.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt={profile.display_name ?? "avatar"}
+                style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+              />
+            ) : (
+              <div style={{
+                width: 48, height: 48, borderRadius: "50%", background: "#2a1a1e",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#7a6a60", fontSize: 10, flexShrink: 0,
+              }}>
+                AVATAR
+              </div>
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: 15, color: "#e8d8d0", fontWeight: 600 }}>
+                {profile?.display_name ?? "名前未設定"}
+              </p>
+              <p style={{ margin: "2px 0 0", fontSize: 12, color: "#7a6a60" }}>
+                @{profile?.username ?? "username"}
+              </p>
+              {profile?.bio && (
+                <p style={{ margin: "6px 0 0", fontSize: 12, color: "#c0a898", lineHeight: 1.5 }}>
+                  {profile.bio.length > 60 ? `${profile.bio.slice(0, 60)}...` : profile.bio}
+                </p>
+              )}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+              {isAdmin && (
+                <Link
+                  href={`/${locale}/admin`}
+                  style={{ fontSize: 11, color: "#e8a0a0", textDecoration: "none", letterSpacing: "0.05em" }}
+                >
+                  管理画面 →
+                </Link>
+              )}
+              <Link
+                href={profile?.username ? `/${locale}/u/${profile.username}` : `/${locale}/account`}
+                style={{ fontSize: 11, color: "#b08888", textDecoration: "none", letterSpacing: "0.05em" }}
+              >
+                公開ページ →
+              </Link>
+              <Link
+                href={`/${locale}/account/settings`}
+                style={{ fontSize: 11, color: "#8899bb", textDecoration: "none", letterSpacing: "0.05em" }}
+              >
+                設定 →
+              </Link>
+            </div>
+          </div>
+        </header>
+
+        <header style={{ marginBottom: 20 }}>
+          <p style={{ fontSize: 11, letterSpacing: "0.15em", color: "#7a6a60", margin: "0 0 4px" }}>
             NOTIFICATIONS
           </p>
-          <h1 style={{ fontSize: 20, color: "#e8d8d0", margin: 0 }}>通知</h1>
+          <h2 style={{ fontSize: 16, color: "#e8d8d0", margin: 0 }}>通知</h2>
         </header>
 
         {/* Admin: pending categories */}

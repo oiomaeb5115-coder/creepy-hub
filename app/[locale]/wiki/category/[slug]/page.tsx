@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import styles from "../../wiki.module.css";
+import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import WikiCategoryEditButton from "@/components/WikiCategoryEditButton";
+import WikiCategoryReportButton from "@/components/WikiCategoryReportButton";
+import CategoryDeleteButton from "@/components/CategoryDeleteButton";
 
 type WikiCategoryPageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -14,6 +17,10 @@ type CategoryRow = {
   name: string;
   description: string | null;
   locale: string;
+  icon_url: string | null;
+  header_image_url: string | null;
+  is_user_created: boolean | null;
+  created_by: string | null;
 };
 
 type JoinRow = {
@@ -26,6 +33,8 @@ type WikiRow = {
   title: string;
   summary: string | null;
   page_type: string;
+  image_url: string | null;
+  view_count: number | null;
 };
 
 export default async function WikiCategoryPage({
@@ -35,7 +44,7 @@ export default async function WikiCategoryPage({
 
   const { data: category, error: categoryError } = await supabase
     .from("categories")
-    .select("id, slug, name, description, locale")
+    .select("id, slug, name, description, locale, icon_url, header_image_url, is_user_created, created_by")
     .eq("locale", locale)
     .eq("slug", slug)
     .single();
@@ -61,10 +70,11 @@ export default async function WikiCategoryPage({
   } else if (wikiIds.length > 0) {
     const { data: wikiItems, error: wikiError } = await supabase
       .from("wiki_pages")
-      .select("id, slug, title, summary, page_type")
+      .select("id, slug, title, summary, page_type, image_url, view_count")
       .eq("locale", locale)
       .eq("is_published", true)
-      .in("id", wikiIds);
+      .in("id", wikiIds)
+      .order("view_count", { ascending: false });
 
     if (wikiError) {
       wikiErrorMessage = wikiError.message;
@@ -74,51 +84,111 @@ export default async function WikiCategoryPage({
   }
 
   return (
-    <main className={styles.wikiPage}>
-      <div className={styles.wikiShell}>
+    <main className={styles.categoryPage}>
+      {/* ヘッダー画像 */}
+      {safeCategory.header_image_url && (
+        <div className={styles.heroImage}>
+          <img
+            src={safeCategory.header_image_url}
+            alt={`${safeCategory.name} ヘッダー画像`}
+            className={styles.heroImg}
+          />
+          <div className={styles.heroOverlay} />
+        </div>
+      )}
+
+      <div className={styles.categoryShell}>
         <BackButton />
-        <header className={styles.wikiHeader}>
-          <div>
-            <p className={styles.wikiBreadcrumb}>ARCHIVE / WIKI / CATEGORY</p>
-            <h1 className={styles.wikiTitle}>{safeCategory.name}</h1>
-            <p className={styles.wikiSubtitle}>
-              {safeCategory.description ?? "カテゴリ別の wiki 一覧です。"}
-            </p>
+        <header className={styles.categoryHeader}>
+          <div className={styles.categoryTitleRow}>
+            {safeCategory.icon_url && (
+              <img
+                src={safeCategory.icon_url}
+                alt={`${safeCategory.name} アイコン`}
+                className={styles.categoryIcon}
+              />
+            )}
+            <div>
+              <p className={styles.categoryBreadcrumb}>OCCULT WIKI / CATEGORY</p>
+              <h1 className={styles.categoryTitle}>{safeCategory.name}</h1>
+              <p className={styles.categorySubtitle}>
+                {safeCategory.description ?? "このカテゴリの wiki 記事一覧です。"}
+              </p>
+            </div>
           </div>
 
           <div className={styles.headerActions}>
             <Link href={`/${locale}/wiki`} className={styles.topLink}>
               Wiki 一覧
             </Link>
+            <WikiCategoryEditButton
+              categoryId={safeCategory.id}
+              createdBy={safeCategory.created_by}
+              slug={safeCategory.slug}
+              locale={locale}
+            />
+            {safeCategory.is_user_created && (
+              <WikiCategoryReportButton categoryId={safeCategory.id} />
+            )}
+            <CategoryDeleteButton
+              categoryId={safeCategory.id}
+              deleteApiPath={`/api/wiki-category/${safeCategory.id}/delete`}
+              redirectTo={`/${locale}/wiki`}
+            />
           </div>
         </header>
 
-        <section className={styles.card}>
+        <section className={styles.cardSection}>
           <div className={styles.sectionHead}>
             <h2 className={styles.sectionTitle}>所属ページ</h2>
             <p className={styles.sectionDescription}>
-              このカテゴリに紐づいた wiki 記事を表示しています。
+              カテゴリ「{safeCategory.name}」に属する wiki 記事です。
             </p>
           </div>
 
           {wikiErrorMessage ? (
-            <div className={styles.errorBox}>{wikiErrorMessage}</div>
+            <p className={styles.emptyText}>
+              記事の取得に失敗しました: {wikiErrorMessage}
+            </p>
           ) : items.length === 0 ? (
-            <p className={styles.emptyText}>まだ記事がありません。</p>
+            <p className={styles.emptyText}>このカテゴリにはまだ記事がありません。</p>
           ) : (
-            <div className={styles.list}>
+            <div className={styles.postGrid}>
               {items.map((item) => (
                 <Link
-                  key={item.id}
                   href={`/${locale}/wiki/${item.slug}`}
-                  className={styles.listLink}
+                  key={item.id}
+                  className={styles.postCardLink}
                 >
-                  <article className={styles.listItem}>
-                    <p className={styles.smallMeta}>{item.page_type}</p>
-                    <h3 className={styles.itemTitle}>{item.title}</h3>
-                    <p className={styles.itemText}>
-                      {item.summary ?? "概要はまだ設定されていません。"}
-                    </p>
+                  <article className={styles.postCard}>
+                    {item.image_url ? (
+                      <img
+                        src={item.image_url}
+                        alt={item.title}
+                        className={styles.postCardImage}
+                      />
+                    ) : (
+                      <div className={styles.postCardImagePlaceholder}>
+                        NO IMAGE
+                      </div>
+                    )}
+
+                    <div className={styles.postCardBody}>
+                      <div className={styles.postCardMetaRow}>
+                        <span className={styles.postCardType}>
+                          {item.page_type}
+                        </span>
+                        <span className={styles.postCardViews}>
+                          👁 {item.view_count ?? 0}
+                        </span>
+                      </div>
+
+                      <h3 className={styles.postCardTitle}>{item.title}</h3>
+
+                      <p className={styles.postCardExcerpt}>
+                        {item.summary ?? "概要はまだ設定されていません。"}
+                      </p>
+                    </div>
                   </article>
                 </Link>
               ))}

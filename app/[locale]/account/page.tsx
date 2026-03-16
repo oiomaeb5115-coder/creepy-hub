@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { getIsAdmin } from "@/lib/auth";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 
@@ -25,6 +26,7 @@ export default function AccountPage() {
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const loadAccount = async () => {
@@ -50,6 +52,8 @@ export default function AccountPage() {
         console.error("profile fetch error:", profileError);
       }
 
+      const adminFlag = await getIsAdmin();
+      setIsAdmin(adminFlag);
       setProfile((profileData as ProfileRow | null) ?? null);
       setLoading(false);
     };
@@ -81,6 +85,9 @@ export default function AccountPage() {
           <div className={styles.headerActions}>
             <Link href={`/${locale}`} className={styles.topLink}>
               ホーム
+            </Link>
+            <Link href={`/${locale}/admin`} className={styles.topLink} style={{ color: "#e8a0a0" }}>
+              管理画面
             </Link>
             <Link href={`/${locale}/account/settings`} className={styles.topLink}>
                 編集

@@ -120,13 +120,16 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // サービスロールキーでRLSをバイパスして削除
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const { error } = await adminSupabase.from("post").delete().eq("id", id);
+  // ソフトデリート: 非公開化 + deleted_at をセット
+  const { error } = await adminSupabase
+    .from("post")
+    .update({ is_published: false, deleted_at: new Date().toISOString() })
+    .eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   revalidatePath("/ja");

@@ -4,6 +4,8 @@ import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 import CategoryReportButton from "@/components/CategoryReportButton";
+import CategoryEditButton from "@/components/CategoryEditButton";
+import CategoryDeleteButton from "@/components/CategoryDeleteButton";
 
 type StoryCategoryPageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -16,6 +18,9 @@ type StoryCategoryRow = {
   description: string | null;
   is_active: boolean;
   is_user_created: boolean;
+  created_by: string | null;
+  icon_url: string | null;
+  header_image_url: string | null;
 };
 
 type PostRow = {
@@ -35,7 +40,7 @@ export default async function StoryCategoryPage({
 
   const { data: categoryData, error: categoryError } = await supabase
     .from("story_categories")
-    .select("id, slug, name, description, is_active, is_user_created")
+    .select("id, slug, name, description, is_active, is_user_created, created_by, icon_url, header_image_url")
     .eq("slug", slug)
     .eq("is_active", true)
     .single();
@@ -57,27 +62,56 @@ export default async function StoryCategoryPage({
 
   return (
     <main className={styles.categoryPage}>
+      {/* ヘッダー画像 */}
+      {category.header_image_url && (
+        <div className={styles.heroImage}>
+          <img
+            src={category.header_image_url}
+            alt={`${category.name} ヘッダー画像`}
+            className={styles.heroImg}
+          />
+          <div className={styles.heroOverlay} />
+        </div>
+      )}
+
       <div className={styles.categoryShell}>
         <BackButton />
         <header className={styles.categoryHeader}>
-          <div>
-            <p className={styles.categoryBreadcrumb}>STORIES / CATEGORY</p>
-            <h1 className={styles.categoryTitle}>{category.name}</h1>
-            <p className={styles.categorySubtitle}>
-              {category.description ?? "このカテゴリの怪談・投稿一覧です。"}
-            </p>
+          <div className={styles.categoryTitleRow}>
+            {category.icon_url && (
+              <img
+                src={category.icon_url}
+                alt={`${category.name} アイコン`}
+                className={styles.categoryIcon}
+              />
+            )}
+            <div>
+              <p className={styles.categoryBreadcrumb}>STORIES / CATEGORY</p>
+              <h1 className={styles.categoryTitle}>{category.name}</h1>
+              <p className={styles.categorySubtitle}>
+                {category.description ?? "このカテゴリの怪談・投稿一覧です。"}
+              </p>
+            </div>
           </div>
 
           <div className={styles.headerActions}>
             <Link href={`/${locale}`} className={styles.topLink}>
               ホーム
             </Link>
-            <Link href={`/${locale}/post`} className={styles.topLink}>
-              投稿する
-            </Link>
+            <CategoryEditButton
+              categoryId={category.id}
+              createdBy={category.created_by}
+              slug={category.slug}
+              locale={locale}
+            />
             {category.is_user_created && (
               <CategoryReportButton categoryId={category.id} />
             )}
+            <CategoryDeleteButton
+              categoryId={category.id}
+              deleteApiPath={`/api/category/${category.id}/delete`}
+              redirectTo={`/${locale}/story`}
+            />
           </div>
         </header>
 

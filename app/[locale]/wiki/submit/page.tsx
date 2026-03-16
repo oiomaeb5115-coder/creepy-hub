@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -41,6 +41,9 @@ export default function WikiSubmitPage() {
   const locale = params?.locale ?? "ja";
 
   const [authChecked, setAuthChecked] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [draftRestored, setDraftRestored] = useState(false);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [summary, setSummary] = useState("");
@@ -65,9 +68,55 @@ export default function WikiSubmitPage() {
         window.location.href = `/${locale}/login`;
         return;
       }
+      setUserId(session.user.id);
       setAuthChecked(true);
     });
   }, [locale]);
+
+  // 下書き復元
+  useEffect(() => {
+    if (!userId) return;
+    const raw = localStorage.getItem(`draft_wiki_${userId}`);
+    if (!raw) return;
+    try {
+      const draft = JSON.parse(raw);
+      if (draft.title) setTitle(draft.title);
+      if (draft.subtitle) setSubtitle(draft.subtitle);
+      if (draft.summary) setSummary(draft.summary);
+      if (draft.pageType) setPageType(draft.pageType as PageType);
+      if (draft.chapters) {
+        setChapters(
+          draft.chapters.map((ch: { id: number; title: string; body: string }) => ({
+            id: ch.id,
+            title: ch.title,
+            body: ch.body,
+            imageFile: null,
+            imagePreview: "",
+          }))
+        );
+      }
+      setDraftRestored(true);
+    } catch { /* 無効なデータは無視 */ }
+  }, [userId]);
+
+  // 下書き自動保存（デバウンス 500ms）
+  useEffect(() => {
+    if (!userId) return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      const savableChapters = chapters.map(({ id, title, body }) => ({ id, title, body }));
+      localStorage.setItem(`draft_wiki_${userId}`, JSON.stringify({ title, subtitle, summary, pageType, chapters: savableChapters }));
+    }, 500);
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
+  }, [userId, title, subtitle, summary, pageType, chapters]);
+
+  const deleteDraft = () => {
+    if (!userId) return;
+    localStorage.removeItem(`draft_wiki_${userId}`);
+    setDraftRestored(false);
+    setTitle(""); setSubtitle(""); setSummary(""); setPageType("general");
+    setChapters([{ id: 1, title: "", body: "", imageFile: null, imagePreview: "" }]);
+  };
 
   const uploadImage = async (
     file: File,
@@ -215,11 +264,29 @@ export default function WikiSubmitPage() {
       }
 
       const content = chapterParts.join("\n\n");
-      const slug = slugify(title);
+      const baseSlug = slugify(title);
 
-      if (!slug) {
+      if (!baseSlug) {
         alert("有効な slug を生成できませんでした。タイトルを調整してください。");
         return;
+      }
+
+      // スラッグの重複チェックと一意化
+      let slug = baseSlug;
+      {
+        const { data: existing } = await supabase
+          .from("wiki_pages")
+          .select("slug")
+          .eq("locale", locale)
+          .like("slug", `${baseSlug}%`);
+        if (existing && existing.length > 0) {
+          const usedSlugs = new Set(existing.map((r: { slug: string }) => r.slug));
+          if (usedSlugs.has(baseSlug)) {
+            let counter = 2;
+            while (usedSlugs.has(`${baseSlug}-${counter}`)) counter++;
+            slug = `${baseSlug}-${counter}`;
+          }
+        }
       }
 
       const payload: Record<string, unknown> = {
@@ -250,6 +317,7 @@ export default function WikiSubmitPage() {
         return;
       }
 
+      localStorage.removeItem(`draft_wiki_${userId}`);
       alert(isPublished ? "wiki記事を公開しました。" : "下書きを保存しました。");
       window.location.href = data?.slug
         ? (isPublished ? `/${locale}/wiki/${encodeURIComponent(data.slug)}` : `/${locale}/wiki`)
@@ -296,6 +364,19 @@ export default function WikiSubmitPage() {
           </div>
 
           <form className={styles.form} onSubmit={handleSubmit}>
+
+            <div className={styles.draftNotice}>
+              ⚠ 下書きはこのブラウザのみ保存されます。別のブラウザや端末では表示されません。
+            </div>
+
+            {draftRestored && (
+              <div className={styles.draftRestoredRow}>
+                <span className={styles.draftRestoredMsg}>下書きを復元しました</span>
+                <button type="button" className={styles.draftDeleteBtn} onClick={deleteDraft}>
+                  下書きを削除
+                </button>
+              </div>
+            )}
 
             {/* Thumbnail */}
             <div className={styles.formGroup}>

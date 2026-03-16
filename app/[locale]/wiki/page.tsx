@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { getDictionary } from "@/lib/getDictionary";
 import styles from "./wiki.module.css";
 import BackButton from "@/components/BackButton";
 
@@ -18,6 +19,7 @@ type WikiPageRow = {
   view_count: number | null;
   updated_at: string | null;
   is_published: boolean;
+  image_url: string | null;
 };
 
 type CategoryRow = {
@@ -27,21 +29,13 @@ type CategoryRow = {
   description: string | null;
 };
 
-const pageTypeLabels: Record<string, string> = {
-  general: "一般",
-  urban_legend: "都市伝説",
-  incident: "怪事件",
-  work: "作品",
-  term: "用語",
-  person: "人物",
-  region: "地域",
-};
-
 export default async function WikiIndexPage({ params, searchParams }: WikiIndexPageProps) {
   const { locale } = await params;
   const { sort = "new" } = await searchParams;
   const isPopular = sort === "popular";
   const orderCol = isPopular ? "view_count" : "updated_at";
+  const dict = await getDictionary(locale);
+  const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
   const [
     mainResult,
@@ -55,7 +49,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
   ] = await Promise.all([
     supabase
       .from("wiki_pages")
-      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published")
+      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published, image_url")
       .eq("locale", locale)
       .eq("is_published", true)
       .order(orderCol, { ascending: false })
@@ -66,12 +60,13 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
       .select("id, slug, name, description")
       .eq("locale", locale)
       .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .limit(8),
+      .eq("is_user_created", true)
+      .order("created_at", { ascending: true })
+      .limit(20),
 
     supabase
       .from("wiki_pages")
-      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published")
+      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published, image_url")
       .eq("locale", locale)
       .eq("is_published", true)
       .eq("page_type", "urban_legend")
@@ -80,7 +75,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
 
     supabase
       .from("wiki_pages")
-      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published")
+      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published, image_url")
       .eq("locale", locale)
       .eq("is_published", true)
       .eq("page_type", "incident")
@@ -89,7 +84,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
 
     supabase
       .from("wiki_pages")
-      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published")
+      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published, image_url")
       .eq("locale", locale)
       .eq("is_published", true)
       .eq("page_type", "work")
@@ -98,7 +93,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
 
     supabase
       .from("wiki_pages")
-      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published")
+      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published, image_url")
       .eq("locale", locale)
       .eq("is_published", true)
       .eq("page_type", "term")
@@ -107,7 +102,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
 
     supabase
       .from("wiki_pages")
-      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published")
+      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published, image_url")
       .eq("locale", locale)
       .eq("is_published", true)
       .eq("page_type", "person")
@@ -116,7 +111,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
 
     supabase
       .from("wiki_pages")
-      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published")
+      .select("id, slug, title, summary, page_type, locale, view_count, updated_at, is_published, image_url")
       .eq("locale", locale)
       .eq("is_published", true)
       .eq("page_type", "region")
@@ -128,12 +123,12 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
   const categories = (categoriesResult.data ?? []) as CategoryRow[];
 
   const pageTypeSections = [
-    { key: "urban_legend", label: pageTypeLabels.urban_legend, items: (urbanLegendResult.data ?? []) as WikiPageRow[] },
-    { key: "incident",     label: pageTypeLabels.incident,     items: (incidentResult.data ?? []) as WikiPageRow[] },
-    { key: "work",         label: pageTypeLabels.work,         items: (workResult.data ?? []) as WikiPageRow[] },
-    { key: "term",         label: pageTypeLabels.term,         items: (termResult.data ?? []) as WikiPageRow[] },
-    { key: "person",       label: pageTypeLabels.person,       items: (personResult.data ?? []) as WikiPageRow[] },
-    { key: "region",       label: pageTypeLabels.region,       items: (regionResult.data ?? []) as WikiPageRow[] },
+    { key: "urban_legend", label: dict.pageType.urban_legend, items: (urbanLegendResult.data ?? []) as WikiPageRow[] },
+    { key: "incident",     label: dict.pageType.incident,     items: (incidentResult.data ?? []) as WikiPageRow[] },
+    { key: "work",         label: dict.pageType.work,         items: (workResult.data ?? []) as WikiPageRow[] },
+    { key: "term",         label: dict.pageType.term,         items: (termResult.data ?? []) as WikiPageRow[] },
+    { key: "person",       label: dict.pageType.person,       items: (personResult.data ?? []) as WikiPageRow[] },
+    { key: "region",       label: dict.pageType.region,       items: (regionResult.data ?? []) as WikiPageRow[] },
   ];
 
   if (mainResult.error) {
@@ -156,33 +151,43 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
           <div>
             <p className={styles.wikiBreadcrumb}>OCCULT WIKI / ARCHIVE</p>
             <h1 className={styles.wikiTitle}>Occult Wiki</h1>
-            <p className={styles.wikiSubtitle}>
-              オカルト・都市伝説・怪事件・作品・人物・用語を整理する情報アーカイブ
-            </p>
+            <p className={styles.wikiSubtitle}>{dict.wiki.subtitle}</p>
           </div>
           <div className={styles.headerActions}>
-            <Link href={`/${locale}`} className={styles.topLink}>ホーム</Link>
-            <Link href={`/${locale}/wiki/random`} className={styles.topLink}>ランダム</Link>
-            <Link href={`/${locale}/wiki/submit`} className={styles.topLink}>Wiki作成</Link>
+            <Link href={`/${locale}`} className={styles.topLink}>{dict.nav.home}</Link>
+            <Link href={`/${locale}/wiki/random`} className={styles.topLink}>{dict.wiki.random}</Link>
+            <Link href={`/${locale}/wiki/submit`} className={styles.topLink}>{dict.wiki.submit}</Link>
           </div>
         </header>
 
         {/* Category filter */}
         <div className={styles.categoryBar}>
           <Link href={`/${locale}/wiki`} className={styles.categoryChip}>
-            すべて
+            {dict.wiki.all}
           </Link>
-          {Object.entries(pageTypeLabels)
-            .filter(([key]) => key !== "general")
-            .map(([key, label]) => (
+          {(Object.keys(dict.pageType) as Array<keyof typeof dict.pageType>)
+            .filter((key) => key !== "general")
+            .map((key) => (
               <Link
                 key={key}
                 href={`/${locale}/wiki/category/${key}`}
                 className={styles.categoryChip}
               >
-                {label}
+                {dict.pageType[key]}
               </Link>
             ))}
+          {categories.map((cat) => (
+            <Link
+              key={cat.id}
+              href={`/${locale}/wiki/category/${cat.slug}`}
+              className={styles.categoryChip}
+            >
+              {cat.name}
+            </Link>
+          ))}
+          <Link href={`/${locale}/wiki/category/create`} className={styles.categoryChipNew}>
+            {dict.wiki.createCategory}
+          </Link>
         </div>
 
         {/* Search */}
@@ -190,16 +195,16 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
           <input
             type="text"
             name="q"
-            placeholder="Wikiを検索..."
+            placeholder={dict.wiki.searchPlaceholder}
             className={styles.searchInput}
           />
-          <button type="submit" className={styles.searchBtn}>検索</button>
+          <button type="submit" className={styles.searchBtn}>{dict.home.searchButton}</button>
         </form>
 
         {/* Main feed with sort toggle */}
         <section className={styles.card}>
           <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Wiki 記事</h2>
+            <h2 className={styles.sectionTitle}>{dict.wiki.listTitle}</h2>
           </div>
 
           <div className={styles.sortTabs}>
@@ -207,40 +212,49 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
               href={`/${locale}/wiki?sort=new`}
               className={`${styles.sortTab} ${!isPopular ? styles.sortTabActive : ""}`}
             >
-              新着順
+              {dict.wiki.newest}
             </Link>
             <Link
               href={`/${locale}/wiki?sort=popular`}
               className={`${styles.sortTab} ${isPopular ? styles.sortTabActive : ""}`}
             >
-              人気順
+              {dict.wiki.popular}
             </Link>
           </div>
 
           {mainItems.length === 0 ? (
-            <p className={styles.emptyText}>公開中の wiki 記事はまだありません。</p>
+            <p className={styles.emptyText}>{dict.wiki.empty}</p>
           ) : (
             <div className={styles.feed}>
               {mainItems.map((item) => (
                 <Link key={item.id} href={`/${locale}/wiki/${item.slug}`} className={styles.feedRow}>
                   <div className={styles.feedLeft}>
                     <span className={styles.typeBadge}>
-                      {pageTypeLabels[item.page_type] ?? item.page_type}
+                      {dict.pageType[item.page_type as keyof typeof dict.pageType] ?? item.page_type}
                     </span>
                   </div>
                   <div className={styles.feedContent}>
                     <h3 className={styles.feedTitle}>{item.title}</h3>
                     <p className={styles.feedSummary}>
-                      {item.summary ?? "概要はまだ設定されていません。"}
+                      {item.summary ?? dict.wiki.noSummary}
                     </p>
                     <div className={styles.feedMeta}>
                       <span>👁 {item.view_count ?? 0}</span>
                     </div>
                   </div>
+                  {item.image_url && (
+                    <div className={styles.feedThumbCol}>
+                      <img
+                        src={item.image_url}
+                        alt={item.title}
+                        className={styles.feedThumb}
+                      />
+                    </div>
+                  )}
                   <div className={styles.feedRight}>
                     <span className={styles.feedDate}>
                       {item.updated_at
-                        ? new Date(item.updated_at).toLocaleDateString("ja-JP")
+                        ? new Date(item.updated_at).toLocaleDateString(dateLocale)
                         : "—"}
                     </span>
                   </div>
@@ -257,7 +271,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
               <div className={styles.sectionHead}>
                 <h2 className={styles.sectionTitle}>{section.label}</h2>
                 <span className={styles.sectionDescription}>
-                  {isPopular ? "人気順" : "新着順"}
+                  {isPopular ? dict.wiki.popular : dict.wiki.newest}
                 </span>
               </div>
               <div className={styles.feed}>
@@ -269,16 +283,25 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
                     <div className={styles.feedContent}>
                       <h3 className={styles.feedTitle}>{item.title}</h3>
                       <p className={styles.feedSummary}>
-                        {item.summary ?? "概要はまだ設定されていません。"}
+                        {item.summary ?? dict.wiki.noSummary}
                       </p>
                       <div className={styles.feedMeta}>
                         <span>👁 {item.view_count ?? 0}</span>
                       </div>
                     </div>
+                    {item.image_url && (
+                      <div className={styles.feedThumbCol}>
+                        <img
+                          src={item.image_url}
+                          alt={item.title}
+                          className={styles.feedThumb}
+                        />
+                      </div>
+                    )}
                     <div className={styles.feedRight}>
                       <span className={styles.feedDate}>
                         {item.updated_at
-                          ? new Date(item.updated_at).toLocaleDateString("ja-JP")
+                          ? new Date(item.updated_at).toLocaleDateString(dateLocale)
                           : "—"}
                       </span>
                     </div>
@@ -293,8 +316,8 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
         {categories.length > 0 && (
           <section className={styles.card}>
             <div className={styles.sectionHead}>
-              <h2 className={styles.sectionTitle}>カテゴリ</h2>
-              <span className={styles.sectionDescription}>分類から探す</span>
+              <h2 className={styles.sectionTitle}>{dict.wiki.categories}</h2>
+              <span className={styles.sectionDescription}>{dict.wiki.browseByCategory}</span>
             </div>
             <div className={styles.categoryGrid}>
               {categories.map((category) => (
@@ -305,7 +328,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
                 >
                   <p className={styles.categoryName}>{category.name}</p>
                   <p className={styles.categoryDesc}>
-                    {category.description ?? "カテゴリ説明はまだありません。"}
+                    {category.description ?? dict.wiki.noCategoryDesc}
                   </p>
                 </Link>
               ))}

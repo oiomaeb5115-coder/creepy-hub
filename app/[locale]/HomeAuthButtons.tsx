@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getIsAdmin } from "@/lib/auth";
 import styles from "./page.module.css";
@@ -14,6 +15,7 @@ export default function HomeAuthButtons({ locale }: Props) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -52,6 +54,15 @@ export default function HomeAuthButtons({ locale }: Props) {
         }}>
           {isAdmin ? "adminとしてログイン" : "ログイン中"}
         </span>
+        {isAdmin && (
+          <Link
+            href={`/${locale}/admin`}
+            className={styles.topTextButton}
+            style={{ color: "#e8a0a0" }}
+          >
+            管理画面
+          </Link>
+        )}
         <button
           type="button"
           onClick={handleLogout}
@@ -65,10 +76,10 @@ export default function HomeAuthButtons({ locale }: Props) {
 
   return (
     <>
-      <Link href={`/${locale}/login`} className={styles.topTextButton}>
+      <Link href={`${pathname}?modal=login`} className={styles.topTextButton}>
         login
       </Link>
-      <Link href={`/${locale}/register`} className={styles.topTextButton}>
+      <Link href={`${pathname}?modal=register`} className={styles.topTextButton}>
         register
       </Link>
     </>

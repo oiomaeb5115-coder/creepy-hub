@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { translateCategoryName } from "@/lib/googleTranslate";
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("Authorization");
@@ -22,10 +23,12 @@ export async function POST(req: NextRequest) {
   const userId = userData.user.id;
 
   const body = await req.json();
-  const { name, slug, description } = body as {
+  const { name, slug, description, icon_url, header_image_url } = body as {
     name?: string;
     slug?: string;
     description?: string;
+    icon_url?: string;
+    header_image_url?: string;
   };
 
   if (!name?.trim() || !slug?.trim()) {
@@ -68,10 +71,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Google Translate で英語名を自動生成
+  let nameEn: string | null = null;
+  try {
+    nameEn = await translateCategoryName(name.trim());
+  } catch {
+    // 翻訳失敗時は null のまま（日本語名がフォールバック）
+  }
+
   const { error: insertError } = await supabase.from("story_categories").insert({
     name: name.trim(),
+    name_en: nameEn,
     slug: slug.trim(),
     description: description?.trim() ?? null,
+    icon_url: icon_url ?? null,
+    header_image_url: header_image_url ?? null,
     created_by: userId,
     is_user_created: true,
     approved: false,

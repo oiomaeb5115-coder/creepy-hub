@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { getDictionary } from "@/lib/getDictionary";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 
@@ -23,31 +24,56 @@ type StoryCategoryRow = {
   id: number;
   slug: string;
   name: string;
+  name_en: string | null;
 };
 
 export default async function StoryIndex({ params, searchParams }: Props) {
   const { locale } = await params;
   const { sort = "new" } = await searchParams;
   const isPopular = sort === "popular";
+  const dict = await getDictionary(locale);
+  const dateLocale = locale === "en" ? "en-US" : "ja-JP";
+  const orderCol = isPopular ? "view_count" : "created_at";
 
-  const [postsResult, categoriesResult] = await Promise.all([
-    supabase
+  let posts: StoryPost[] = [];
+
+  if (locale === "en") {
+    // 英語翻訳済みの記事のみ取得（post_translations と inner join）
+    const { data } = await supabase
       .from("post")
-      .select("id,title,content,created_at,image_url,view_count")
+      .select("id, title, content, created_at, image_url, view_count, post_translations!inner(title, content)")
       .eq("is_published", true)
-      .order(isPopular ? "view_count" : "created_at", { ascending: false })
-      .limit(50),
+      .eq("post_translations.locale", "en")
+      .order(orderCol, { ascending: false })
+      .limit(50);
 
-    supabase
-      .from("story_categories")
-      .select("id, slug, name")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .limit(20),
-  ]);
+    posts = (data ?? []).map((p: any) => ({
+      id: p.id,
+      title: p.post_translations?.[0]?.title ?? p.title,
+      content: p.post_translations?.[0]?.content ?? p.content,
+      created_at: p.created_at,
+      image_url: p.image_url,
+      view_count: p.view_count,
+    }));
+  } else {
+    const { data } = await supabase
+      .from("post")
+      .select("id, title, content, created_at, image_url, view_count")
+      .eq("is_published", true)
+      .order(orderCol, { ascending: false })
+      .limit(50);
 
-  const posts = (postsResult.data ?? []) as StoryPost[];
-  const categories = (categoriesResult.data ?? []) as StoryCategoryRow[];
+    posts = (data ?? []) as StoryPost[];
+  }
+
+  const { data: categoriesData } = await supabase
+    .from("story_categories")
+    .select("id, slug, name, name_en")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true })
+    .limit(20);
+
+  const categories = (categoriesData ?? []) as StoryCategoryRow[];
 
   return (
     <main className={styles.storyPage}>
@@ -59,8 +85,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
             <h1 className={styles.pageTitle}>Horror Post</h1>
           </div>
           <div className={styles.headerActions}>
-            <Link href={`/${locale}`} className={styles.topLink}>ホーム</Link>
-            <Link href={`/${locale}/post`} className={styles.topLink}>投稿する</Link>
+            <Link href={`/${locale}`} className={styles.topLink}>{dict.nav.home}</Link>
           </div>
         </header>
 
@@ -69,17 +94,17 @@ export default async function StoryIndex({ params, searchParams }: Props) {
           <input
             type="text"
             name="q"
-            placeholder="怪談を検索..."
+            placeholder={dict.story.searchPlaceholder}
             className={styles.searchInput}
           />
-          <button type="submit" className={styles.searchBtn}>検索</button>
+          <button type="submit" className={styles.searchBtn}>{dict.home.searchButton}</button>
         </form>
 
         {/* Category filter */}
         {categories.length > 0 && (
           <div className={styles.categoryBar}>
             <Link href={`/${locale}/story`} className={styles.categoryChip}>
-              すべて
+              {dict.story.all}
             </Link>
             {categories.map((cat) => (
               <Link
@@ -87,11 +112,11 @@ export default async function StoryIndex({ params, searchParams }: Props) {
                 href={`/${locale}/story/category/${cat.slug}`}
                 className={styles.categoryChip}
               >
-                {cat.name}
+                {locale === "en" ? (cat.name_en ?? cat.name) : cat.name}
               </Link>
             ))}
             <Link href={`/${locale}/category/create`} className={styles.categoryChipNew}>
-              ＋ カテゴリを作成
+              {dict.story.createCategory}
             </Link>
           </div>
         )}
@@ -102,26 +127,26 @@ export default async function StoryIndex({ params, searchParams }: Props) {
             href={`/${locale}/story?sort=new`}
             className={`${styles.sortTab} ${!isPopular ? styles.sortTabActive : ""}`}
           >
-            新着順
+            {dict.story.newest}
           </Link>
           <Link
             href={`/${locale}/story?sort=popular`}
             className={`${styles.sortTab} ${isPopular ? styles.sortTabActive : ""}`}
           >
-            人気順
+            {dict.story.popular}
           </Link>
         </div>
 
         {posts.length === 0 ? (
-          <p className={styles.emptyText}>まだ怪談記事がありません。</p>
+          <p className={styles.emptyText}>{dict.story.empty}</p>
         ) : (
           <div className={styles.feed}>
             {posts.map((post) => {
-              const safeTitle = post.title ?? "無題";
+              const safeTitle = post.title ?? dict.story.untitled;
               const safeContent = post.content ?? "";
               const dateStr = post.created_at
-                ? new Date(post.created_at).toLocaleDateString("ja-JP")
-                : "日付不明";
+                ? new Date(post.created_at).toLocaleDateString(dateLocale)
+                : dict.story.unknownDate;
 
               return (
                 <Link
@@ -136,7 +161,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
 
                   <div className={styles.postContent}>
                     <div className={styles.postMeta}>
-                      <span className={styles.badge}>怪談</span>
+                      <span className={styles.badge}>{dict.story.label}</span>
                       <span className={styles.postDate}>{dateStr}</span>
                     </div>
                     <h3 className={styles.postTitle}>{safeTitle}</h3>
@@ -146,7 +171,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
                         : safeContent}
                     </p>
                     <div className={styles.postFooter}>
-                      <span>👁 {post.view_count ?? 0} 閲覧</span>
+                      <span>👁 {post.view_count ?? 0} {dict.story.views}</span>
                     </div>
                   </div>
 

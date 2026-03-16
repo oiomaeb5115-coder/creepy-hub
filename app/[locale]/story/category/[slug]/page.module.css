@@ -2,12 +2,55 @@
   min-height: 100vh;
   background: #0d0608;
   color: #f5f1eb;
-  padding: 32px 20px 72px;
+}
+
+/* ヒーロー（ヘッダー）画像 */
+.heroImage {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  overflow: hidden;
+}
+
+.heroImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(13, 6, 8, 0.1) 0%,
+    rgba(13, 6, 8, 0.7) 100%
+  );
 }
 
 .categoryShell {
   max-width: 1180px;
   margin: 0 auto;
+  padding: 32px 20px 100px;
+}
+
+/* アイコン付きタイトル行 */
+.categoryTitleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.categoryIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(165, 99, 104, 0.4);
+  background: #120608;
+  flex-shrink: 0;
+  margin-top: 4px;
 }
 
 .categoryHeader {
@@ -198,6 +241,10 @@
 }
 
 @media (max-width: 760px) {
+  .heroImage {
+    height: 180px;
+  }
+
   .categoryHeader {
     flex-direction: column;
     align-items: stretch;

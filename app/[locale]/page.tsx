@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "./page.module.css";
 import HomeAuthButtons from "./HomeAuthButtons";
-import BottomNavProfileLink from "./BottomNavProfileLink";
 import AdminPendingSection from "@/components/AdminPendingSection";
 
 export const revalidate = 60;
@@ -47,6 +46,7 @@ type StoryCategoryRow = {
   id: number;
   slug: string;
   name: string;
+  name_en: string | null;
 };
 
 const wikiPageTypeKeys = [
@@ -249,22 +249,42 @@ export default async function HomePage({ params }: HomePageProps) {
   const { locale } = await params;
   const dict = await getDictionary(locale);
 
+  const storiesQuery = locale === "en"
+    ? supabase
+        .from("post")
+        .select(`
+          id,
+          title,
+          content,
+          created_at,
+          image_url,
+          view_count,
+          post_votes(vote_type),
+          post_comments(id),
+          post_translations!inner(title, content)
+        `)
+        .eq("is_published", true)
+        .eq("post_translations.locale", "en")
+        .order("created_at", { ascending: false })
+        .limit(12)
+    : supabase
+        .from("post")
+        .select(`
+          id,
+          title,
+          content,
+          created_at,
+          image_url,
+          view_count,
+          post_votes(vote_type),
+          post_comments(id)
+        `)
+        .eq("is_published", true)
+        .order("created_at", { ascending: false })
+        .limit(12);
+
   const [latestStoriesResult, latestWikiResult, storyCategoriesResult] = await Promise.all([
-    supabase
-      .from("post")
-      .select(`
-        id,
-        title,
-        content,
-        created_at,
-        image_url,
-        view_count,
-        post_votes(vote_type),
-        post_comments(id)
-      `)
-      .eq("is_published", true)
-      .order("created_at", { ascending: false })
-      .limit(12),
+    storiesQuery,
 
     supabase
       .from("wiki_pages")
@@ -276,13 +296,22 @@ export default async function HomePage({ params }: HomePageProps) {
 
     supabase
       .from("story_categories")
-      .select("id, slug, name")
+      .select("id, slug, name, name_en")
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .limit(20),
   ]);
 
-  const latestStories = (latestStoriesResult.data ?? []) as StoryPost[];
+  const latestStories = (latestStoriesResult.data ?? []).map((p: any) => ({
+    id: p.id,
+    title: locale === "en" ? (p.post_translations?.[0]?.title ?? p.title) : p.title,
+    content: locale === "en" ? (p.post_translations?.[0]?.content ?? p.content) : p.content,
+    created_at: p.created_at,
+    image_url: p.image_url,
+    view_count: p.view_count,
+    post_votes: p.post_votes,
+    post_comments: p.post_comments,
+  })) as StoryPost[];
   const latestWiki = (latestWikiResult.data ?? []) as WikiPost[];
   const storyCategories = (storyCategoriesResult.data ?? []) as StoryCategoryRow[];
 
@@ -392,7 +421,7 @@ export default async function HomePage({ params }: HomePageProps) {
                     href={`/${locale}/story/category/${cat.slug}`}
                     className={styles.categoryChip}
                   >
-                    {cat.name}
+                    {locale === "en" ? (cat.name_en ?? cat.name) : cat.name}
                   </Link>
                 ))
               )}
@@ -416,36 +445,7 @@ export default async function HomePage({ params }: HomePageProps) {
         </section>
 
         <AdminPendingSection locale={locale} />
-
-        <nav className={styles.bottomNav}>
-          <Link href={`/${locale}`} className={styles.bottomNavItem}>
-            <span className={styles.bottomNavLabel}>
-              <span className={styles.bottomNavLabelEn}>HOME</span>
-              <span className={styles.bottomNavLabelJa}>{dict.nav.home}</span>
-            </span>
-          </Link>
-
-          <Link href={`/${locale}/story`} className={styles.bottomNavItem}>
-            <span className={styles.bottomNavLabel}>
-              <span className={styles.bottomNavLabelEn}>CREEPY POSTS</span>
-              <span className={styles.bottomNavLabelJa}>{dict.nav.stories}</span>
-            </span>
-          </Link>
-
-          <Link href={`/${locale}/wiki`} className={styles.bottomNavItem}>
-            <span className={styles.bottomNavLabel}>
-              <span className={styles.bottomNavLabelEn}>WIKI</span>
-              <span className={styles.bottomNavLabelJa}>{dict.nav.wiki}</span>
-            </span>
-          </Link>
-
-          <BottomNavProfileLink locale={locale} />
-        </nav>
       </div>
-
-      <Link href={`/${locale}/post`} className={styles.floatingPostButton}>
-        <Image src="/images/ui/post.png" alt="POST" width={68} height={68} />
-      </Link>
     </main>
   );
 }

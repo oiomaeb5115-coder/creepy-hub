@@ -112,14 +112,16 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // サービスロールキーでRLSをバイパスして削除
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // slug に紐づく全ロケール削除
-  const { error } = await adminSupabase.from("wiki_pages").delete().eq("slug", slug);
+  // ソフトデリート: 全ロケールを非公開化 + deleted_at をセット
+  const { error } = await adminSupabase
+    .from("wiki_pages")
+    .update({ is_published: false, deleted_at: new Date().toISOString() })
+    .eq("slug", slug);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   revalidatePath("/ja/wiki");

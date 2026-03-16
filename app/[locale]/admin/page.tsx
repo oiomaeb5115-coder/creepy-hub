@@ -18,8 +18,22 @@ type PendingCategory = {
   reported_count: number;
 };
 
+type PendingWikiCategory = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  created_at: string | null;
+};
+
+type TrashStory = { id: number; title: string | null; deleted_at: string };
+type TrashWiki = { slug: string; title: string; deleted_at: string };
+type TrashCategory = { id: number; name: string; slug: string; deleted_at: string };
+
 type TranslateStatus = "idle" | "loading" | "done" | "error" | "exists";
 type ApproveStatus = "idle" | "loading" | "done" | "error";
+type DeleteStatus = "idle" | "loading" | "done" | "error";
+type TrashStatus = "idle" | "loading" | "restored" | "purged" | "error";
 
 export default function AdminPage() {
   const params = useParams<{ locale: string }>();
@@ -31,14 +45,34 @@ export default function AdminPage() {
   const [wikis, setWikis] = useState<WikiRow[]>([]);
   const [pendingCategories, setPendingCategories] = useState<PendingCategory[]>([]);
   const [reportedCategories, setReportedCategories] = useState<PendingCategory[]>([]);
+  const [pendingWikiCategories, setPendingWikiCategories] = useState<PendingWikiCategory[]>([]);
+  const [wikiApproveStatus, setWikiApproveStatus] = useState<Record<number, ApproveStatus>>({});
+  const [wikiDeleteStatus, setWikiDeleteStatus] = useState<Record<number, DeleteStatus>>({});
   const [storyStatus, setStoryStatus] = useState<Record<number, TranslateStatus>>({});
   const [wikiStatus, setWikiStatus] = useState<Record<string, TranslateStatus>>({});
   const [approveStatus, setApproveStatus] = useState<Record<number, ApproveStatus>>({});
+  const [deleteStatus, setDeleteStatus] = useState<Record<number, DeleteStatus>>({});
+  const [trashStories, setTrashStories] = useState<TrashStory[]>([]);
+  const [trashWikis, setTrashWikis] = useState<TrashWiki[]>([]);
+  const [trashCategories, setTrashCategories] = useState<TrashCategory[]>([]);
+  const [trashStoryStatus, setTrashStoryStatus] = useState<Record<number, TrashStatus>>({});
+  const [trashWikiStatus, setTrashWikiStatus] = useState<Record<string, TrashStatus>>({});
+  const [trashCatStatus, setTrashCatStatus] = useState<Record<number, TrashStatus>>({});
 
   useEffect(() => {
     const init = async () => {
-      const isAdmin = await getIsAdmin();
-      if (!isAdmin) {
+      // キャッシュに依存しない直接クエリで管理者チェック
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        router.replace(`/${locale}`);
+        return;
+      }
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+      if (profileData?.role !== "admin") {
         router.replace(`/${locale}`);
         return;
       }
@@ -87,6 +121,15 @@ export default function AdminPage() {
         .order("created_at", { ascending: false });
       setPendingCategories((pendingCats ?? []) as PendingCategory[]);
 
+      // 審査待ち Wiki カテゴリを取得
+      const { data: pendingWikiCats } = await supabase
+        .from("categories")
+        .select("id, name, slug, description, created_at")
+        .eq("is_user_created", true)
+        .eq("is_active", false)
+        .order("created_at", { ascending: false });
+      setPendingWikiCategories((pendingWikiCats ?? []) as PendingWikiCategory[]);
+
       // 報告が多いカテゴリを取得（承認済みで reported_count >= 3）
       const { data: reportedCats } = await supabase
         .from("story_categories")
@@ -96,6 +139,31 @@ export default function AdminPage() {
         .gte("reported_count", 3)
         .order("reported_count", { ascending: false });
       setReportedCategories((reportedCats ?? []) as PendingCategory[]);
+
+      // ゴミ箱: ソフトデリートされた投稿
+      const { data: tStories } = await supabase
+        .from("post")
+        .select("id, title, deleted_at")
+        .not("deleted_at", "is", null)
+        .order("deleted_at", { ascending: false });
+      setTrashStories((tStories ?? []) as TrashStory[]);
+
+      // ゴミ箱: ソフトデリートされたWiki
+      const { data: tWikis } = await supabase
+        .from("wiki_pages")
+        .select("slug, title, deleted_at")
+        .eq("locale", "ja")
+        .not("deleted_at", "is", null)
+        .order("deleted_at", { ascending: false });
+      setTrashWikis((tWikis ?? []) as TrashWiki[]);
+
+      // ゴミ箱: ソフトデリートされたカテゴリ
+      const { data: tCats } = await supabase
+        .from("story_categories")
+        .select("id, name, slug, deleted_at")
+        .not("deleted_at", "is", null)
+        .order("deleted_at", { ascending: false });
+      setTrashCategories((tCats ?? []) as TrashCategory[]);
 
       setChecking(false);
     };
@@ -172,6 +240,166 @@ export default function AdminPage() {
     } catch {
       setApproveStatus((prev) => ({ ...prev, [categoryId]: "error" }));
     }
+  };
+
+  const approveWikiCategory = async (categoryId: number) => {
+    setWikiApproveStatus((prev) => ({ ...prev, [categoryId]: "loading" }));
+    try {
+      const token = await getAccessToken();
+      const res = await fetch(`/api/wiki-category/${categoryId}/approve`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setWikiApproveStatus((prev) => ({ ...prev, [categoryId]: "done" }));
+        setPendingWikiCategories((prev) => prev.filter((c) => c.id !== categoryId));
+      } else {
+        setWikiApproveStatus((prev) => ({ ...prev, [categoryId]: "error" }));
+      }
+    } catch {
+      setWikiApproveStatus((prev) => ({ ...prev, [categoryId]: "error" }));
+    }
+  };
+
+  const deleteWikiCategory = async (categoryId: number) => {
+    if (!window.confirm("このWikiカテゴリを削除しますか？")) return;
+    setWikiDeleteStatus((prev) => ({ ...prev, [categoryId]: "loading" }));
+    try {
+      const token = await getAccessToken();
+      const res = await fetch(`/api/wiki-category/${categoryId}/delete`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setWikiDeleteStatus((prev) => ({ ...prev, [categoryId]: "done" }));
+        setPendingWikiCategories((prev) => prev.filter((c) => c.id !== categoryId));
+      } else {
+        setWikiDeleteStatus((prev) => ({ ...prev, [categoryId]: "error" }));
+      }
+    } catch {
+      setWikiDeleteStatus((prev) => ({ ...prev, [categoryId]: "error" }));
+    }
+  };
+
+  const deleteCategory = async (categoryId: number) => {
+    if (!window.confirm("このカテゴリを削除しますか？この操作は元に戻せません。")) return;
+    setDeleteStatus((prev) => ({ ...prev, [categoryId]: "loading" }));
+    try {
+      const token = await getAccessToken();
+      const res = await fetch(`/api/category/${categoryId}/delete`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setDeleteStatus((prev) => ({ ...prev, [categoryId]: "done" }));
+        setPendingCategories((prev) => prev.filter((c) => c.id !== categoryId));
+        setReportedCategories((prev) => prev.filter((c) => c.id !== categoryId));
+      } else {
+        setDeleteStatus((prev) => ({ ...prev, [categoryId]: "error" }));
+      }
+    } catch {
+      setDeleteStatus((prev) => ({ ...prev, [categoryId]: "error" }));
+    }
+  };
+
+  // ゴミ箱: 復元
+  const restoreStory = async (postId: number) => {
+    setTrashStoryStatus((prev) => ({ ...prev, [postId]: "loading" }));
+    const token = await getAccessToken();
+    const res = await fetch(`/api/story/${postId}/restore`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.ok) {
+      setTrashStoryStatus((prev) => ({ ...prev, [postId]: "restored" }));
+      setTrashStories((prev) => prev.filter((s) => s.id !== postId));
+    } else {
+      setTrashStoryStatus((prev) => ({ ...prev, [postId]: "error" }));
+    }
+  };
+
+  const purgeStory = async (postId: number) => {
+    if (!window.confirm("完全に削除しますか？この操作は元に戻せません。")) return;
+    setTrashStoryStatus((prev) => ({ ...prev, [postId]: "loading" }));
+    const token = await getAccessToken();
+    const res = await fetch(`/api/story/${postId}/purge`, {
+      method: "DELETE",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.ok) {
+      setTrashStoryStatus((prev) => ({ ...prev, [postId]: "purged" }));
+      setTrashStories((prev) => prev.filter((s) => s.id !== postId));
+    } else {
+      setTrashStoryStatus((prev) => ({ ...prev, [postId]: "error" }));
+    }
+  };
+
+  const restoreWiki = async (slug: string) => {
+    setTrashWikiStatus((prev) => ({ ...prev, [slug]: "loading" }));
+    const token = await getAccessToken();
+    const res = await fetch(`/api/wiki/${slug}/restore`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.ok) {
+      setTrashWikiStatus((prev) => ({ ...prev, [slug]: "restored" }));
+      setTrashWikis((prev) => prev.filter((w) => w.slug !== slug));
+    } else {
+      setTrashWikiStatus((prev) => ({ ...prev, [slug]: "error" }));
+    }
+  };
+
+  const purgeWiki = async (slug: string) => {
+    if (!window.confirm("完全に削除しますか？この操作は元に戻せません。")) return;
+    setTrashWikiStatus((prev) => ({ ...prev, [slug]: "loading" }));
+    const token = await getAccessToken();
+    const res = await fetch(`/api/wiki/${slug}/purge`, {
+      method: "DELETE",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.ok) {
+      setTrashWikiStatus((prev) => ({ ...prev, [slug]: "purged" }));
+      setTrashWikis((prev) => prev.filter((w) => w.slug !== slug));
+    } else {
+      setTrashWikiStatus((prev) => ({ ...prev, [slug]: "error" }));
+    }
+  };
+
+  const restoreCategory = async (catId: number) => {
+    setTrashCatStatus((prev) => ({ ...prev, [catId]: "loading" }));
+    const token = await getAccessToken();
+    const res = await fetch(`/api/category/${catId}/restore`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.ok) {
+      setTrashCatStatus((prev) => ({ ...prev, [catId]: "restored" }));
+      setTrashCategories((prev) => prev.filter((c) => c.id !== catId));
+    } else {
+      setTrashCatStatus((prev) => ({ ...prev, [catId]: "error" }));
+    }
+  };
+
+  const purgeCategory = async (catId: number) => {
+    if (!window.confirm("完全に削除しますか？この操作は元に戻せません。")) return;
+    setTrashCatStatus((prev) => ({ ...prev, [catId]: "loading" }));
+    const token = await getAccessToken();
+    const res = await fetch(`/api/category/${catId}/purge`, {
+      method: "DELETE",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.ok) {
+      setTrashCatStatus((prev) => ({ ...prev, [catId]: "purged" }));
+      setTrashCategories((prev) => prev.filter((c) => c.id !== catId));
+    } else {
+      setTrashCatStatus((prev) => ({ ...prev, [catId]: "error" }));
+    }
+  };
+
+  const daysLeft = (deletedAt: string) => {
+    const diff = Date.now() - new Date(deletedAt).getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    return Math.max(0, 3 - days);
   };
 
   if (checking) {
@@ -336,6 +564,7 @@ export default function AdminPage() {
               <tbody>
                 {pendingCategories.map((cat) => {
                   const st = approveStatus[cat.id] ?? "idle";
+                  const dst = deleteStatus[cat.id] ?? "idle";
                   return (
                     <tr key={cat.id} style={trStyle}>
                       <td style={tdStyle}>{cat.name}</td>
@@ -350,12 +579,12 @@ export default function AdminPage() {
                           ? new Date(cat.created_at).toLocaleDateString("ja-JP")
                           : "—"}
                       </td>
-                      <td style={tdStyle}>
+                      <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
                         <button
                           style={actionButtonStyle(
                             st === "done" ? "done" : st === "error" ? "error" : "idle"
                           )}
-                          disabled={st === "loading" || st === "done"}
+                          disabled={st === "loading" || st === "done" || dst === "done"}
                           onClick={() => approveCategory(cat.id)}
                         >
                           {st === "loading"
@@ -365,6 +594,75 @@ export default function AdminPage() {
                             : st === "error"
                             ? "再試行"
                             : "承認する"}
+                        </button>
+                        <button
+                          style={deleteButtonStyle(dst)}
+                          disabled={dst === "loading" || dst === "done" || st === "done"}
+                          onClick={() => deleteCategory(cat.id)}
+                        >
+                          {dst === "loading" ? "削除中..." : dst === "done" ? "削除済" : dst === "error" ? "再試行" : "削除"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </section>
+
+        {/* 審査待ち Wiki カテゴリ */}
+        <section style={sectionStyle}>
+          <h2 style={sectionTitleStyle}>
+            審査待ち Wiki カテゴリ（{pendingWikiCategories.length}件）
+          </h2>
+          {pendingWikiCategories.length === 0 ? (
+            <p style={emptyStyle}>審査待ちはありません</p>
+          ) : (
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>カテゴリ名</th>
+                  <th style={thStyle}>slug</th>
+                  <th style={thStyle}>説明</th>
+                  <th style={thStyle}>申請日</th>
+                  <th style={thStyle}>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingWikiCategories.map((cat) => {
+                  const st = wikiApproveStatus[cat.id] ?? "idle";
+                  const dst = wikiDeleteStatus[cat.id] ?? "idle";
+                  return (
+                    <tr key={cat.id} style={trStyle}>
+                      <td style={tdStyle}>{cat.name}</td>
+                      <td style={tdStyle}>
+                        <span style={{ color: "#7a6a60", fontFamily: "monospace" }}>
+                          {cat.slug}
+                        </span>
+                      </td>
+                      <td style={tdStyle}>{cat.description ?? "—"}</td>
+                      <td style={tdStyle}>
+                        {cat.created_at
+                          ? new Date(cat.created_at).toLocaleDateString("ja-JP")
+                          : "—"}
+                      </td>
+                      <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
+                        <button
+                          style={actionButtonStyle(
+                            st === "done" ? "done" : st === "error" ? "error" : "idle"
+                          )}
+                          disabled={st === "loading" || st === "done" || dst === "done"}
+                          onClick={() => approveWikiCategory(cat.id)}
+                        >
+                          {st === "loading" ? "処理中..." : st === "done" ? "承認済" : st === "error" ? "再試行" : "承認する"}
+                        </button>
+                        <button
+                          style={deleteButtonStyle(dst)}
+                          disabled={dst === "loading" || dst === "done" || st === "done"}
+                          onClick={() => deleteWikiCategory(cat.id)}
+                        >
+                          {dst === "loading" ? "削除中..." : dst === "done" ? "削除済" : dst === "error" ? "再試行" : "削除"}
                         </button>
                       </td>
                     </tr>
@@ -393,30 +691,177 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {reportedCategories.map((cat) => (
-                  <tr key={cat.id} style={trStyle}>
-                    <td style={tdStyle}>{cat.name}</td>
-                    <td style={tdStyle}>
-                      <span style={{ color: "#7a6a60", fontFamily: "monospace" }}>
-                        {cat.slug}
-                      </span>
-                    </td>
-                    <td style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
-                      {cat.reported_count}
-                    </td>
-                    <td style={tdStyle}>
-                      <Link
-                        href={`/${locale}/story/category/${cat.slug}`}
-                        style={linkStyle}
-                        target="_blank"
-                      >
-                        確認する →
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                {reportedCategories.map((cat) => {
+                  const dst = deleteStatus[cat.id] ?? "idle";
+                  return (
+                    <tr key={cat.id} style={trStyle}>
+                      <td style={tdStyle}>{cat.name}</td>
+                      <td style={tdStyle}>
+                        <span style={{ color: "#7a6a60", fontFamily: "monospace" }}>
+                          {cat.slug}
+                        </span>
+                      </td>
+                      <td style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
+                        {cat.reported_count}
+                      </td>
+                      <td style={{ ...tdStyle, display: "flex", gap: 8, alignItems: "center" }}>
+                        <Link
+                          href={`/${locale}/story/category/${cat.slug}`}
+                          style={linkStyle}
+                          target="_blank"
+                        >
+                          確認する →
+                        </Link>
+                        <button
+                          style={deleteButtonStyle(dst)}
+                          disabled={dst === "loading" || dst === "done"}
+                          onClick={() => deleteCategory(cat.id)}
+                        >
+                          {dst === "loading" ? "削除中..." : dst === "done" ? "削除済" : dst === "error" ? "再試行" : "削除"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
+          )}
+        </section>
+
+        {/* ゴミ箱 */}
+        <section style={sectionStyle}>
+          <h2 style={{ ...sectionTitleStyle, color: "#e0a0a0" }}>
+            ゴミ箱（ソフトデリート済み）
+          </h2>
+          <p style={{ ...emptyStyle, marginBottom: 16 }}>
+            削除から3日以内は復元できます。3日経過後に自動的に完全削除されます。
+          </p>
+
+          {/* ゴミ箱: 投稿 */}
+          {trashStories.length > 0 && (
+            <div style={{ marginBottom: 32 }}>
+              <p style={{ fontSize: 12, color: "#9a8a88", marginBottom: 8, letterSpacing: "0.08em" }}>
+                CREEPY POSTS（{trashStories.length}件）
+              </p>
+              <table style={tableStyle}>
+                <thead>
+                  <tr>
+                    <th style={thStyle}>タイトル</th>
+                    <th style={thStyle}>削除日</th>
+                    <th style={thStyle}>残り</th>
+                    <th style={thStyle}>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {trashStories.map((s) => {
+                    const st = trashStoryStatus[s.id] ?? "idle";
+                    return (
+                      <tr key={s.id} style={trStyle}>
+                        <td style={tdStyle}>{s.title ?? `#${s.id}`}</td>
+                        <td style={tdStyle}>{new Date(s.deleted_at).toLocaleDateString("ja-JP")}</td>
+                        <td style={{ ...tdStyle, color: daysLeft(s.deleted_at) === 0 ? "#e08080" : "#c8b8b0" }}>
+                          {daysLeft(s.deleted_at)}日
+                        </td>
+                        <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
+                          <button style={restoreButtonStyle} disabled={st !== "idle"} onClick={() => restoreStory(s.id)}>
+                            {st === "loading" ? "処理中..." : st === "restored" ? "復元済" : st === "error" ? "エラー" : "復元"}
+                          </button>
+                          <button style={purgeButtonStyle} disabled={st !== "idle"} onClick={() => purgeStory(s.id)}>
+                            {st === "purged" ? "削除済" : "完全削除"}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* ゴミ箱: Wiki */}
+          {trashWikis.length > 0 && (
+            <div style={{ marginBottom: 32 }}>
+              <p style={{ fontSize: 12, color: "#9a8a88", marginBottom: 8, letterSpacing: "0.08em" }}>
+                WIKI（{trashWikis.length}件）
+              </p>
+              <table style={tableStyle}>
+                <thead>
+                  <tr>
+                    <th style={thStyle}>タイトル</th>
+                    <th style={thStyle}>削除日</th>
+                    <th style={thStyle}>残り</th>
+                    <th style={thStyle}>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {trashWikis.map((w) => {
+                    const st = trashWikiStatus[w.slug] ?? "idle";
+                    return (
+                      <tr key={w.slug} style={trStyle}>
+                        <td style={tdStyle}>{w.title}</td>
+                        <td style={tdStyle}>{new Date(w.deleted_at).toLocaleDateString("ja-JP")}</td>
+                        <td style={{ ...tdStyle, color: daysLeft(w.deleted_at) === 0 ? "#e08080" : "#c8b8b0" }}>
+                          {daysLeft(w.deleted_at)}日
+                        </td>
+                        <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
+                          <button style={restoreButtonStyle} disabled={st !== "idle"} onClick={() => restoreWiki(w.slug)}>
+                            {st === "loading" ? "処理中..." : st === "restored" ? "復元済" : st === "error" ? "エラー" : "復元"}
+                          </button>
+                          <button style={purgeButtonStyle} disabled={st !== "idle"} onClick={() => purgeWiki(w.slug)}>
+                            {st === "purged" ? "削除済" : "完全削除"}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* ゴミ箱: カテゴリ */}
+          {trashCategories.length > 0 && (
+            <div>
+              <p style={{ fontSize: 12, color: "#9a8a88", marginBottom: 8, letterSpacing: "0.08em" }}>
+                カテゴリ（{trashCategories.length}件）
+              </p>
+              <table style={tableStyle}>
+                <thead>
+                  <tr>
+                    <th style={thStyle}>カテゴリ名</th>
+                    <th style={thStyle}>削除日</th>
+                    <th style={thStyle}>残り</th>
+                    <th style={thStyle}>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {trashCategories.map((c) => {
+                    const st = trashCatStatus[c.id] ?? "idle";
+                    return (
+                      <tr key={c.id} style={trStyle}>
+                        <td style={tdStyle}>{c.name}</td>
+                        <td style={tdStyle}>{new Date(c.deleted_at).toLocaleDateString("ja-JP")}</td>
+                        <td style={{ ...tdStyle, color: daysLeft(c.deleted_at) === 0 ? "#e08080" : "#c8b8b0" }}>
+                          {daysLeft(c.deleted_at)}日
+                        </td>
+                        <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
+                          <button style={restoreButtonStyle} disabled={st !== "idle"} onClick={() => restoreCategory(c.id)}>
+                            {st === "loading" ? "処理中..." : st === "restored" ? "復元済" : st === "error" ? "エラー" : "復元"}
+                          </button>
+                          <button style={purgeButtonStyle} disabled={st !== "idle"} onClick={() => purgeCategory(c.id)}>
+                            {st === "purged" ? "削除済" : "完全削除"}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {trashStories.length === 0 && trashWikis.length === 0 && trashCategories.length === 0 && (
+            <p style={emptyStyle}>ゴミ箱は空です</p>
           )}
         </section>
       </div>
@@ -552,3 +997,44 @@ const actionButtonStyle = (
   cursor: st === "loading" || st === "done" || st === "exists" ? "default" : "pointer",
   borderRadius: 4,
 });
+
+const deleteButtonStyle = (st: DeleteStatus): React.CSSProperties => ({
+  padding: "5px 12px",
+  fontSize: 12,
+  background:
+    st === "done"
+      ? "rgba(40, 80, 40, 0.4)"
+      : st === "error"
+      ? "rgba(80, 20, 20, 0.5)"
+      : "rgba(80, 10, 10, 0.7)",
+  border: `1px solid ${
+    st === "done"
+      ? "rgba(80, 160, 80, 0.4)"
+      : st === "error"
+      ? "rgba(200, 60, 60, 0.5)"
+      : "rgba(200, 60, 60, 0.4)"
+  }`,
+  color: st === "done" ? "#80c080" : st === "error" ? "#e08080" : "#e09090",
+  cursor: st === "loading" || st === "done" ? "default" : "pointer",
+  borderRadius: 4,
+});
+
+const restoreButtonStyle: React.CSSProperties = {
+  padding: "5px 12px",
+  fontSize: 12,
+  background: "rgba(20, 60, 30, 0.7)",
+  border: "1px solid rgba(80, 160, 80, 0.4)",
+  color: "#80c080",
+  cursor: "pointer",
+  borderRadius: 4,
+};
+
+const purgeButtonStyle: React.CSSProperties = {
+  padding: "5px 12px",
+  fontSize: 12,
+  background: "rgba(80, 10, 10, 0.7)",
+  border: "1px solid rgba(200, 60, 60, 0.4)",
+  color: "#e09090",
+  cursor: "pointer",
+  borderRadius: 4,
+};
