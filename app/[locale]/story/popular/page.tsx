@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { getDictionary } from "@/lib/getDictionary";
 import styles from "../../page.module.css";
 import BackButton from "@/components/BackButton";
 
@@ -30,33 +31,69 @@ type StoryPost = {
 
 export default async function PopularPage({ params }: Props) {
   const { locale } = await params;
+  const dict = await getDictionary(locale);
+  const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
-  const { data } = await supabase
-    .from("post")
-    .select(`
-      id,
-      title,
-      content,
-      created_at,
-      image_url,
-      view_count,
-      post_votes(vote_type),
-      post_comments(id)
-    `)
-    .eq("is_published", true)
-    .limit(30);
+  let rawData: any[] = [];
 
-  const posts = ((data ?? []) as StoryPost[])
+  if (locale === "en") {
+    const { data } = await supabase
+      .from("post")
+      .select(`
+        id,
+        title,
+        content,
+        created_at,
+        image_url,
+        view_count,
+        post_votes(vote_type),
+        post_comments(id),
+        post_translations!inner(title, content)
+      `)
+      .eq("is_published", true)
+      .eq("post_translations.locale", "en")
+      .limit(30);
+    rawData = data ?? [];
+  } else {
+    const { data } = await supabase
+      .from("post")
+      .select(`
+        id,
+        title,
+        content,
+        created_at,
+        image_url,
+        view_count,
+        post_votes(vote_type),
+        post_comments(id)
+      `)
+      .eq("is_published", true)
+      .limit(30);
+    rawData = data ?? [];
+  }
+
+  const posts = rawData
     .map((post) => {
       const score = (post.post_votes ?? []).reduce(
-        (sum, v) => sum + (v.vote_type ?? 0),
+        (sum: number, v: VoteRow) => sum + (v.vote_type ?? 0),
         0
       );
 
       const commentCount = (post.post_comments ?? []).length;
 
+      const title =
+        locale === "en"
+          ? (post.post_translations?.[0]?.title ?? post.title)
+          : post.title;
+      const content =
+        locale === "en"
+          ? (post.post_translations?.[0]?.content ?? post.content)
+          : post.content;
+
       return {
         ...post,
+        title,
+        content,
         score,
         commentCount,
       };
@@ -67,11 +104,13 @@ export default async function PopularPage({ params }: Props) {
     <main className={styles.archivePage}>
       <div className={styles.archiveShell}>
         <BackButton />
-        <h1 className={styles.archiveTitle}>人気怪談</h1>
+        <h1 className={styles.archiveTitle}>
+          {dict.story.popular} {dict.story.label}
+        </h1>
 
         <div className={styles.postGrid}>
           {posts.map((post) => {
-            const safeTitle = post.title ?? "無題";
+            const safeTitle = post.title ?? dict.story.untitled;
             const safeContent = post.content ?? "";
             const safeCreatedAt = post.created_at ?? "";
 
@@ -98,12 +137,14 @@ export default async function PopularPage({ params }: Props) {
 
                   <div className={styles.postCardBody}>
                     <div className={styles.postCardMetaRow}>
-                      <span className={styles.postCardCategory}>怪談</span>
+                      <span className={styles.postCardCategory}>
+                        {dict.story.label}
+                      </span>
 
                       <span className={styles.postCardDate}>
                         {safeCreatedAt
-                          ? new Date(safeCreatedAt).toLocaleDateString("ja-JP")
-                          : "日付不明"}
+                          ? new Date(safeCreatedAt).toLocaleDateString(dateLocale)
+                          : dict.story.unknownDate}
                       </span>
                     </div>
 

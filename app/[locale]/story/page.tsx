@@ -79,7 +79,11 @@ export default async function StoryIndex({ params, searchParams }: Props) {
   return (
     <main className={styles.storyPage}>
       <div className={styles.pageLayout}>
-      <FavoriteSidebar type="story" locale={locale} />
+      <FavoriteSidebar
+        type="story"
+        locale={locale}
+        labels={{ title: dict.common.favoriteSidebar, empty: dict.common.favoriteNone }}
+      />
       <div className={styles.storyShell}>
         <BackButton />
         <header className={styles.pageHeader}>

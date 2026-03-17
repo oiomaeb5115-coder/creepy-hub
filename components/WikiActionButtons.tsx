@@ -5,16 +5,33 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getIsAdmin, getAccessToken } from "@/lib/auth";
 
+type Labels = {
+  edit?: string;
+  delete?: string;
+  deleting?: string;
+  deleteConfirm?: string;
+  deleteFailed?: string;
+};
+
 type Props = {
   slug: string;
   authorId: string | null;
   locale: string;
+  labels?: Labels;
 };
 
-export default function WikiActionButtons({ slug, authorId, locale }: Props) {
+export default function WikiActionButtons({ slug, authorId, locale, labels }: Props) {
   const [canEdit, setCanEdit] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
+
+  const t = {
+    edit: labels?.edit ?? "編集",
+    delete: labels?.delete ?? "削除",
+    deleting: labels?.deleting ?? "削除中...",
+    deleteConfirm: labels?.deleteConfirm ?? "このWiki記事を削除しますか？この操作は取り消せません。",
+    deleteFailed: labels?.deleteFailed ?? "削除失敗: ",
+  };
 
   useEffect(() => {
     const check = async () => {
@@ -30,7 +47,7 @@ export default function WikiActionButtons({ slug, authorId, locale }: Props) {
   if (!canEdit) return null;
 
   const handleDelete = async () => {
-    if (!confirm("このWiki記事を削除しますか？この操作は取り消せません。")) return;
+    if (!confirm(t.deleteConfirm)) return;
     setDeleting(true);
     try {
       const token = await getAccessToken();
@@ -40,7 +57,7 @@ export default function WikiActionButtons({ slug, authorId, locale }: Props) {
       });
       if (!res.ok) {
         const json = await res.json();
-        alert(`削除失敗: ${json.error}`);
+        alert(`${t.deleteFailed}${json.error}`);
         return;
       }
       router.push(`/${locale}/wiki`);
@@ -52,14 +69,14 @@ export default function WikiActionButtons({ slug, authorId, locale }: Props) {
   return (
     <div style={{ display: "flex", gap: 8 }}>
       <a href={`/${locale}/wiki/${slug}/edit`} style={editStyle}>
-        編集
+        {t.edit}
       </a>
       <button
         onClick={handleDelete}
         disabled={deleting}
         style={deleteStyle}
       >
-        {deleting ? "削除中..." : "削除"}
+        {deleting ? t.deleting : t.delete}
       </button>
     </div>
   );

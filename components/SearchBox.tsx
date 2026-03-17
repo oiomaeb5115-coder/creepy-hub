@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 
-export default function SearchBox({ locale }: { locale: string }) {
+export default function SearchBox({
+  locale,
+  placeholder,
+}: {
+  locale: string;
+  placeholder?: string;
+}) {
   const [q, setQ] = useState("");
 
   return (
@@ -12,7 +18,7 @@ export default function SearchBox({ locale }: { locale: string }) {
         name="q"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="怪談・都市伝説・Wikiを検索"
+        placeholder={placeholder ?? "怪談・都市伝説・Wikiを検索"}
         style={{
           width: "100%",
           minHeight: "48px",

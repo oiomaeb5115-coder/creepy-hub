@@ -3,9 +3,19 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+type Labels = {
+  rateLoginRequired?: string;
+  rateRevokeFailed?: string;
+  rateFailed?: string;
+  rateChangeFailed?: string;
+  upvote?: string;
+  downvote?: string;
+};
+
 type PostVoteButtonsProps = {
   postId: number;
   initialScore: number;
+  labels?: Labels;
 };
 
 type SessionUser = {
@@ -15,12 +25,22 @@ type SessionUser = {
 export default function PostVoteButtons({
   postId,
   initialScore,
+  labels,
 }: PostVoteButtonsProps) {
   const [score, setScore] = useState(initialScore);
   const [currentVote, setCurrentVote] = useState<1 | -1 | 0>(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [currentUser, setCurrentUser] = useState<SessionUser | null>(null);
+
+  const t = {
+    rateLoginRequired: labels?.rateLoginRequired ?? "評価するにはログインが必要です。",
+    rateRevokeFailed: labels?.rateRevokeFailed ?? "評価の取り消しに失敗しました: ",
+    rateFailed: labels?.rateFailed ?? "評価に失敗しました: ",
+    rateChangeFailed: labels?.rateChangeFailed ?? "評価変更に失敗しました: ",
+    upvote: labels?.upvote ?? "高く評価",
+    downvote: labels?.downvote ?? "低く評価",
+  };
 
   useEffect(() => {
     const loadVoteState = async () => {
@@ -55,7 +75,7 @@ export default function PostVoteButtons({
 
   const applyVote = async (nextVote: 1 | -1) => {
     if (!currentUser) {
-      alert("評価するにはログインが必要です。");
+      alert(t.rateLoginRequired);
       return;
     }
 
@@ -71,7 +91,7 @@ export default function PostVoteButtons({
           .eq("user_id", currentUser.id);
 
         if (error) {
-          alert(`評価の取り消しに失敗しました: ${error.message}`);
+          alert(`${t.rateRevokeFailed}${error.message}`);
           return;
         }
 
@@ -90,7 +110,7 @@ export default function PostVoteButtons({
         ]);
 
         if (error) {
-          alert(`評価に失敗しました: ${error.message}`);
+          alert(`${t.rateFailed}${error.message}`);
           return;
         }
 
@@ -106,7 +126,7 @@ export default function PostVoteButtons({
         .eq("user_id", currentUser.id);
 
       if (error) {
-        alert(`評価変更に失敗しました: ${error.message}`);
+        alert(`${t.rateChangeFailed}${error.message}`);
         return;
       }
 
@@ -131,13 +151,12 @@ export default function PostVoteButtons({
         background: "rgba(14, 5, 7, 0.9)",
       }}
     >
-      {/* upvote */}
       <button
         type="button"
         disabled={disabled}
         onClick={() => applyVote(1)}
-        title="高く評価"
-        aria-label="高く評価"
+        title={t.upvote}
+        aria-label={t.upvote}
         style={{
           width: "32px",
           height: "32px",
@@ -164,7 +183,6 @@ export default function PostVoteButtons({
         ▲
       </button>
 
-      {/* score */}
       <span
         style={{
           minWidth: "28px",
@@ -183,13 +201,12 @@ export default function PostVoteButtons({
         {score}
       </span>
 
-      {/* downvote */}
       <button
         type="button"
         disabled={disabled}
         onClick={() => applyVote(-1)}
-        title="低く評価"
-        aria-label="低く評価"
+        title={t.downvote}
+        aria-label={t.downvote}
         style={{
           width: "32px",
           height: "32px",

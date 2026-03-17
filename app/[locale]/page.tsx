@@ -467,7 +467,15 @@ export default async function HomePage({ params }: HomePageProps) {
           </div>
         </section>
 
-        <AdminPendingSection locale={locale} />
+        <AdminPendingSection
+          locale={locale}
+          labels={{
+            adminSection: dict.common.adminSection,
+            adminLink: dict.common.adminLink,
+            storyLabel: dict.admin.storyLabel,
+            wikiLabel: dict.admin.wikiLabel,
+          }}
+        />
       </div>
     </main>
   );

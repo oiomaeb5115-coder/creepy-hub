@@ -13,13 +13,24 @@ type FavEntry = {
   locale: string;
 };
 
+type Labels = {
+  title?: string;
+  empty?: string;
+};
+
 type Props = {
   type: "story" | "wiki";
   locale: string;
+  labels?: Labels;
 };
 
-export default function FavoriteSidebar({ type, locale }: Props) {
+export default function FavoriteSidebar({ type, locale, labels }: Props) {
   const [favorites, setFavorites] = useState<FavEntry[]>([]);
+
+  const t = {
+    title: labels?.title ?? "お気に入り",
+    empty: labels?.empty ?? "なし",
+  };
 
   useEffect(() => {
     const load = () => {
@@ -27,7 +38,6 @@ export default function FavoriteSidebar({ type, locale }: Props) {
       setFavorites(saved.filter((e) => e.type === type && e.locale === locale));
     };
     load();
-    // ページ内の他タブでお気に入りが変わったとき同期
     window.addEventListener("storage", load);
     return () => window.removeEventListener("storage", load);
   }, [type, locale]);
@@ -40,10 +50,10 @@ export default function FavoriteSidebar({ type, locale }: Props) {
     <aside className={styles.sidebar}>
       <p className={styles.title}>
         <span className={styles.titleStar}>★</span>
-        お気に入り
+        {t.title}
       </p>
       {favorites.length === 0 ? (
-        <p className={styles.empty}>なし</p>
+        <p className={styles.empty}>{t.empty}</p>
       ) : (
         <ul className={styles.list}>
           {favorites.map((fav) => (

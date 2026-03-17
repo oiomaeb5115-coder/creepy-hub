@@ -7,6 +7,8 @@ import { supabase } from "@/lib/supabase";
 import { getIsAdmin } from "@/lib/auth";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import en from "@/locales/en.json";
+import ja from "@/locales/ja.json";
 
 type ProfileRow = {
   id: string;
@@ -23,6 +25,7 @@ type ProfileRow = {
 export default function AccountPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
+  const dict = locale === "en" ? en : ja;
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
@@ -88,7 +91,7 @@ export default function AccountPage() {
       .from(bucket)
       .upload(fileName, file, { cacheControl: "3600", upsert: true });
     if (uploadError) {
-      alert(`画像アップロードに失敗しました: ${uploadError.message}`);
+      alert(`${dict.account.imageFailed}${uploadError.message}`);
       return null;
     }
     const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
@@ -134,7 +137,7 @@ export default function AccountPage() {
         .eq("id", profile.id);
 
       if (error) {
-        alert(`保存に失敗しました: ${error.message}`);
+        alert(`${dict.account.saveFailed}${error.message}`);
         return;
       }
 
@@ -158,7 +161,7 @@ export default function AccountPage() {
   if (loading) {
     return (
       <main className={styles.accountPage}>
-        <div className={styles.accountShell}>読み込み中...</div>
+        <div className={styles.accountShell}>{dict.common.loading}</div>
       </main>
     );
   }
@@ -172,28 +175,28 @@ export default function AccountPage() {
             <p className={styles.accountBreadcrumb}>ACCOUNT / PROFILE</p>
             <h1 className={styles.accountTitle}>My Profile</h1>
             <p className={styles.accountSubtitle}>
-              登録ユーザーのプロフィールページです
+              {dict.account.subtitle}
             </p>
           </div>
 
           <div className={styles.headerActions}>
             <Link href={`/${locale}`} className={styles.topLink}>
-              ホーム
+              {dict.common.home}
             </Link>
             {isAdmin && (
               <Link href={`/${locale}/admin`} className={styles.topLink} style={{ color: "#e8a0a0" }}>
-                管理画面
+                {dict.account.adminPanel}
               </Link>
             )}
             <Link href={`/${locale}/bookmark`} className={styles.topLink}>
-              保存済み
+              {dict.account.bookmarks}
             </Link>
             <Link href={`/${locale}/account/settings`} className={styles.topLink}>
-              プロフィール編集
+              {dict.account.settingsEdit}
             </Link>
             {profile?.username && (
               <Link href={`/${locale}/u/${profile.username}`} className={styles.topLink}>
-                公開ページ
+                {dict.account.publicPage}
               </Link>
             )}
           </div>
@@ -224,7 +227,7 @@ export default function AccountPage() {
               )}
               {!editing && (
                 <button className={styles.editBtn} onClick={openEdit}>
-                  編集
+                  {dict.account.editBtn}
                 </button>
               )}
             </div>
@@ -234,17 +237,17 @@ export default function AccountPage() {
                 /* ── インライン編集フォーム ── */
                 <div className={styles.inlineEdit}>
                   <div className={styles.inlineGroup}>
-                    <label className={styles.inlineLabel}>表示名</label>
+                    <label className={styles.inlineLabel}>{dict.account.displayNameLabel}</label>
                     <input
                       className={styles.inlineInput}
                       value={editDisplayName}
                       onChange={(e) => setEditDisplayName(e.target.value)}
-                      placeholder="表示名"
+                      placeholder={dict.account.displayNameLabel}
                     />
                   </div>
 
                   <div className={styles.inlineGroup}>
-                    <label className={styles.inlineLabel}>アバター画像をアップロード</label>
+                    <label className={styles.inlineLabel}>{dict.account.uploadAvatar}</label>
                     <input
                       type="file"
                       accept="image/*"
@@ -253,12 +256,12 @@ export default function AccountPage() {
                       disabled={uploadingAvatar}
                     />
                     {uploadingAvatar && (
-                      <p className={styles.inlineHint}>アップロード中...</p>
+                      <p className={styles.inlineHint}>{dict.account.uploading}</p>
                     )}
                   </div>
 
                   <div className={styles.inlineGroup}>
-                    <label className={styles.inlineLabel}>アバター画像URL</label>
+                    <label className={styles.inlineLabel}>{dict.account.avatarUrlLabel}</label>
                     <input
                       className={styles.inlineInput}
                       value={editAvatarUrl}
@@ -276,7 +279,7 @@ export default function AccountPage() {
                   )}
 
                   <div className={styles.inlineGroup}>
-                    <label className={styles.inlineLabel}>ヘッダー画像をアップロード</label>
+                    <label className={styles.inlineLabel}>{dict.account.uploadBanner}</label>
                     <input
                       type="file"
                       accept="image/*"
@@ -285,12 +288,12 @@ export default function AccountPage() {
                       disabled={uploadingBanner}
                     />
                     {uploadingBanner && (
-                      <p className={styles.inlineHint}>アップロード中...</p>
+                      <p className={styles.inlineHint}>{dict.account.uploading}</p>
                     )}
                   </div>
 
                   <div className={styles.inlineGroup}>
-                    <label className={styles.inlineLabel}>ヘッダー画像URL</label>
+                    <label className={styles.inlineLabel}>{dict.account.bannerUrlLabel}</label>
                     <input
                       className={styles.inlineInput}
                       value={editBannerUrl}
@@ -308,12 +311,12 @@ export default function AccountPage() {
                   )}
 
                   <div className={styles.inlineGroup}>
-                    <label className={styles.inlineLabel}>自己紹介</label>
+                    <label className={styles.inlineLabel}>{dict.account.bioInputLabel}</label>
                     <textarea
                       className={`${styles.inlineInput} ${styles.inlineTextarea}`}
                       value={editBio}
                       onChange={(e) => setEditBio(e.target.value)}
-                      placeholder="プロフィール文を入力してください。"
+                      placeholder={dict.account.bioInputLabel}
                       rows={4}
                     />
                   </div>
@@ -324,14 +327,14 @@ export default function AccountPage() {
                       onClick={handleSave}
                       disabled={saving || uploadingAvatar || uploadingBanner}
                     >
-                      {saving ? "保存中..." : "保存する"}
+                      {saving ? dict.account.saving : dict.account.saveButton}
                     </button>
                     <button
                       className={styles.cancelBtn}
                       onClick={() => setEditing(false)}
                       disabled={saving}
                     >
-                      キャンセル
+                      {dict.common.cancel}
                     </button>
                   </div>
                 </div>
@@ -339,7 +342,7 @@ export default function AccountPage() {
                 /* ── 表示モード ── */
                 <>
                   <h2 className={styles.displayName}>
-                    {profile?.display_name ?? "未設定"}
+                    {profile?.display_name ?? "—"}
                   </h2>
 
                   <p className={styles.username}>
@@ -351,12 +354,12 @@ export default function AccountPage() {
                       <span className={styles.badge}>{profile.location}</span>
                     )}
                     <span className={styles.badge}>
-                      {profile?.is_public ? "公開プロフィール" : "非公開プロフィール"}
+                      {profile?.is_public ? dict.account.publicProfile : dict.account.privateProfile}
                     </span>
                   </div>
 
                   <p className={styles.bio}>
-                    {profile?.bio ?? "自己紹介はまだ設定されていません。"}
+                    {profile?.bio ?? dict.account.noBioSet}
                   </p>
 
                   {profile?.website_url && (

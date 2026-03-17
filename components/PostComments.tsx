@@ -3,8 +3,27 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+type PostCommentsLabels = {
+  comment?: string;
+  commentSubtitle?: string;
+  commentWritePlaceholder?: string;
+  commentLoginRequired?: string;
+  commentPosting?: string;
+  commentSubmit?: string;
+  commentLoading?: string;
+  noComments?: string;
+  deletedComment?: string;
+  reply?: string;
+  replyPlaceholder?: string;
+  cancel?: string;
+  replyPosting?: string;
+  replySubmit?: string;
+};
+
 type PostCommentsProps = {
   postId: number;
+  locale?: string;
+  labels?: PostCommentsLabels;
 };
 
 type ProfileRow = {
@@ -30,7 +49,24 @@ type SessionUser = {
   email?: string | null;
 };
 
-export default function PostComments({ postId }: PostCommentsProps) {
+export default function PostComments({ postId, locale = "ja", labels }: PostCommentsProps) {
+  const t = {
+    comment: labels?.comment ?? "コメント",
+    commentSubtitle: labels?.commentSubtitle ?? "投稿について感想や考察を書けます。",
+    commentWritePlaceholder: labels?.commentWritePlaceholder ?? "コメントを書く...",
+    commentLoginRequired: labels?.commentLoginRequired ?? "コメントするにはログインが必要です",
+    commentPosting: labels?.commentPosting ?? "投稿中...",
+    commentSubmit: labels?.commentSubmit ?? "コメントする",
+    commentLoading: labels?.commentLoading ?? "コメントを読み込み中...",
+    noComments: labels?.noComments ?? "まだコメントはありません。",
+    deletedComment: labels?.deletedComment ?? "削除されたコメントです。",
+    reply: labels?.reply ?? "返信",
+    replyPlaceholder: labels?.replyPlaceholder ?? "返信を書く...",
+    cancel: labels?.cancel ?? "キャンセル",
+    replyPosting: labels?.replyPosting ?? "返信中...",
+    replySubmit: labels?.replySubmit ?? "返信する",
+  };
+  const dateLocale = locale === "en" ? "en-US" : "ja-JP";
   const [comments, setComments] = useState<CommentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
@@ -116,12 +152,12 @@ export default function PostComments({ postId }: PostCommentsProps) {
     e.preventDefault();
 
     if (!currentUser) {
-      alert("コメントするにはログインが必要です。");
+      alert(t.commentLoginRequired);
       return;
     }
 
     if (!content.trim()) {
-      alert("コメントを入力してください。");
+      alert(t.commentWritePlaceholder);
       return;
     }
 
@@ -138,7 +174,7 @@ export default function PostComments({ postId }: PostCommentsProps) {
       ]);
 
       if (error) {
-        alert(`コメント投稿に失敗しました: ${error.message}`);
+        alert(`${t.commentSubmit}: ${error.message}`);
         return;
       }
 
@@ -151,12 +187,12 @@ export default function PostComments({ postId }: PostCommentsProps) {
 
   const handleReplyPost = async (parentId: number) => {
     if (!currentUser) {
-      alert("返信するにはログインが必要です。");
+      alert(t.commentLoginRequired);
       return;
     }
 
     if (!replyContent.trim()) {
-      alert("返信内容を入力してください。");
+      alert(t.replyPlaceholder);
       return;
     }
 
@@ -173,7 +209,7 @@ export default function PostComments({ postId }: PostCommentsProps) {
       ]);
 
       if (error) {
-        alert(`返信投稿に失敗しました: ${error.message}`);
+        alert(`${t.replySubmit}: ${error.message}`);
         return;
       }
 
@@ -201,7 +237,7 @@ export default function PostComments({ postId }: PostCommentsProps) {
             color: "#f1f5fc",
           }}
         >
-          コメント
+          {t.comment}
         </h3>
         <p
           style={{
@@ -210,7 +246,7 @@ export default function PostComments({ postId }: PostCommentsProps) {
             lineHeight: 1.8,
           }}
         >
-          投稿について感想や考察を書けます。
+          {t.commentSubtitle}
         </p>
       </div>
 
@@ -220,8 +256,8 @@ export default function PostComments({ postId }: PostCommentsProps) {
           onChange={(e) => setContent(e.target.value)}
           placeholder={
             currentUser
-              ? "コメントを書く..."
-              : "コメントするにはログインが必要です"
+              ? t.commentWritePlaceholder
+              : t.commentLoginRequired
           }
           disabled={!currentUser || posting}
           style={{
@@ -262,15 +298,15 @@ export default function PostComments({ postId }: PostCommentsProps) {
               opacity: !currentUser || posting ? 0.7 : 1,
             }}
           >
-            {posting ? "投稿中..." : "コメントする"}
+            {posting ? t.commentPosting : t.commentSubmit}
           </button>
         </div>
       </form>
 
       {loading ? (
-        <p style={{ color: "#aebcd1" }}>コメントを読み込み中...</p>
+        <p style={{ color: "#aebcd1" }}>{t.commentLoading}</p>
       ) : rootComments.length === 0 ? (
-        <p style={{ color: "#aebcd1" }}>まだコメントはありません。</p>
+        <p style={{ color: "#aebcd1" }}>{t.noComments}</p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           {rootComments.map((comment) => {
@@ -300,7 +336,7 @@ export default function PostComments({ postId }: PostCommentsProps) {
                     @{author?.username ?? "unknown"}
                   </div>
                   <div style={{ color: "#8ea4c2", fontSize: "13px" }}>
-                    {new Date(comment.created_at).toLocaleString("ja-JP")}
+                    {new Date(comment.created_at).toLocaleString(dateLocale)}
                   </div>
                 </div>
 
@@ -311,7 +347,7 @@ export default function PostComments({ postId }: PostCommentsProps) {
                     lineHeight: 1.9,
                   }}
                 >
-                  {comment.is_deleted ? "削除されたコメントです。" : comment.content}
+                  {comment.is_deleted ? t.deletedComment : comment.content}
                 </p>
 
                 <div
@@ -337,7 +373,7 @@ export default function PostComments({ postId }: PostCommentsProps) {
                       cursor: "pointer",
                     }}
                   >
-                    返信
+                    {t.reply}
                   </button>
                 </div>
 
@@ -348,8 +384,8 @@ export default function PostComments({ postId }: PostCommentsProps) {
                       onChange={(e) => setReplyContent(e.target.value)}
                       placeholder={
                         currentUser
-                          ? "返信を書く..."
-                          : "返信するにはログインが必要です"
+                          ? t.replyPlaceholder
+                          : t.commentLoginRequired
                       }
                       disabled={!currentUser || replyPosting}
                       style={{
@@ -391,7 +427,7 @@ export default function PostComments({ postId }: PostCommentsProps) {
                           cursor: "pointer",
                         }}
                       >
-                        キャンセル
+                        {t.cancel}
                       </button>
 
                       <button
@@ -411,7 +447,7 @@ export default function PostComments({ postId }: PostCommentsProps) {
                           opacity: !currentUser || replyPosting ? 0.7 : 1,
                         }}
                       >
-                        {replyPosting ? "返信中..." : "返信する"}
+                        {replyPosting ? t.replyPosting : t.replySubmit}
                       </button>
                     </div>
                   </div>
@@ -453,7 +489,7 @@ export default function PostComments({ postId }: PostCommentsProps) {
                               @{replyAuthor?.username ?? "unknown"}
                             </div>
                             <div style={{ color: "#8ea4c2", fontSize: "12px" }}>
-                              {new Date(reply.created_at).toLocaleString("ja-JP")}
+                              {new Date(reply.created_at).toLocaleString(dateLocale)}
                             </div>
                           </div>
 
@@ -465,7 +501,7 @@ export default function PostComments({ postId }: PostCommentsProps) {
                             }}
                           >
                             {reply.is_deleted
-                              ? "削除されたコメントです。"
+                              ? t.deletedComment
                               : reply.content}
                           </p>
                         </div>

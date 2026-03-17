@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import en from "@/locales/en.json";
+import ja from "@/locales/ja.json";
 
 type ProfileRow = {
   id: string;
@@ -29,6 +31,7 @@ type PostRow = {
 export default function UserProfilePage() {
   const params = useParams<{ locale: string; username: string }>();
   const locale = params?.locale ?? "ja";
+  const dict = locale === "en" ? en : ja;
   const username = params?.username ? decodeURIComponent(params.username) : "";
 
   const [loading, setLoading] = useState(true);
@@ -74,7 +77,7 @@ export default function UserProfilePage() {
     return (
       <main className={styles.profilePage}>
         <div className={styles.shell} style={{ paddingTop: "80px", textAlign: "center", color: "#8a7870" }}>
-          読み込み中...
+          {dict.common.loading}
         </div>
       </main>
     );
@@ -84,8 +87,8 @@ export default function UserProfilePage() {
     return (
       <main className={styles.profilePage}>
         <div className={styles.shell} style={{ paddingTop: "80px", textAlign: "center", color: "#8a7870" }}>
-          <p>プロフィールが見つかりませんでした。</p>
-          <Link href={`/${locale}`} style={{ color: "#c49090" }}>ホームへ戻る</Link>
+          <p>{dict.profile.notFound}</p>
+          <Link href={`/${locale}`} style={{ color: "#c49090" }}>{dict.profile.backToHome}</Link>
         </div>
       </main>
     );
@@ -133,17 +136,17 @@ export default function UserProfilePage() {
         </div>
 
         <section className={styles.section}>
-          <h2>投稿怪談</h2>
+          <h2>{dict.profile.stories}</h2>
 
           {posts.length === 0 && (
             <p className={styles.empty}>
-              まだ投稿がありません
+              {dict.profile.noStories}
             </p>
           )}
 
           <div className={styles.feed}>
             {posts.map((post) => {
-              const safeTitle = post.title ?? "無題";
+              const safeTitle = post.title ?? dict.story.untitled;
               const safeContent = post.content ?? "";
               const excerpt = safeContent.length > 20
                 ? `${safeContent.slice(0, 20)}…`
@@ -169,7 +172,7 @@ export default function UserProfilePage() {
 
                   <div className={styles.postContent}>
                     <div className={styles.tagRow}>
-                      <span className={styles.badge}>怪談</span>
+                      <span className={styles.badge}>{dict.story.label}</span>
                     </div>
                     <h3 className={styles.postTitle}>{safeTitle}</h3>
                     {excerpt && (
@@ -185,7 +188,7 @@ export default function UserProfilePage() {
 
         <div className={styles.back}>
           <Link href={`/${locale}`}>
-            ホームへ戻る
+            {dict.profile.backToHome}
           </Link>
         </div>
 

@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import en from "@/locales/en.json";
+import ja from "@/locales/ja.json";
 
 type ProfileRow = {
   username: string | null;
@@ -21,6 +23,7 @@ type ProfileRow = {
 export default function AccountSettingsPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
+  const dict = locale === "en" ? en : ja;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -89,7 +92,7 @@ export default function AccountSettingsPage() {
     } = await supabase.auth.getSession();
 
     if (sessionError || !session?.user) {
-      alert("ログインが必要です。");
+      alert(dict.common.loginRequired);
       window.location.href = `/${locale}/login`;
       return null;
     }
@@ -106,7 +109,7 @@ export default function AccountSettingsPage() {
       });
 
     if (uploadError) {
-      alert(`画像アップロードに失敗しました: ${uploadError.message}`);
+      alert(`${dict.account.imageFailed}${uploadError.message}`);
       return null;
     }
 
@@ -178,11 +181,11 @@ export default function AccountSettingsPage() {
       const { error } = await supabase.from("profiles").upsert(payload);
 
       if (error) {
-        alert(`保存に失敗しました: ${error.message}`);
+        alert(`${dict.account.profileFailed}${error.message}`);
         return;
       }
 
-      alert("プロフィールを保存しました。");
+      alert(dict.account.profileSaved);
       window.location.href = `/${locale}/account`;
     } finally {
       setSaving(false);
@@ -192,7 +195,7 @@ export default function AccountSettingsPage() {
   if (loading) {
     return (
       <main className={styles.settingsPage}>
-        <div className={styles.settingsShell}>読み込み中...</div>
+        <div className={styles.settingsShell}>{dict.common.loading}</div>
       </main>
     );
   }
@@ -206,13 +209,13 @@ export default function AccountSettingsPage() {
             <p className={styles.settingsBreadcrumb}>ACCOUNT / SETTINGS</p>
             <h1 className={styles.settingsTitle}>Profile Settings</h1>
             <p className={styles.settingsSubtitle}>
-              表示名、自己紹介、画像、公開設定などを編集します
+              {dict.account.settingsSubtitle}
             </p>
           </div>
 
           <div className={styles.headerActions}>
             <Link href={`/${locale}/account`} className={styles.topLink}>
-              プロフィールへ戻る
+              {dict.account.backToProfile}
             </Link>
           </div>
         </header>
@@ -246,7 +249,7 @@ export default function AccountSettingsPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="username">ユーザー名</label>
+              <label htmlFor="username">{dict.account.usernameLabel}</label>
               <input
                 id="username"
                 className={styles.formControl}
@@ -257,7 +260,7 @@ export default function AccountSettingsPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="displayName">表示名</label>
+              <label htmlFor="displayName">{dict.account.displayNameLabel}</label>
               <input
                 id="displayName"
                 className={styles.formControl}
@@ -268,7 +271,7 @@ export default function AccountSettingsPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="avatarFile">アバター画像アップロード</label>
+              <label htmlFor="avatarFile">{dict.account.uploadAvatar}</label>
               <input
                 id="avatarFile"
                 type="file"
@@ -277,12 +280,12 @@ export default function AccountSettingsPage() {
                 onChange={handleAvatarUpload}
               />
               <p className={styles.helpText}>
-                {uploadingAvatar ? "アバターをアップロード中..." : "画像を選ぶとURLに反映されます。"}
+                {uploadingAvatar ? dict.account.uploading : dict.account.uploadHint}
               </p>
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="avatarUrl">アバター画像URL</label>
+              <label htmlFor="avatarUrl">{dict.account.avatarUrlLabel}</label>
               <input
                 id="avatarUrl"
                 className={styles.formControl}
@@ -293,7 +296,7 @@ export default function AccountSettingsPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="bannerFile">バナー画像アップロード</label>
+              <label htmlFor="bannerFile">{dict.account.uploadBanner}</label>
               <input
                 id="bannerFile"
                 type="file"
@@ -302,12 +305,12 @@ export default function AccountSettingsPage() {
                 onChange={handleBannerUpload}
               />
               <p className={styles.helpText}>
-                {uploadingBanner ? "バナーをアップロード中..." : "画像を選ぶとURLに反映されます。"}
+                {uploadingBanner ? dict.account.uploading : dict.account.uploadHint}
               </p>
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="bannerUrl">バナー画像URL</label>
+              <label htmlFor="bannerUrl">{dict.account.bannerUrlLabel}</label>
               <input
                 id="bannerUrl"
                 className={styles.formControl}
@@ -318,18 +321,18 @@ export default function AccountSettingsPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="bio">自己紹介</label>
+              <label htmlFor="bio">{dict.account.bioInputLabel}</label>
               <textarea
                 id="bio"
                 className={`${styles.formControl} ${styles.textarea}`}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="プロフィール文を入力してください。"
+                placeholder={dict.account.bioInputLabel}
               />
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="websiteUrl">WebサイトURL</label>
+              <label htmlFor="websiteUrl">{dict.account.websiteLabel}</label>
               <input
                 id="websiteUrl"
                 className={styles.formControl}
@@ -340,7 +343,7 @@ export default function AccountSettingsPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="location">地域</label>
+              <label htmlFor="location">{dict.account.locationLabel}</label>
               <input
                 id="location"
                 className={styles.formControl}
@@ -357,7 +360,7 @@ export default function AccountSettingsPage() {
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
                 />
-                公開プロフィールにする
+                {dict.account.makePublic}
               </label>
             </div>
 
@@ -367,7 +370,7 @@ export default function AccountSettingsPage() {
                 className={styles.primaryButton}
                 disabled={saving || uploadingAvatar || uploadingBanner}
               >
-                {saving ? "保存中..." : "保存する"}
+                {saving ? dict.account.saving : dict.account.saveButton}
               </button>
             </div>
           </form>

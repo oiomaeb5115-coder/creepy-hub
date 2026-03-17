@@ -5,22 +5,39 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAccessToken } from "@/lib/auth";
 
+type Labels = {
+  deleteConfirm?: string;
+  deleteFailed?: string;
+  deleting?: string;
+  deleted?: string;
+};
+
 type Props = {
   categoryId: number;
   deleteApiPath: string;
   redirectTo: string;
   label?: string;
+  labels?: Labels;
 };
 
 export default function CategoryDeleteButton({
   categoryId,
   deleteApiPath,
   redirectTo,
-  label = "カテゴリを削除",
+  label,
+  labels,
 }: Props) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const router = useRouter();
+
+  const t = {
+    deleteConfirm: labels?.deleteConfirm ?? "このカテゴリを削除しますか？この操作は元に戻せません。",
+    deleteFailed: labels?.deleteFailed ?? "削除に失敗しました",
+    deleting: labels?.deleting ?? "削除中...",
+    deleted: labels?.deleted ?? "削除済",
+    buttonLabel: label ?? (labels?.deleted ? "Delete Category" : "カテゴリを削除"),
+  };
 
   useEffect(() => {
     const check = async () => {
@@ -41,7 +58,7 @@ export default function CategoryDeleteButton({
   if (!isAdmin) return null;
 
   const handleDelete = async () => {
-    if (!window.confirm(`このカテゴリを削除しますか？この操作は元に戻せません。`)) return;
+    if (!window.confirm(t.deleteConfirm)) return;
 
     setStatus("loading");
     try {
@@ -56,7 +73,7 @@ export default function CategoryDeleteButton({
         router.push(redirectTo);
       } else {
         const json = await res.json().catch(() => ({}));
-        alert(json.error ?? "削除に失敗しました");
+        alert(json.error ?? t.deleteFailed);
         setStatus("error");
       }
     } catch {
@@ -82,7 +99,7 @@ export default function CategoryDeleteButton({
         fontSize: "14px",
       }}
     >
-      {status === "loading" ? "削除中..." : status === "done" ? "削除済" : label}
+      {status === "loading" ? t.deleting : status === "done" ? t.deleted : t.buttonLabel}
     </button>
   );
 }

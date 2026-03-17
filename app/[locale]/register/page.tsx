@@ -6,10 +6,13 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import en from "@/locales/en.json";
+import ja from "@/locales/ja.json";
 
 export default function RegisterPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
+  const dict = locale === "en" ? en : ja;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,7 +22,7 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (!email.trim() || !password.trim()) {
-      alert("メールアドレスとパスワードを入力してください。");
+      alert(dict.auth.emptyFields);
       return;
     }
 
@@ -35,11 +38,11 @@ export default function RegisterPage() {
       });
 
       if (error) {
-        alert(`登録失敗: ${error.message}`);
+        alert(`${dict.auth.registerFailed}${error.message}`);
         return;
       }
 
-      alert("確認メールを送信しました。");
+      alert(dict.auth.registerEmailSent);
       window.location.href = `/${locale}/login`;
     } finally {
       setIsSubmitting(false);
@@ -55,29 +58,29 @@ export default function RegisterPage() {
             <p className={styles.authBreadcrumb}>ARCHIVE / ACCOUNT</p>
             <h1 className={styles.authTitle}>Register</h1>
             <p className={styles.authSubtitle}>
-              Horror Archive のアカウントを作成します
+              {dict.auth.registerSubtitle}
             </p>
           </div>
 
           <div className={styles.authActions}>
             <Link href={`/${locale}`} className={styles.topLink}>
-              ホーム
+              {dict.nav.home}
             </Link>
             <Link href={`/${locale}/login`} className={styles.topLink}>
-              ログイン
+              {dict.nav.login}
             </Link>
           </div>
         </header>
 
         <section className={styles.authCard}>
           <div className={styles.formHeader}>
-            <h2>登録</h2>
-            <p>メールアドレスとパスワードを入力してアカウントを作成します。</p>
+            <h2>{dict.auth.registerHeading}</h2>
+            <p>{dict.auth.registerInstruction}</p>
           </div>
 
           <form className={styles.authForm} onSubmit={handleRegister}>
             <div className={styles.formGroup}>
-              <label htmlFor="email">メールアドレス</label>
+              <label htmlFor="email">{dict.auth.emailLabel}</label>
               <input
                 id="email"
                 type="email"
@@ -89,7 +92,7 @@ export default function RegisterPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="password">パスワード</label>
+              <label htmlFor="password">{dict.auth.passwordLabel}</label>
               <input
                 id="password"
                 type="password"
@@ -106,15 +109,15 @@ export default function RegisterPage() {
                 className={styles.primaryButton}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "登録中..." : "登録する"}
+                {isSubmitting ? dict.auth.registerSubmitting : dict.auth.registerSubmit}
               </button>
             </div>
           </form>
 
           <div className={styles.authFooter}>
-            <p>すでにアカウントを持っていますか？</p>
+            <p>{dict.auth.registerHasAccount}</p>
             <Link href={`/${locale}/login`} className={styles.inlineLink}>
-              ログインページへ
+              {dict.auth.registerToLogin}
             </Link>
           </div>
         </section>

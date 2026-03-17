@@ -5,7 +5,17 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { getIsAdmin } from "@/lib/auth";
 
-type Props = { locale: string };
+type Labels = {
+  adminSection?: string;
+  adminLink?: string;
+  storyLabel?: string;
+  wikiLabel?: string;
+};
+
+type Props = {
+  locale: string;
+  labels?: Labels;
+};
 
 type PendingCategory = {
   id: number;
@@ -15,9 +25,16 @@ type PendingCategory = {
   type: "story" | "wiki";
 };
 
-export default function AdminPendingSection({ locale }: Props) {
+export default function AdminPendingSection({ locale, labels }: Props) {
   const [pending, setPending] = useState<PendingCategory[]>([]);
   const [show, setShow] = useState(false);
+
+  const t = {
+    adminSection: labels?.adminSection ?? "ADMIN ｜ 審査待ちカテゴリ（{count}件）",
+    adminLink: labels?.adminLink ?? "→ 管理画面へ",
+    storyLabel: labels?.storyLabel ?? "[STORY]",
+    wikiLabel: labels?.wikiLabel ?? "[WIKI]",
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -60,6 +77,8 @@ export default function AdminPendingSection({ locale }: Props) {
 
   if (!show) return null;
 
+  const sectionTitle = t.adminSection.replace("{count}", String(pending.length));
+
   return (
     <section
       style={{
@@ -87,13 +106,13 @@ export default function AdminPendingSection({ locale }: Props) {
             fontWeight: 600,
           }}
         >
-          ADMIN ｜ 審査待ちカテゴリ（{pending.length}件）
+          {sectionTitle}
         </h3>
         <Link
           href={`/${locale}/admin`}
           style={{ fontSize: 12, color: "#b08888", textDecoration: "none" }}
         >
-          → 管理画面へ
+          {t.adminLink}
         </Link>
       </div>
 
@@ -113,12 +132,12 @@ export default function AdminPendingSection({ locale }: Props) {
             <span>
               {cat.name}
               <span style={{ marginLeft: 6, fontSize: 10, color: cat.type === "wiki" ? "#8ab0c8" : "#c8a0a8", letterSpacing: "0.08em" }}>
-                {cat.type === "wiki" ? "[WIKI]" : "[STORY]"}
+                {cat.type === "wiki" ? t.wikiLabel : t.storyLabel}
               </span>
             </span>
             <span style={{ color: "#7a6060", fontSize: 11 }}>
               {cat.created_at
-                ? new Date(cat.created_at).toLocaleDateString("ja-JP")
+                ? new Date(cat.created_at).toLocaleDateString(locale === "en" ? "en-US" : "ja-JP")
                 : "—"}
             </span>
           </div>

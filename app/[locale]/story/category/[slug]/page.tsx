@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { getDictionary } from "@/lib/getDictionary";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 import CategoryReportButton from "@/components/CategoryReportButton";
@@ -16,6 +17,7 @@ type StoryCategoryRow = {
   id: number;
   slug: string;
   name: string;
+  name_en: string | null;
   description: string | null;
   is_active: boolean;
   is_user_created: boolean;
@@ -38,10 +40,12 @@ export default async function StoryCategoryPage({
   params,
 }: StoryCategoryPageProps) {
   const { locale, slug } = await params;
+  const dict = await getDictionary(locale);
+  const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
   const { data: categoryData, error: categoryError } = await supabase
     .from("story_categories")
-    .select("id, slug, name, description, is_active, is_user_created, created_by, icon_url, header_image_url")
+    .select("id, slug, name, name_en, description, is_active, is_user_created, created_by, icon_url, header_image_url")
     .eq("slug", slug)
     .eq("is_active", true)
     .single();
@@ -52,23 +56,50 @@ export default async function StoryCategoryPage({
     notFound();
   }
 
-  const { data: postsData, error: postsError } = await supabase
-    .from("post")
-    .select("id, title, content, created_at, image_url, view_count, category_id")
-    .eq("is_published", true)
-    .eq("category_id", category.id)
-    .order("created_at", { ascending: false });
+  const categoryName = locale === "en" ? (category.name_en ?? category.name) : category.name;
 
-  const posts = (postsData ?? []) as PostRow[];
+  let posts: PostRow[] = [];
+
+  if (locale === "en") {
+    const { data } = await supabase
+      .from("post")
+      .select("id, title, content, created_at, image_url, view_count, category_id, post_translations!inner(title, content)")
+      .eq("is_published", true)
+      .eq("category_id", category.id)
+      .eq("post_translations.locale", "en")
+      .order("created_at", { ascending: false });
+
+    posts = (data ?? []).map((p: any) => ({
+      id: p.id,
+      title: p.post_translations?.[0]?.title ?? p.title,
+      content: p.post_translations?.[0]?.content ?? p.content,
+      created_at: p.created_at,
+      image_url: p.image_url,
+      view_count: p.view_count,
+      category_id: p.category_id,
+    }));
+  } else {
+    const { data, error: postsError } = await supabase
+      .from("post")
+      .select("id, title, content, created_at, image_url, view_count, category_id")
+      .eq("is_published", true)
+      .eq("category_id", category.id)
+      .order("created_at", { ascending: false });
+
+    if (postsError) {
+      posts = [];
+    } else {
+      posts = (data ?? []) as PostRow[];
+    }
+  }
 
   return (
     <main className={styles.categoryPage}>
-      {/* ヘッダー画像 */}
       {category.header_image_url && (
         <div className={styles.heroImage}>
           <img
             src={category.header_image_url}
-            alt={`${category.name} ヘッダー画像`}
+            alt={`${categoryName} header`}
             className={styles.heroImg}
           />
           <div className={styles.heroOverlay} />
@@ -82,64 +113,82 @@ export default async function StoryCategoryPage({
             {category.icon_url && (
               <img
                 src={category.icon_url}
-                alt={`${category.name} アイコン`}
+                alt={`${categoryName} icon`}
                 className={styles.categoryIcon}
               />
             )}
             <div>
               <p className={styles.categoryBreadcrumb}>STORIES / CATEGORY</p>
-              <h1 className={styles.categoryTitle}>{category.name}</h1>
+              <h1 className={styles.categoryTitle}>{categoryName}</h1>
               <p className={styles.categorySubtitle}>
-                {category.description ?? "このカテゴリの怪談・投稿一覧です。"}
+                {category.description ?? `${categoryName} — ${dict.story.label}`}
               </p>
             </div>
           </div>
 
           <div className={styles.headerActions}>
             <Link href={`/${locale}`} className={styles.topLink}>
-              ホーム
+              {dict.common.home}
             </Link>
             <FavoriteCategoryButton
               type="story"
               slug={category.slug}
-              name={category.name}
+              name={categoryName}
               locale={locale}
+              labels={{
+                unfavorite: dict.common.favoriteRemove,
+                favoriteAdd: dict.common.favoriteAdd,
+                favorite: dict.common.favorite,
+                unfavorited: dict.common.unfavorite,
+              }}
             />
             <CategoryEditButton
               categoryId={category.id}
               createdBy={category.created_by}
               slug={category.slug}
               locale={locale}
+              label={dict.common.imageSettings}
             />
             {category.is_user_created && (
-              <CategoryReportButton categoryId={category.id} />
+              <CategoryReportButton
+                categoryId={category.id}
+                labels={{
+                  reportAccepted: dict.common.reportAccepted,
+                  reportLoginRequired: dict.common.reportLoginRequired,
+                  report: dict.common.report,
+                  reporting: dict.common.reporting,
+                  retry: dict.common.retry,
+                }}
+              />
             )}
             <CategoryDeleteButton
               categoryId={category.id}
               deleteApiPath={`/api/category/${category.id}/delete`}
               redirectTo={`/${locale}/story`}
+              labels={{
+                deleteConfirm: dict.common.deleteConfirmCategory,
+                deleteFailed: dict.common.deleteFailed,
+                deleting: dict.common.deleting,
+                deleted: dict.common.deleted,
+              }}
             />
           </div>
         </header>
 
         <section className={styles.cardSection}>
           <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>投稿一覧</h2>
+            <h2 className={styles.sectionTitle}>{dict.story.label}</h2>
             <p className={styles.sectionDescription}>
-              カテゴリ「{category.name}」に属する投稿です。
+              {categoryName}
             </p>
           </div>
 
-          {postsError ? (
-            <p className={styles.emptyText}>
-              投稿の取得に失敗しました: {postsError.message}
-            </p>
-          ) : posts.length === 0 ? (
-            <p className={styles.emptyText}>このカテゴリにはまだ投稿がありません。</p>
+          {posts.length === 0 ? (
+            <p className={styles.emptyText}>{dict.story.empty}</p>
           ) : (
             <div className={styles.postGrid}>
               {posts.map((post) => {
-                const safeTitle = post.title ?? "無題";
+                const safeTitle = post.title ?? dict.story.untitled;
                 const safeContent = post.content ?? "";
                 const safeCreatedAt = post.created_at ?? "";
 
@@ -167,12 +216,12 @@ export default async function StoryCategoryPage({
                       <div className={styles.postCardBody}>
                         <div className={styles.postCardMetaRow}>
                           <span className={styles.postCardCategory}>
-                            {category.name}
+                            {categoryName}
                           </span>
                           <span className={styles.postCardDate}>
                             {safeCreatedAt
-                              ? new Date(safeCreatedAt).toLocaleDateString("ja-JP")
-                              : "日付不明"}
+                              ? new Date(safeCreatedAt).toLocaleDateString(dateLocale)
+                              : dict.story.unknownDate}
                           </span>
                         </div>
 
@@ -186,7 +235,7 @@ export default async function StoryCategoryPage({
 
                         <div className={styles.postCardFooter}>
                           <span className={styles.postCardViews}>
-                            閲覧: {post.view_count ?? 0}
+                            {dict.story.views}: {post.view_count ?? 0}
                           </span>
                         </div>
                       </div>

@@ -11,15 +11,30 @@ type FavEntry = {
   locale: string;
 };
 
+type Labels = {
+  unfavorite?: string;
+  favoriteAdd?: string;
+  favorite?: string;
+  unfavorited?: string;
+};
+
 type Props = {
   type: "story" | "wiki";
   slug: string;
   name: string;
   locale: string;
+  labels?: Labels;
 };
 
-export default function FavoriteCategoryButton({ type, slug, name, locale }: Props) {
+export default function FavoriteCategoryButton({ type, slug, name, locale, labels }: Props) {
   const [favorited, setFavorited] = useState(false);
+
+  const t = {
+    unfavorite: labels?.unfavorite ?? "お気に入り解除",
+    favoriteAdd: labels?.favoriteAdd ?? "お気に入りに追加",
+    favorite: labels?.favorite ?? "お気に入り",
+    unfavorited: labels?.unfavorited ?? "お気に入り中",
+  };
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]") as FavEntry[];
@@ -44,8 +59,8 @@ export default function FavoriteCategoryButton({ type, slug, name, locale }: Pro
   return (
     <button
       onClick={toggle}
-      title={favorited ? "お気に入り解除" : "お気に入りに追加"}
-      aria-label={favorited ? "お気に入り解除" : "お気に入りに追加"}
+      title={favorited ? t.unfavorite : t.favoriteAdd}
+      aria-label={favorited ? t.unfavorite : t.favoriteAdd}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -67,7 +82,7 @@ export default function FavoriteCategoryButton({ type, slug, name, locale }: Pro
       }}
     >
       <span style={{ fontSize: "14px" }}>{favorited ? "★" : "☆"}</span>
-      {favorited ? "お気に入り中" : "お気に入り"}
+      {favorited ? t.unfavorited : t.favorite}
     </button>
   );
 }

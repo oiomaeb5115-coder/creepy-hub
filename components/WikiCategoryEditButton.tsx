@@ -9,9 +9,10 @@ type Props = {
   createdBy: string | null;
   slug: string;
   locale: string;
+  label?: string;
 };
 
-export default function WikiCategoryEditButton({ categoryId: _categoryId, createdBy, slug, locale }: Props) {
+export default function WikiCategoryEditButton({ categoryId: _categoryId, createdBy, slug, locale, label }: Props) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -58,7 +59,7 @@ export default function WikiCategoryEditButton({ categoryId: _categoryId, create
         fontSize: "14px",
       }}
     >
-      画像設定
+      {label ?? "画像設定"}
     </Link>
   );
 }

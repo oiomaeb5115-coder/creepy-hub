@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import BackButton from "@/components/BackButton";
 import styles from "./page.module.css";
+import en from "@/locales/en.json";
+import ja from "@/locales/ja.json";
 
 type CategoryData = {
   id: number;
@@ -19,6 +21,7 @@ export default function WikiCategoryEditPage() {
   const params = useParams<{ locale: string; slug: string }>();
   const locale = params?.locale ?? "ja";
   const slug = params?.slug ?? "";
+  const dict = locale === "en" ? en : ja;
   const router = useRouter();
 
   const [category, setCategory] = useState<CategoryData | null>(null);
@@ -123,7 +126,7 @@ export default function WikiCategoryEditPage() {
         try {
           updateBody.icon_url = await uploadCategoryImage(iconFile, session.user.id, "icon");
         } catch {
-          setErrorMsg("アイコン画像のアップロードに失敗しました。");
+          setErrorMsg(dict.categoryEdit.errorIconUpload);
           return;
         }
       }
@@ -132,13 +135,13 @@ export default function WikiCategoryEditPage() {
         try {
           updateBody.header_image_url = await uploadCategoryImage(headerFile, session.user.id, "header");
         } catch {
-          setErrorMsg("ヘッダー画像のアップロードに失敗しました。");
+          setErrorMsg(dict.categoryEdit.errorHeaderUpload);
           return;
         }
       }
 
       if (Object.keys(updateBody).length === 0) {
-        setErrorMsg("変更する画像を選択してください。");
+        setErrorMsg(dict.categoryEdit.errorNoChange);
         return;
       }
 
@@ -153,7 +156,7 @@ export default function WikiCategoryEditPage() {
 
       const json = await res.json();
       if (!res.ok) {
-        setErrorMsg(json.error ?? "エラーが発生しました。");
+        setErrorMsg(json.error ?? dict.categoryEdit.errorGeneral);
         return;
       }
 
@@ -211,20 +214,20 @@ export default function WikiCategoryEditPage() {
         <BackButton />
         <header className={styles.header}>
           <p className={styles.breadcrumb}>OCCULT WIKI / CATEGORY / SETTINGS</p>
-          <h1 className={styles.title}>カテゴリ画像設定</h1>
+          <h1 className={styles.title}>{dict.categoryEdit.settingsTitle}</h1>
           <p className={styles.subtitle}>
-            「{category?.name}」のアイコンとヘッダー画像を設定します。
+            {dict.categoryEdit.settingsSubtitle.replace("{category}", category?.name ?? "")}
           </p>
         </header>
 
         {done ? (
           <div className={styles.successCard}>
-            <p className={styles.successTitle}>画像を更新しました</p>
+            <p className={styles.successTitle}>{dict.categoryEdit.successTitle}</p>
             <button
               className={styles.backBtn}
               onClick={() => router.push(`/${locale}/wiki/category/${slug}`)}
             >
-              カテゴリページへ戻る
+              {dict.categoryEdit.backToCategory}
             </button>
           </div>
         ) : (

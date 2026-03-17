@@ -3,14 +3,31 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-type Props = {
-  categoryId: number;
+type Labels = {
+  reportAccepted?: string;
+  reportLoginRequired?: string;
+  report?: string;
+  reporting?: string;
+  retry?: string;
 };
 
-export default function WikiCategoryReportButton({ categoryId }: Props) {
+type Props = {
+  categoryId: number;
+  labels?: Labels;
+};
+
+export default function WikiCategoryReportButton({ categoryId, labels }: Props) {
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error" | "notLoggedIn">(
     "idle"
   );
+
+  const t = {
+    reportAccepted: labels?.reportAccepted ?? "報告を受け付けました",
+    reportLoginRequired: labels?.reportLoginRequired ?? "報告にはログインが必要です",
+    report: labels?.report ?? "このカテゴリを報告",
+    reporting: labels?.reporting ?? "送信中...",
+    retry: labels?.retry ?? "再試行",
+  };
 
   const handleReport = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -45,10 +62,10 @@ export default function WikiCategoryReportButton({ categoryId }: Props) {
   };
 
   if (status === "done") {
-    return <span style={labelStyle}>報告を受け付けました</span>;
+    return <span style={labelStyle}>{t.reportAccepted}</span>;
   }
   if (status === "notLoggedIn") {
-    return <span style={labelStyle}>報告にはログインが必要です</span>;
+    return <span style={labelStyle}>{t.reportLoginRequired}</span>;
   }
 
   return (
@@ -57,7 +74,7 @@ export default function WikiCategoryReportButton({ categoryId }: Props) {
       disabled={status === "loading"}
       style={buttonStyle}
     >
-      {status === "loading" ? "送信中..." : status === "error" ? "再試行" : "このカテゴリを報告"}
+      {status === "loading" ? t.reporting : status === "error" ? t.retry : t.report}
     </button>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { getDictionary } from "@/lib/getDictionary";
 import styles from "../page.module.css";
 import BackButton from "@/components/BackButton";
 
@@ -20,20 +21,45 @@ type StoryPost = {
 export default async function StorySearchPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const { q = "" } = await searchParams;
+  const dict = await getDictionary(locale);
+  const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
   const keyword = `%${q}%`;
 
-  const { data } = q
-    ? await supabase
+  let posts: StoryPost[] = [];
+
+  if (q) {
+    if (locale === "en") {
+      // EN: search in post_translations
+      const { data } = await supabase
+        .from("post")
+        .select("id, title, content, created_at, image_url, view_count, post_translations!inner(title, content)")
+        .eq("is_published", true)
+        .eq("post_translations.locale", "en")
+        .or(`post_translations.title.ilike.${keyword},post_translations.content.ilike.${keyword}`)
+        .order("view_count", { ascending: false })
+        .limit(30);
+
+      posts = (data ?? []).map((p: any) => ({
+        id: p.id,
+        title: p.post_translations?.[0]?.title ?? p.title,
+        content: p.post_translations?.[0]?.content ?? p.content,
+        created_at: p.created_at,
+        image_url: p.image_url,
+        view_count: p.view_count,
+      }));
+    } else {
+      const { data } = await supabase
         .from("post")
         .select("id,title,content,created_at,image_url,view_count")
         .eq("is_published", true)
         .or(`title.ilike.${keyword},content.ilike.${keyword}`)
         .order("view_count", { ascending: false })
-        .limit(30)
-    : { data: [] };
+        .limit(30);
 
-  const posts = (data ?? []) as StoryPost[];
+      posts = (data ?? []) as StoryPost[];
+    }
+  }
 
   return (
     <main className={styles.storyPage}>
@@ -42,11 +68,11 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
         <header className={styles.pageHeader}>
           <div>
             <p className={styles.breadcrumb}>HORROR POST / SEARCH</p>
-            <h1 className={styles.pageTitle}>怪談検索</h1>
+            <h1 className={styles.pageTitle}>{dict.story.headerTitle} — {dict.search.title}</h1>
           </div>
           <div className={styles.headerActions}>
-            <Link href={`/${locale}`} className={styles.topLink}>ホーム</Link>
-            <Link href={`/${locale}/story`} className={styles.topLink}>一覧へ</Link>
+            <Link href={`/${locale}`} className={styles.topLink}>{dict.common.home}</Link>
+            <Link href={`/${locale}/story`} className={styles.topLink}>{dict.nav.stories}</Link>
           </div>
         </header>
 
@@ -55,30 +81,30 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
             type="text"
             name="q"
             defaultValue={q}
-            placeholder="怪談を検索..."
+            placeholder={dict.story.searchPlaceholder}
             className={styles.searchInput}
           />
-          <button type="submit" className={styles.searchBtn}>検索</button>
+          <button type="submit" className={styles.searchBtn}>{dict.home.searchButton}</button>
         </form>
 
         {q && (
           <p style={{ margin: "0 0 16px", fontSize: 13, color: "#8a7870" }}>
-            「{q}」の検索結果：{posts.length} 件
+            &ldquo;{q}&rdquo; — {posts.length} {locale === "en" ? "results" : "件"}
           </p>
         )}
 
         {posts.length === 0 ? (
           <p className={styles.emptyText}>
-            {q ? "該当する怪談が見つかりませんでした。" : "キーワードを入力して検索してください。"}
+            {q ? dict.search.noResults : dict.story.searchPlaceholder}
           </p>
         ) : (
           <div className={styles.feed}>
             {posts.map((post) => {
-              const safeTitle = post.title ?? "無題";
+              const safeTitle = post.title ?? dict.story.untitled;
               const safeContent = post.content ?? "";
               const dateStr = post.created_at
-                ? new Date(post.created_at).toLocaleDateString("ja-JP")
-                : "日付不明";
+                ? new Date(post.created_at).toLocaleDateString(dateLocale)
+                : dict.story.unknownDate;
 
               return (
                 <Link
@@ -93,7 +119,7 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
 
                   <div className={styles.postContent}>
                     <div className={styles.postMeta}>
-                      <span className={styles.badge}>怪談</span>
+                      <span className={styles.badge}>{dict.story.label}</span>
                       <span className={styles.postDate}>{dateStr}</span>
                     </div>
                     <h3 className={styles.postTitle}>{safeTitle}</h3>
@@ -103,7 +129,7 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
                         : safeContent}
                     </p>
                     <div className={styles.postFooter}>
-                      <span>👁 {post.view_count ?? 0} 閲覧</span>
+                      <span>👁 {post.view_count ?? 0} {dict.story.views}</span>
                     </div>
                   </div>
 

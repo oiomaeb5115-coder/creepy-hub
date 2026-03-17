@@ -3,8 +3,30 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
-export default function PostBookmarkButton({ postId }: { postId: number }) {
+type Labels = {
+  loginRequired?: string;
+  save?: string;
+  saved?: string;
+  bookmark?: string;
+  unbookmark?: string;
+};
+
+export default function PostBookmarkButton({
+  postId,
+  labels,
+}: {
+  postId: number;
+  labels?: Labels;
+}) {
   const [bookmarked, setBookmarked] = useState(false);
+
+  const t = {
+    loginRequired: labels?.loginRequired ?? "ログインしてください",
+    save: labels?.save ?? "保存",
+    saved: labels?.saved ?? "保存済み",
+    bookmark: labels?.bookmark ?? "ブックマーク",
+    unbookmark: labels?.unbookmark ?? "ブックマーク解除",
+  };
 
   useEffect(() => {
     checkBookmark();
@@ -33,7 +55,7 @@ export default function PostBookmarkButton({ postId }: { postId: number }) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      alert("ログインしてください");
+      alert(t.loginRequired);
       return;
     }
 
@@ -58,8 +80,8 @@ export default function PostBookmarkButton({ postId }: { postId: number }) {
   return (
     <button
       onClick={toggleBookmark}
-      title={bookmarked ? "保存済み" : "保存"}
-      aria-label={bookmarked ? "ブックマーク解除" : "ブックマーク"}
+      title={bookmarked ? t.saved : t.save}
+      aria-label={bookmarked ? t.unbookmark : t.bookmark}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -90,7 +112,7 @@ export default function PostBookmarkButton({ postId }: { postId: number }) {
       }}
     >
       <span style={{ fontSize: "15px" }}>{bookmarked ? "★" : "☆"}</span>
-      {bookmarked ? "保存済み" : "保存"}
+      {bookmarked ? t.saved : t.save}
     </button>
   );
 }

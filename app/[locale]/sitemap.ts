@@ -3,8 +3,19 @@ import { supabase } from "@/lib/supabase";
 
 const baseUrl = "https://creepyhub.com";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export async function generateStaticParams() {
+  return [{ locale: "ja" }, { locale: "en" }];
+}
+
+export default async function sitemap({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<MetadataRoute.Sitemap> {
+  const locale = params?.locale ?? "ja";
+
   const [storiesResult, wikiResult] = await Promise.all([
+    // Stories are shared across locales (EN shows translated stories)
     supabase
       .from("post")
       .select("id, updated_at, created_at")
@@ -12,19 +23,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     supabase
       .from("wiki_pages")
       .select("slug, updated_at")
-      .eq("locale", "ja")
+      .eq("locale", locale)
       .eq("is_published", true),
   ]);
 
   const stories = (storiesResult.data ?? []).map((post) => ({
-    url: `${baseUrl}/ja/story/${post.id}`,
+    url: `${baseUrl}/${locale}/story/${post.id}`,
     lastModified: new Date(post.updated_at ?? post.created_at),
     changeFrequency: "weekly" as const,
     priority: 0.7,
   }));
 
   const wikiPages = (wikiResult.data ?? []).map((page) => ({
-    url: `${baseUrl}/ja/wiki/${page.slug}`,
+    url: `${baseUrl}/${locale}/wiki/${page.slug}`,
     lastModified: new Date(page.updated_at),
     changeFrequency: "weekly" as const,
     priority: 0.8,
@@ -32,19 +43,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     {
-      url: `${baseUrl}/ja`,
+      url: `${baseUrl}/${locale}`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1,
     },
     {
-      url: `${baseUrl}/ja/story`,
+      url: `${baseUrl}/${locale}/story`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/ja/wiki`,
+      url: `${baseUrl}/${locale}/wiki`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,

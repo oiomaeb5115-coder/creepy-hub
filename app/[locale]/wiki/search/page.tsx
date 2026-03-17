@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { getDictionary } from "@/lib/getDictionary";
 import styles from "../wiki.module.css";
 import BackButton from "@/components/BackButton";
 
@@ -21,6 +22,8 @@ type WikiPage = {
 export default async function WikiSearchPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const { q = "" } = await searchParams;
+  const dict = await getDictionary(locale);
+  const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
   const keyword = `%${q}%`;
 
@@ -44,11 +47,11 @@ export default async function WikiSearchPage({ params, searchParams }: Props) {
         <header className={styles.wikiHeader}>
           <div>
             <p className={styles.wikiBreadcrumb}>ARCHIVE / WIKI / SEARCH</p>
-            <h1 className={styles.wikiTitle}>Wiki 検索</h1>
+            <h1 className={styles.wikiTitle}>{dict.wiki.listTitle} — {dict.search.title}</h1>
           </div>
           <div className={styles.headerActions}>
-            <Link href={`/${locale}`} className={styles.topLink}>ホーム</Link>
-            <Link href={`/${locale}/wiki`} className={styles.topLink}>Wiki一覧</Link>
+            <Link href={`/${locale}`} className={styles.topLink}>{dict.wiki.home}</Link>
+            <Link href={`/${locale}/wiki`} className={styles.topLink}>{dict.wiki.listTitle}</Link>
           </div>
         </header>
 
@@ -57,29 +60,29 @@ export default async function WikiSearchPage({ params, searchParams }: Props) {
             type="text"
             name="q"
             defaultValue={q}
-            placeholder="Wikiを検索..."
+            placeholder={dict.wiki.searchPlaceholder}
             className={styles.searchInput}
           />
-          <button type="submit" className={styles.searchBtn}>検索</button>
+          <button type="submit" className={styles.searchBtn}>{dict.home.searchButton}</button>
         </form>
 
         {q && (
           <p style={{ margin: "0 0 16px", fontSize: 13, color: "#8a7870" }}>
-            「{q}」の検索結果：{pages.length} 件
+            &ldquo;{q}&rdquo; — {pages.length} {locale === "en" ? "results" : "件"}
           </p>
         )}
 
         <div className={styles.card}>
           {pages.length === 0 ? (
             <p className={styles.emptyText}>
-              {q ? "該当するWiki記事が見つかりませんでした。" : "キーワードを入力して検索してください。"}
+              {q ? dict.search.noResults : dict.wiki.searchPlaceholder}
             </p>
           ) : (
             <div className={styles.feed}>
               {pages.map((page) => {
                 const dateStr = page.updated_at
-                  ? new Date(page.updated_at).toLocaleDateString("ja-JP")
-                  : "日付不明";
+                  ? new Date(page.updated_at).toLocaleDateString(dateLocale)
+                  : dict.story.unknownDate;
 
                 return (
                   <Link
@@ -88,7 +91,9 @@ export default async function WikiSearchPage({ params, searchParams }: Props) {
                     className={styles.feedRow}
                   >
                     <div className={styles.feedLeft}>
-                      <span className={styles.typeBadge}>{page.page_type}</span>
+                      <span className={styles.typeBadge}>
+                        {dict.pageType[page.page_type as keyof typeof dict.pageType] ?? page.page_type}
+                      </span>
                     </div>
 
                     <div className={styles.feedContent}>

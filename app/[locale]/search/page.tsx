@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { searchAll } from "@/lib/search";
+import { getDictionary } from "@/lib/getDictionary";
 import SearchBox from "@/components/SearchBox";
 import BackButton from "@/components/BackButton";
 
@@ -29,6 +30,7 @@ export default async function SearchPage({
 }: SearchPageProps) {
   const { locale } = await params;
   const { q = "" } = await searchParams;
+  const dict = await getDictionary(locale);
 
   const { stories, wiki, storyError, wikiError } = q.trim()
     ? await searchAll(q.trim(), locale)
@@ -58,29 +60,29 @@ export default async function SearchPage({
           </p>
 
           <h1 style={{ margin: 0, fontSize: "clamp(34px, 5vw, 54px)" }}>
-            検索
+            {dict.search.title}
           </h1>
 
           <p style={{ marginTop: 12, color: "#a9b9cf" }}>
-            投稿とWikiをまとめて検索できます
+            {dict.search.placeholder}
           </p>
         </header>
 
         <div style={{ marginBottom: 28 }}>
-          <SearchBox locale={locale} />
+          <SearchBox locale={locale} placeholder={dict.common.searchPlaceholder} />
         </div>
 
         <p style={{ color: "#b8c5d7" }}>
-          検索語: {q.trim() ? q : "未入力"}
+          {q.trim() ? q : "—"}
         </p>
 
         <section style={{ marginTop: 30 }}>
-          <h2>Stories</h2>
+          <h2>{dict.search.storyResults}</h2>
 
           {storyError ? (
-            <p>Storiesの検索に失敗しました: {storyError.message}</p>
+            <p>{dict.search.noResults}</p>
           ) : stories.length === 0 ? (
-            <p>該当する投稿はありません。</p>
+            <p>{dict.search.noResults}</p>
           ) : (
             <div style={{ display: "grid", gap: 14 }}>
               {(stories as StoryRow[]).map((post) => (
@@ -97,7 +99,7 @@ export default async function SearchPage({
                     textDecoration: "none",
                   }}
                 >
-                  <h3 style={{ margin: "0 0 10px" }}>{post.title ?? "無題"}</h3>
+                  <h3 style={{ margin: "0 0 10px" }}>{post.title ?? dict.story.untitled}</h3>
                   <p style={{ margin: "0 0 10px", color: "#c8d3e4" }}>
                     {(post.content ?? "").slice(0, 120)}
                   </p>
@@ -111,12 +113,12 @@ export default async function SearchPage({
         </section>
 
         <section style={{ marginTop: 40 }}>
-          <h2>Wiki</h2>
+          <h2>{dict.search.wikiResults}</h2>
 
           {wikiError ? (
-            <p>Wikiの検索に失敗しました: {wikiError.message}</p>
+            <p>{dict.search.noResults}</p>
           ) : wiki.length === 0 ? (
-            <p>該当するWikiはありません。</p>
+            <p>{dict.search.noResults}</p>
           ) : (
             <div style={{ display: "grid", gap: 14 }}>
               {(wiki as WikiRow[]).map((item) => (
@@ -135,7 +137,7 @@ export default async function SearchPage({
                 >
                   <h3 style={{ margin: "0 0 10px" }}>{item.title}</h3>
                   <p style={{ margin: "0 0 10px", color: "#c8d3e4" }}>
-                    {item.summary ?? "概要はまだ設定されていません。"}
+                    {item.summary ?? dict.wiki.noSummary}
                   </p>
                   <span style={{ color: "#8ea4c2", fontSize: 13 }}>
                     👁 {item.view_count ?? 0}

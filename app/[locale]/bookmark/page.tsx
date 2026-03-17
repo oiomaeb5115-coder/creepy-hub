@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import en from "@/locales/en.json";
+import ja from "@/locales/ja.json";
 
 type BookmarkedPost = {
   post_id: number;
@@ -21,6 +23,7 @@ type BookmarkedPost = {
 export default function BookmarkPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
+  const dict = locale === "en" ? en : ja;
 
   const [loading, setLoading] = useState(true);
   const [bookmarks, setBookmarks] = useState<BookmarkedPost[]>([]);
@@ -73,7 +76,7 @@ export default function BookmarkPage() {
           className={styles.shell}
           style={{ paddingTop: 80, textAlign: "center", color: "#6a5858" }}
         >
-          読み込み中...
+          {dict.common.loading}
         </div>
       </main>
     );
@@ -89,18 +92,17 @@ export default function BookmarkPage() {
             <p className={styles.breadcrumb}>ACCOUNT / BOOKMARKS</p>
             <h1 className={styles.title}>Bookmarks</h1>
             <p className={styles.subtitle}>
-              保存した怪談（{bookmarks.length}件）
+              {dict.account.bookmarkSubtitle.replace("{count}", String(bookmarks.length))}
             </p>
           </div>
           <Link href={`/${locale}/account`} className={styles.topLink}>
-            プロフィールへ
+            {dict.account.backToProfile}
           </Link>
         </header>
 
         {bookmarks.length === 0 ? (
           <p className={styles.empty}>
-            まだ保存した怪談がありません。<br />
-            怪談のページで ☆ ボタンを押すと保存できます。
+            {dict.account.noBookmarks}
           </p>
         ) : (
           <div className={styles.feed}>
@@ -132,10 +134,10 @@ export default function BookmarkPage() {
                     )}
                     <div className={styles.cardBody}>
                       <div className={styles.cardMeta}>
-                        <span className={styles.badge}>怪談</span>
+                        <span className={styles.badge}>{dict.story.label}</span>
                       </div>
                       <h3 className={styles.cardTitle}>
-                        {bm.post.title ?? "無題"}
+                        {bm.post.title ?? dict.story.untitled}
                       </h3>
                       {excerpt && (
                         <p className={styles.cardExcerpt}>{excerpt}</p>
@@ -149,9 +151,9 @@ export default function BookmarkPage() {
                     className={styles.removeBtn}
                     onClick={() => removeBookmark(bm.post_id)}
                     disabled={removingId === bm.post_id}
-                    title="ブックマークを削除"
+                    title={dict.common.unbookmark}
                   >
-                    {removingId === bm.post_id ? "…" : "削除"}
+                    {removingId === bm.post_id ? "…" : dict.common.delete}
                   </button>
                 </div>
               );

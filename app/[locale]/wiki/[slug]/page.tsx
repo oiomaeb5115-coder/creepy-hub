@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import AutoLinkedWikiContent from "@/components/AutoLinkedwikiContent";
@@ -9,9 +10,51 @@ import BackButton from "@/components/BackButton";
 import TranslateButton from "@/components/TranslateButton";
 import WikiActionButtons from "@/components/WikiActionButtons";
 
+const BASE_URL = "https://creepyhub.com";
+
 type WikiDetailPageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };
+
+export async function generateMetadata({
+  params,
+}: WikiDetailPageProps): Promise<Metadata> {
+  const { locale, slug } = await params;
+
+  const { data: page } = await supabase
+    .from("wiki_pages")
+    .select("title, summary, image_url")
+    .eq("locale", locale)
+    .eq("slug", slug)
+    .eq("is_published", true)
+    .single();
+
+  if (!page) return {};
+
+  const title = page.title;
+  const description = page.summary ?? undefined;
+  const url = `${BASE_URL}/${locale}/wiki/${slug}`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+      languages: {
+        ja: `${BASE_URL}/ja/wiki/${slug}`,
+        en: `${BASE_URL}/en/wiki/${slug}`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "article",
+      locale: locale === "en" ? "en_US" : "ja_JP",
+      ...(page.image_url ? { images: [{ url: page.image_url }] } : {}),
+    },
+  };
+}
 
 type WikiPageRow = {
   id: number;
@@ -149,6 +192,13 @@ export default async function WikiDetailPage({
               slug={safePage.slug}
               authorId={safePage.author_id}
               locale={locale}
+              labels={{
+                edit: dict.common.edit,
+                delete: dict.common.delete,
+                deleting: dict.common.deleting,
+                deleteConfirm: dict.common.deleteConfirmWiki,
+                deleteFailed: dict.common.deleteFailed,
+              }}
             />
           </div>
         </header>

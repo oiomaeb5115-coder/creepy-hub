@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { getDictionary } from "@/lib/getDictionary";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 import WikiCategoryEditButton from "@/components/WikiCategoryEditButton";
@@ -42,6 +43,7 @@ export default async function WikiCategoryPage({
   params,
 }: WikiCategoryPageProps) {
   const { locale, slug } = await params;
+  const dict = await getDictionary(locale);
 
   const { data: category, error: categoryError } = await supabase
     .from("categories")
@@ -91,7 +93,7 @@ export default async function WikiCategoryPage({
         <div className={styles.heroImage}>
           <img
             src={safeCategory.header_image_url}
-            alt={`${safeCategory.name} ヘッダー画像`}
+            alt={safeCategory.name}
             className={styles.heroImg}
           />
           <div className={styles.heroOverlay} />
@@ -105,7 +107,7 @@ export default async function WikiCategoryPage({
             {safeCategory.icon_url && (
               <img
                 src={safeCategory.icon_url}
-                alt={`${safeCategory.name} アイコン`}
+                alt={`${safeCategory.name} icon`}
                 className={styles.categoryIcon}
               />
             )}
@@ -113,52 +115,74 @@ export default async function WikiCategoryPage({
               <p className={styles.categoryBreadcrumb}>OCCULT WIKI / CATEGORY</p>
               <h1 className={styles.categoryTitle}>{safeCategory.name}</h1>
               <p className={styles.categorySubtitle}>
-                {safeCategory.description ?? "このカテゴリの wiki 記事一覧です。"}
+                {safeCategory.description ?? dict.wiki.categoryDefaultDesc}
               </p>
             </div>
           </div>
 
           <div className={styles.headerActions}>
             <Link href={`/${locale}/wiki`} className={styles.topLink}>
-              Wiki 一覧
+              {dict.wiki.listTitle}
             </Link>
             <FavoriteCategoryButton
               type="wiki"
               slug={safeCategory.slug}
               name={safeCategory.name}
               locale={locale}
+              labels={{
+                unfavorite: dict.common.favoriteRemove,
+                favoriteAdd: dict.common.favoriteAdd,
+                favorite: dict.common.favorite,
+                unfavorited: dict.common.unfavorite,
+              }}
             />
             <WikiCategoryEditButton
               categoryId={safeCategory.id}
               createdBy={safeCategory.created_by}
               slug={safeCategory.slug}
               locale={locale}
+              label={dict.common.imageSettings}
             />
             {safeCategory.is_user_created && (
-              <WikiCategoryReportButton categoryId={safeCategory.id} />
+              <WikiCategoryReportButton
+                categoryId={safeCategory.id}
+                labels={{
+                  reportAccepted: dict.common.reportAccepted,
+                  reportLoginRequired: dict.common.reportLoginRequired,
+                  report: dict.common.report,
+                  reporting: dict.common.reporting,
+                  retry: dict.common.retry,
+                }}
+              />
             )}
             <CategoryDeleteButton
               categoryId={safeCategory.id}
               deleteApiPath={`/api/wiki-category/${safeCategory.id}/delete`}
               redirectTo={`/${locale}/wiki`}
+              labels={{
+                deleteConfirm: dict.common.deleteConfirmCategory,
+                deleteFailed: dict.common.deleteFailed,
+                deleting: dict.common.deleting,
+                deleted: dict.common.deleted,
+              }}
             />
           </div>
         </header>
 
         <section className={styles.cardSection}>
           <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>所属ページ</h2>
+            <h2 className={styles.sectionTitle}>{dict.wiki.categoryArticlesTitle}</h2>
             <p className={styles.sectionDescription}>
-              カテゴリ「{safeCategory.name}」に属する wiki 記事です。
+              {safeCategory.name}
             </p>
           </div>
 
           {wikiErrorMessage ? (
             <p className={styles.emptyText}>
-              記事の取得に失敗しました: {wikiErrorMessage}
+              {dict.wiki.categoryFetchFailed}{wikiErrorMessage}
             </p>
           ) : items.length === 0 ? (
-            <p className={styles.emptyText}>このカテゴリにはまだ記事がありません。</p>
+            <p className={styles.emptyText}>{dict.wiki.categoryEmptyInCat}</p>
           ) : (
             <div className={styles.postGrid}>
               {items.map((item) => (
@@ -193,7 +217,7 @@ export default async function WikiCategoryPage({
                       <h3 className={styles.postCardTitle}>{item.title}</h3>
 
                       <p className={styles.postCardExcerpt}>
-                        {item.summary ?? "概要はまだ設定されていません。"}
+                        {item.summary ?? dict.wiki.noSummary}
                       </p>
                     </div>
                   </article>

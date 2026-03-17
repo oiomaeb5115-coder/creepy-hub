@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import BackButton from "@/components/BackButton";
 import styles from "./page.module.css";
+import en from "@/locales/en.json";
+import ja from "@/locales/ja.json";
 
 type CategoryData = {
   id: number;
@@ -19,6 +21,7 @@ export default function CategoryEditPage() {
   const params = useParams<{ locale: string; slug: string }>();
   const locale = params?.locale ?? "ja";
   const slug = params?.slug ?? "";
+  const dict = locale === "en" ? en : ja;
   const router = useRouter();
 
   const [category, setCategory] = useState<CategoryData | null>(null);
@@ -133,7 +136,7 @@ export default function CategoryEditPage() {
         try {
           updateBody.icon_url = await uploadCategoryImage(iconFile, session.user.id, "icon");
         } catch {
-          setErrorMsg("アイコン画像のアップロードに失敗しました。");
+          setErrorMsg(dict.categoryEdit.errorIconUpload);
           return;
         }
       }
@@ -142,13 +145,13 @@ export default function CategoryEditPage() {
         try {
           updateBody.header_image_url = await uploadCategoryImage(headerFile, session.user.id, "header");
         } catch {
-          setErrorMsg("ヘッダー画像のアップロードに失敗しました。");
+          setErrorMsg(dict.categoryEdit.errorHeaderUpload);
           return;
         }
       }
 
       if (Object.keys(updateBody).length === 0) {
-        setErrorMsg("変更する画像を選択してください。");
+        setErrorMsg(dict.categoryEdit.errorNoChange);
         return;
       }
 
@@ -163,7 +166,7 @@ export default function CategoryEditPage() {
 
       const json = await res.json();
       if (!res.ok) {
-        setErrorMsg(json.error ?? "エラーが発生しました。");
+        setErrorMsg(json.error ?? dict.categoryEdit.errorGeneral);
         return;
       }
 
@@ -221,20 +224,20 @@ export default function CategoryEditPage() {
         <BackButton />
         <header className={styles.header}>
           <p className={styles.breadcrumb}>STORIES / CATEGORY / SETTINGS</p>
-          <h1 className={styles.title}>カテゴリ画像設定</h1>
+          <h1 className={styles.title}>{dict.categoryEdit.settingsTitle}</h1>
           <p className={styles.subtitle}>
-            「{category?.name}」のアイコンとヘッダー画像を設定します。
+            {dict.categoryEdit.settingsSubtitle.replace("{category}", category?.name ?? "")}
           </p>
         </header>
 
         {done ? (
           <div className={styles.successCard}>
-            <p className={styles.successTitle}>画像を更新しました</p>
+            <p className={styles.successTitle}>{dict.categoryEdit.successTitle}</p>
             <button
               className={styles.backBtn}
               onClick={() => router.push(`/${locale}/story/category/${slug}`)}
             >
-              カテゴリページへ戻る
+              {dict.categoryEdit.backToCategory}
             </button>
           </div>
         ) : (
@@ -243,18 +246,18 @@ export default function CategoryEditPage() {
 
             {/* アイコン設定 */}
             <div className={styles.formGroup}>
-              <label>アイコン画像<span className={styles.hint}>（正方形推奨・最大2MB）</span></label>
+              <label>{dict.categoryEdit.iconLabel}<span className={styles.hint}>{dict.categoryEdit.iconHint}</span></label>
               <div className={styles.imageRow}>
                 {iconPreview ? (
                   <div className={styles.iconPreviewWrap}>
-                    <img src={iconPreview} alt="アイコン" className={styles.iconPreview} />
+                    <img src={iconPreview} alt="icon" className={styles.iconPreview} />
                     {category?.icon_url && !iconFile && (
                       <button
                         type="button"
                         className={styles.removeBtn}
                         onClick={handleRemoveIcon}
                       >
-                        削除
+                        {dict.common.delete}
                       </button>
                     )}
                   </div>
@@ -268,24 +271,24 @@ export default function CategoryEditPage() {
                     className={styles.fileInput}
                     onChange={handleIconChange}
                   />
-                  <p className={styles.fileHint}>新しいファイルを選択して上書き</p>
+                  <p className={styles.fileHint}>{dict.categoryEdit.fileHint}</p>
                 </div>
               </div>
             </div>
 
             {/* ヘッダー画像設定 */}
             <div className={styles.formGroup}>
-              <label>ヘッダー画像<span className={styles.hint}>（横長推奨・最大5MB）</span></label>
+              <label>{dict.categoryEdit.headerLabel}<span className={styles.hint}>{dict.categoryEdit.headerHint}</span></label>
               {headerPreview ? (
                 <div className={styles.headerPreviewWrap}>
-                  <img src={headerPreview} alt="ヘッダー" className={styles.headerPreview} />
+                  <img src={headerPreview} alt="header" className={styles.headerPreview} />
                   {category?.header_image_url && !headerFile && (
                     <button
                       type="button"
                       className={styles.removeBtn}
                       onClick={handleRemoveHeader}
                     >
-                      削除
+                      {dict.common.delete}
                     </button>
                   )}
                 </div>
@@ -299,7 +302,7 @@ export default function CategoryEditPage() {
                 style={{ marginTop: "8px" }}
                 onChange={handleHeaderChange}
               />
-              <p className={styles.fileHint}>新しいファイルを選択して上書き</p>
+              <p className={styles.fileHint}>{dict.categoryEdit.fileHint}</p>
             </div>
 
             <button
@@ -307,7 +310,7 @@ export default function CategoryEditPage() {
               className={styles.submitBtn}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "保存中..." : "画像を保存する"}
+              {isSubmitting ? dict.categoryEdit.saving : dict.categoryEdit.saveBtn}
             </button>
           </form>
         )}

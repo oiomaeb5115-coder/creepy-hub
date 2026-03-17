@@ -6,6 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getIsAdmin, getAccessToken } from "@/lib/auth";
 import BackButton from "@/components/BackButton";
+import en from "@/locales/en.json";
+import ja from "@/locales/ja.json";
 
 type StoryRow = { id: number; title: string | null; created_at: string | null };
 type WikiRow = { slug: string; title: string; updated_at: string | null };
@@ -38,6 +40,8 @@ type TrashStatus = "idle" | "loading" | "restored" | "purged" | "error";
 export default function AdminPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
+  const dict = locale === "en" ? en : ja;
+  const dateLocale = locale === "en" ? "en-US" : "ja-JP";
   const router = useRouter();
 
   const [checking, setChecking] = useState(true);
@@ -262,7 +266,7 @@ export default function AdminPage() {
   };
 
   const deleteWikiCategory = async (categoryId: number) => {
-    if (!window.confirm("このWikiカテゴリを削除しますか？")) return;
+    if (!window.confirm(dict.admin.deleteWikiCatConfirm)) return;
     setWikiDeleteStatus((prev) => ({ ...prev, [categoryId]: "loading" }));
     try {
       const token = await getAccessToken();
@@ -282,7 +286,7 @@ export default function AdminPage() {
   };
 
   const deleteCategory = async (categoryId: number) => {
-    if (!window.confirm("このカテゴリを削除しますか？この操作は元に戻せません。")) return;
+    if (!window.confirm(dict.admin.deleteCatConfirm)) return;
     setDeleteStatus((prev) => ({ ...prev, [categoryId]: "loading" }));
     try {
       const token = await getAccessToken();
@@ -319,7 +323,7 @@ export default function AdminPage() {
   };
 
   const purgeStory = async (postId: number) => {
-    if (!window.confirm("完全に削除しますか？この操作は元に戻せません。")) return;
+    if (!window.confirm(dict.admin.purgeConfirm)) return;
     setTrashStoryStatus((prev) => ({ ...prev, [postId]: "loading" }));
     const token = await getAccessToken();
     const res = await fetch(`/api/story/${postId}/purge`, {
@@ -350,7 +354,7 @@ export default function AdminPage() {
   };
 
   const purgeWiki = async (slug: string) => {
-    if (!window.confirm("完全に削除しますか？この操作は元に戻せません。")) return;
+    if (!window.confirm(dict.admin.purgeConfirm)) return;
     setTrashWikiStatus((prev) => ({ ...prev, [slug]: "loading" }));
     const token = await getAccessToken();
     const res = await fetch(`/api/wiki/${slug}/purge`, {
@@ -381,7 +385,7 @@ export default function AdminPage() {
   };
 
   const purgeCategory = async (catId: number) => {
-    if (!window.confirm("完全に削除しますか？この操作は元に戻せません。")) return;
+    if (!window.confirm(dict.admin.purgeConfirm)) return;
     setTrashCatStatus((prev) => ({ ...prev, [catId]: "loading" }));
     const token = await getAccessToken();
     const res = await fetch(`/api/category/${catId}/purge`, {
@@ -405,7 +409,7 @@ export default function AdminPage() {
   if (checking) {
     return (
       <main style={pageStyle}>
-        <div style={shellStyle}>認証確認中...</div>
+        <div style={shellStyle}>{dict.admin.authChecking}</div>
       </main>
     );
   }
@@ -418,28 +422,28 @@ export default function AdminPage() {
         <header style={headerStyle}>
           <div>
             <p style={breadcrumbStyle}>ADMIN / DASHBOARD</p>
-            <h1 style={titleStyle}>管理者ダッシュボード</h1>
-            <p style={subtitleStyle}>翻訳・コンテンツ管理</p>
+            <h1 style={titleStyle}>{dict.admin.dashboard}</h1>
+            <p style={subtitleStyle}>{dict.admin.subtitle}</p>
           </div>
           <Link href={`/${locale}`} style={topLinkStyle}>
-            ホームへ
+            {dict.admin.homeLink}
           </Link>
         </header>
 
         {/* ストーリー翻訳 */}
         <section style={sectionStyle}>
           <h2 style={sectionTitleStyle}>
-            未翻訳ストーリー（{stories.length}件）
+            {dict.admin.untranslatedStories.replace("{count}", String(stories.length))}
           </h2>
           {stories.length === 0 ? (
-            <p style={emptyStyle}>すべて翻訳済みです</p>
+            <p style={emptyStyle}>{dict.admin.allTranslated}</p>
           ) : (
             <table style={tableStyle}>
               <thead>
                 <tr>
-                  <th style={thStyle}>タイトル</th>
-                  <th style={thStyle}>投稿日</th>
-                  <th style={thStyle}>操作</th>
+                  <th style={thStyle}>{dict.admin.titleCol}</th>
+                  <th style={thStyle}>{dict.admin.dateCol}</th>
+                  <th style={thStyle}>{dict.admin.actionCol}</th>
                 </tr>
               </thead>
               <tbody>
@@ -457,7 +461,7 @@ export default function AdminPage() {
                       </td>
                       <td style={tdStyle}>
                         {story.created_at
-                          ? new Date(story.created_at).toLocaleDateString("ja-JP")
+                          ? new Date(story.created_at).toLocaleDateString(dateLocale)
                           : "—"}
                       </td>
                       <td style={tdStyle}>
@@ -467,14 +471,14 @@ export default function AdminPage() {
                           onClick={() => translateStory(story.id)}
                         >
                           {st === "loading"
-                            ? "翻訳中..."
+                            ? dict.admin.translating
                             : st === "done"
-                            ? "完了"
+                            ? dict.admin.translated
                             : st === "exists"
-                            ? "翻訳済"
+                            ? dict.admin.alreadyTranslated
                             : st === "error"
-                            ? "再試行"
-                            : "英語翻訳"}
+                            ? dict.common.retry
+                            : dict.admin.translateBtn}
                         </button>
                       </td>
                     </tr>
@@ -488,17 +492,17 @@ export default function AdminPage() {
         {/* Wiki 翻訳 */}
         <section style={sectionStyle}>
           <h2 style={sectionTitleStyle}>
-            未翻訳 Wiki（{wikis.length}件）
+            {dict.admin.untranslatedWiki.replace("{count}", String(wikis.length))}
           </h2>
           {wikis.length === 0 ? (
-            <p style={emptyStyle}>すべて翻訳済みです</p>
+            <p style={emptyStyle}>{dict.admin.allTranslated}</p>
           ) : (
             <table style={tableStyle}>
               <thead>
                 <tr>
-                  <th style={thStyle}>タイトル</th>
-                  <th style={thStyle}>更新日</th>
-                  <th style={thStyle}>操作</th>
+                  <th style={thStyle}>{dict.admin.titleCol}</th>
+                  <th style={thStyle}>{dict.admin.updatedCol}</th>
+                  <th style={thStyle}>{dict.admin.actionCol}</th>
                 </tr>
               </thead>
               <tbody>
@@ -516,7 +520,7 @@ export default function AdminPage() {
                       </td>
                       <td style={tdStyle}>
                         {wiki.updated_at
-                          ? new Date(wiki.updated_at).toLocaleDateString("ja-JP")
+                          ? new Date(wiki.updated_at).toLocaleDateString(dateLocale)
                           : "—"}
                       </td>
                       <td style={tdStyle}>
@@ -526,14 +530,14 @@ export default function AdminPage() {
                           onClick={() => translateWiki(wiki.slug)}
                         >
                           {st === "loading"
-                            ? "翻訳中..."
+                            ? dict.admin.translating
                             : st === "done"
-                            ? "完了"
+                            ? dict.admin.translated
                             : st === "exists"
-                            ? "翻訳済"
+                            ? dict.admin.alreadyTranslated
                             : st === "error"
-                            ? "再試行"
-                            : "英語翻訳"}
+                            ? dict.common.retry
+                            : dict.admin.translateBtn}
                         </button>
                       </td>
                     </tr>
@@ -546,19 +550,19 @@ export default function AdminPage() {
         {/* 審査待ちカテゴリ */}
         <section style={sectionStyle}>
           <h2 style={sectionTitleStyle}>
-            審査待ちカテゴリ（{pendingCategories.length}件）
+            {dict.admin.pendingCats.replace("{count}", String(pendingCategories.length))}
           </h2>
           {pendingCategories.length === 0 ? (
-            <p style={emptyStyle}>審査待ちはありません</p>
+            <p style={emptyStyle}>{dict.admin.noPending}</p>
           ) : (
             <table style={tableStyle}>
               <thead>
                 <tr>
-                  <th style={thStyle}>カテゴリ名</th>
-                  <th style={thStyle}>slug</th>
-                  <th style={thStyle}>説明</th>
-                  <th style={thStyle}>申請日</th>
-                  <th style={thStyle}>操作</th>
+                  <th style={thStyle}>{dict.admin.catNameCol}</th>
+                  <th style={thStyle}>{dict.admin.slugCol}</th>
+                  <th style={thStyle}>{dict.admin.descCol}</th>
+                  <th style={thStyle}>{dict.admin.requestDateCol}</th>
+                  <th style={thStyle}>{dict.admin.actionCol}</th>
                 </tr>
               </thead>
               <tbody>
@@ -576,7 +580,7 @@ export default function AdminPage() {
                       <td style={tdStyle}>{cat.description ?? "—"}</td>
                       <td style={tdStyle}>
                         {cat.created_at
-                          ? new Date(cat.created_at).toLocaleDateString("ja-JP")
+                          ? new Date(cat.created_at).toLocaleDateString(dateLocale)
                           : "—"}
                       </td>
                       <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
@@ -588,19 +592,19 @@ export default function AdminPage() {
                           onClick={() => approveCategory(cat.id)}
                         >
                           {st === "loading"
-                            ? "処理中..."
+                            ? dict.admin.processing
                             : st === "done"
-                            ? "承認済"
+                            ? dict.admin.approved
                             : st === "error"
-                            ? "再試行"
-                            : "承認する"}
+                            ? dict.common.retry
+                            : dict.admin.approveBtn}
                         </button>
                         <button
                           style={deleteButtonStyle(dst)}
                           disabled={dst === "loading" || dst === "done" || st === "done"}
                           onClick={() => deleteCategory(cat.id)}
                         >
-                          {dst === "loading" ? "削除中..." : dst === "done" ? "削除済" : dst === "error" ? "再試行" : "削除"}
+                          {dst === "loading" ? dict.admin.deleting : dst === "done" ? dict.common.deleted : dst === "error" ? dict.common.retry : dict.admin.deleteBtn}
                         </button>
                       </td>
                     </tr>
@@ -614,19 +618,19 @@ export default function AdminPage() {
         {/* 審査待ち Wiki カテゴリ */}
         <section style={sectionStyle}>
           <h2 style={sectionTitleStyle}>
-            審査待ち Wiki カテゴリ（{pendingWikiCategories.length}件）
+            {dict.admin.pendingWikiCats.replace("{count}", String(pendingWikiCategories.length))}
           </h2>
           {pendingWikiCategories.length === 0 ? (
-            <p style={emptyStyle}>審査待ちはありません</p>
+            <p style={emptyStyle}>{dict.admin.noPending}</p>
           ) : (
             <table style={tableStyle}>
               <thead>
                 <tr>
-                  <th style={thStyle}>カテゴリ名</th>
-                  <th style={thStyle}>slug</th>
-                  <th style={thStyle}>説明</th>
-                  <th style={thStyle}>申請日</th>
-                  <th style={thStyle}>操作</th>
+                  <th style={thStyle}>{dict.admin.catNameCol}</th>
+                  <th style={thStyle}>{dict.admin.slugCol}</th>
+                  <th style={thStyle}>{dict.admin.descCol}</th>
+                  <th style={thStyle}>{dict.admin.requestDateCol}</th>
+                  <th style={thStyle}>{dict.admin.actionCol}</th>
                 </tr>
               </thead>
               <tbody>
@@ -644,7 +648,7 @@ export default function AdminPage() {
                       <td style={tdStyle}>{cat.description ?? "—"}</td>
                       <td style={tdStyle}>
                         {cat.created_at
-                          ? new Date(cat.created_at).toLocaleDateString("ja-JP")
+                          ? new Date(cat.created_at).toLocaleDateString(dateLocale)
                           : "—"}
                       </td>
                       <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
@@ -655,14 +659,14 @@ export default function AdminPage() {
                           disabled={st === "loading" || st === "done" || dst === "done"}
                           onClick={() => approveWikiCategory(cat.id)}
                         >
-                          {st === "loading" ? "処理中..." : st === "done" ? "承認済" : st === "error" ? "再試行" : "承認する"}
+                          {st === "loading" ? dict.admin.processing : st === "done" ? dict.admin.approved : st === "error" ? dict.common.retry : dict.admin.approveBtn}
                         </button>
                         <button
                           style={deleteButtonStyle(dst)}
                           disabled={dst === "loading" || dst === "done" || st === "done"}
                           onClick={() => deleteWikiCategory(cat.id)}
                         >
-                          {dst === "loading" ? "削除中..." : dst === "done" ? "削除済" : dst === "error" ? "再試行" : "削除"}
+                          {dst === "loading" ? dict.admin.deleting : dst === "done" ? dict.common.deleted : dst === "error" ? dict.common.retry : dict.admin.deleteBtn}
                         </button>
                       </td>
                     </tr>
@@ -676,18 +680,18 @@ export default function AdminPage() {
         {/* 報告されたカテゴリ */}
         <section style={sectionStyle}>
           <h2 style={sectionTitleStyle}>
-            報告されたカテゴリ（{reportedCategories.length}件）
+            {dict.admin.reportedCats.replace("{count}", String(reportedCategories.length))}
           </h2>
           {reportedCategories.length === 0 ? (
-            <p style={emptyStyle}>報告はありません</p>
+            <p style={emptyStyle}>{dict.admin.noReports}</p>
           ) : (
             <table style={tableStyle}>
               <thead>
                 <tr>
-                  <th style={thStyle}>カテゴリ名</th>
-                  <th style={thStyle}>slug</th>
-                  <th style={thStyle}>報告数</th>
-                  <th style={thStyle}>操作</th>
+                  <th style={thStyle}>{dict.admin.catNameCol}</th>
+                  <th style={thStyle}>{dict.admin.slugCol}</th>
+                  <th style={thStyle}>{dict.admin.reportCountCol}</th>
+                  <th style={thStyle}>{dict.admin.actionCol}</th>
                 </tr>
               </thead>
               <tbody>
@@ -710,14 +714,14 @@ export default function AdminPage() {
                           style={linkStyle}
                           target="_blank"
                         >
-                          確認する →
+                          {dict.admin.viewBtn}
                         </Link>
                         <button
                           style={deleteButtonStyle(dst)}
                           disabled={dst === "loading" || dst === "done"}
                           onClick={() => deleteCategory(cat.id)}
                         >
-                          {dst === "loading" ? "削除中..." : dst === "done" ? "削除済" : dst === "error" ? "再試行" : "削除"}
+                          {dst === "loading" ? dict.admin.deleting : dst === "done" ? dict.common.deleted : dst === "error" ? dict.common.retry : dict.admin.deleteBtn}
                         </button>
                       </td>
                     </tr>
@@ -731,25 +735,25 @@ export default function AdminPage() {
         {/* ゴミ箱 */}
         <section style={sectionStyle}>
           <h2 style={{ ...sectionTitleStyle, color: "#e0a0a0" }}>
-            ゴミ箱（ソフトデリート済み）
+            {dict.admin.trash}
           </h2>
           <p style={{ ...emptyStyle, marginBottom: 16 }}>
-            削除から3日以内は復元できます。3日経過後に自動的に完全削除されます。
+            {dict.admin.trashInfo}
           </p>
 
           {/* ゴミ箱: 投稿 */}
           {trashStories.length > 0 && (
             <div style={{ marginBottom: 32 }}>
               <p style={{ fontSize: 12, color: "#9a8a88", marginBottom: 8, letterSpacing: "0.08em" }}>
-                CREEPY POSTS（{trashStories.length}件）
+                {dict.admin.trashStoriesSec.replace("{count}", String(trashStories.length))}
               </p>
               <table style={tableStyle}>
                 <thead>
                   <tr>
-                    <th style={thStyle}>タイトル</th>
-                    <th style={thStyle}>削除日</th>
-                    <th style={thStyle}>残り</th>
-                    <th style={thStyle}>操作</th>
+                    <th style={thStyle}>{dict.admin.titleCol}</th>
+                    <th style={thStyle}>{dict.admin.deletedDateCol}</th>
+                    <th style={thStyle}>{dict.admin.remainingCol}</th>
+                    <th style={thStyle}>{dict.admin.actionCol}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -758,16 +762,16 @@ export default function AdminPage() {
                     return (
                       <tr key={s.id} style={trStyle}>
                         <td style={tdStyle}>{s.title ?? `#${s.id}`}</td>
-                        <td style={tdStyle}>{new Date(s.deleted_at).toLocaleDateString("ja-JP")}</td>
+                        <td style={tdStyle}>{new Date(s.deleted_at).toLocaleDateString(dateLocale)}</td>
                         <td style={{ ...tdStyle, color: daysLeft(s.deleted_at) === 0 ? "#e08080" : "#c8b8b0" }}>
-                          {daysLeft(s.deleted_at)}日
+                          {daysLeft(s.deleted_at)}{dict.admin.daysLeftUnit}
                         </td>
                         <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
                           <button style={restoreButtonStyle} disabled={st !== "idle"} onClick={() => restoreStory(s.id)}>
-                            {st === "loading" ? "処理中..." : st === "restored" ? "復元済" : st === "error" ? "エラー" : "復元"}
+                            {st === "loading" ? dict.admin.processing : st === "restored" ? dict.admin.restoredStatus : st === "error" ? dict.admin.errorStatus : dict.admin.restoreBtn}
                           </button>
                           <button style={purgeButtonStyle} disabled={st !== "idle"} onClick={() => purgeStory(s.id)}>
-                            {st === "purged" ? "削除済" : "完全削除"}
+                            {st === "purged" ? dict.admin.purgedStatus : dict.admin.purgeBtn}
                           </button>
                         </td>
                       </tr>
@@ -782,15 +786,15 @@ export default function AdminPage() {
           {trashWikis.length > 0 && (
             <div style={{ marginBottom: 32 }}>
               <p style={{ fontSize: 12, color: "#9a8a88", marginBottom: 8, letterSpacing: "0.08em" }}>
-                WIKI（{trashWikis.length}件）
+                {dict.admin.trashWikiSec.replace("{count}", String(trashWikis.length))}
               </p>
               <table style={tableStyle}>
                 <thead>
                   <tr>
-                    <th style={thStyle}>タイトル</th>
-                    <th style={thStyle}>削除日</th>
-                    <th style={thStyle}>残り</th>
-                    <th style={thStyle}>操作</th>
+                    <th style={thStyle}>{dict.admin.titleCol}</th>
+                    <th style={thStyle}>{dict.admin.deletedDateCol}</th>
+                    <th style={thStyle}>{dict.admin.remainingCol}</th>
+                    <th style={thStyle}>{dict.admin.actionCol}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -799,16 +803,16 @@ export default function AdminPage() {
                     return (
                       <tr key={w.slug} style={trStyle}>
                         <td style={tdStyle}>{w.title}</td>
-                        <td style={tdStyle}>{new Date(w.deleted_at).toLocaleDateString("ja-JP")}</td>
+                        <td style={tdStyle}>{new Date(w.deleted_at).toLocaleDateString(dateLocale)}</td>
                         <td style={{ ...tdStyle, color: daysLeft(w.deleted_at) === 0 ? "#e08080" : "#c8b8b0" }}>
-                          {daysLeft(w.deleted_at)}日
+                          {daysLeft(w.deleted_at)}{dict.admin.daysLeftUnit}
                         </td>
                         <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
                           <button style={restoreButtonStyle} disabled={st !== "idle"} onClick={() => restoreWiki(w.slug)}>
-                            {st === "loading" ? "処理中..." : st === "restored" ? "復元済" : st === "error" ? "エラー" : "復元"}
+                            {st === "loading" ? dict.admin.processing : st === "restored" ? dict.admin.restoredStatus : st === "error" ? dict.admin.errorStatus : dict.admin.restoreBtn}
                           </button>
                           <button style={purgeButtonStyle} disabled={st !== "idle"} onClick={() => purgeWiki(w.slug)}>
-                            {st === "purged" ? "削除済" : "完全削除"}
+                            {st === "purged" ? dict.admin.purgedStatus : dict.admin.purgeBtn}
                           </button>
                         </td>
                       </tr>
@@ -823,15 +827,15 @@ export default function AdminPage() {
           {trashCategories.length > 0 && (
             <div>
               <p style={{ fontSize: 12, color: "#9a8a88", marginBottom: 8, letterSpacing: "0.08em" }}>
-                カテゴリ（{trashCategories.length}件）
+                {dict.admin.trashCatSec.replace("{count}", String(trashCategories.length))}
               </p>
               <table style={tableStyle}>
                 <thead>
                   <tr>
-                    <th style={thStyle}>カテゴリ名</th>
-                    <th style={thStyle}>削除日</th>
-                    <th style={thStyle}>残り</th>
-                    <th style={thStyle}>操作</th>
+                    <th style={thStyle}>{dict.admin.catNameCol}</th>
+                    <th style={thStyle}>{dict.admin.deletedDateCol}</th>
+                    <th style={thStyle}>{dict.admin.remainingCol}</th>
+                    <th style={thStyle}>{dict.admin.actionCol}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -840,16 +844,16 @@ export default function AdminPage() {
                     return (
                       <tr key={c.id} style={trStyle}>
                         <td style={tdStyle}>{c.name}</td>
-                        <td style={tdStyle}>{new Date(c.deleted_at).toLocaleDateString("ja-JP")}</td>
+                        <td style={tdStyle}>{new Date(c.deleted_at).toLocaleDateString(dateLocale)}</td>
                         <td style={{ ...tdStyle, color: daysLeft(c.deleted_at) === 0 ? "#e08080" : "#c8b8b0" }}>
-                          {daysLeft(c.deleted_at)}日
+                          {daysLeft(c.deleted_at)}{dict.admin.daysLeftUnit}
                         </td>
                         <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
                           <button style={restoreButtonStyle} disabled={st !== "idle"} onClick={() => restoreCategory(c.id)}>
-                            {st === "loading" ? "処理中..." : st === "restored" ? "復元済" : st === "error" ? "エラー" : "復元"}
+                            {st === "loading" ? dict.admin.processing : st === "restored" ? dict.admin.restoredStatus : st === "error" ? dict.admin.errorStatus : dict.admin.restoreBtn}
                           </button>
                           <button style={purgeButtonStyle} disabled={st !== "idle"} onClick={() => purgeCategory(c.id)}>
-                            {st === "purged" ? "削除済" : "完全削除"}
+                            {st === "purged" ? dict.admin.purgedStatus : dict.admin.purgeBtn}
                           </button>
                         </td>
                       </tr>
@@ -861,7 +865,7 @@ export default function AdminPage() {
           )}
 
           {trashStories.length === 0 && trashWikis.length === 0 && trashCategories.length === 0 && (
-            <p style={emptyStyle}>ゴミ箱は空です</p>
+            <p style={emptyStyle}>{dict.admin.emptyTrash}</p>
           )}
         </section>
       </div>

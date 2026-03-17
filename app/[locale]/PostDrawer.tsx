@@ -185,6 +185,17 @@ export default function PostDrawer({ locale, labels }: Props) {
 
       if (error) { alert(`${labels.alertPostFailed}${error.message}`); return; }
 
+      // EN locale で投稿した場合、post_translations に EN 翻訳行を作成
+      // → EN版ストーリー一覧（post_translations!inner 結合）に表示されるようになる
+      if (locale === "en" && data) {
+        await supabase.from("post_translations").insert([{
+          post_id: data.id,
+          locale: "en",
+          title: title.trim(),
+          content: body.trim(),
+        }]);
+      }
+
       if (userId) localStorage.removeItem(`draft_post_${userId}`);
       setTitle(""); setBody(""); setTags(""); setCategoryId("");
       setMainImage1(null); setMainImage2(null); setMainImage3(null);

@@ -147,7 +147,11 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
   return (
     <main className={styles.wikiPage}>
       <div className={styles.pageLayout}>
-      <FavoriteSidebar type="wiki" locale={locale} />
+      <FavoriteSidebar
+        type="wiki"
+        locale={locale}
+        labels={{ title: dict.common.favoriteSidebar, empty: dict.common.favoriteNone }}
+      />
       <div className={styles.wikiShell}>
         <BackButton />
         <header className={styles.wikiHeader}>

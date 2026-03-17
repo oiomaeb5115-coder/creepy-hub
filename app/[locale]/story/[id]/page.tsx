@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import StoryImageGallery from "@/components/StoryImageGallery";
@@ -12,9 +13,65 @@ import BackButton from "@/components/BackButton";
 import TranslateButton from "@/components/TranslateButton";
 import StoryActionButtons from "@/components/StoryActionButtons";
 
+const BASE_URL = "https://creepyhub.com";
+
 type StoryPageProps = {
   params: Promise<{ locale: string; id: string }>;
 };
+
+export async function generateMetadata({
+  params,
+}: StoryPageProps): Promise<Metadata> {
+  const { locale, id } = await params;
+
+  const { data: post } = await supabase
+    .from("post")
+    .select("title, content, image_url")
+    .eq("id", id)
+    .eq("is_published", true)
+    .single();
+
+  if (!post) return {};
+
+  let title = post.title ?? undefined;
+  let description: string | undefined = post.content
+    ? post.content.slice(0, 120)
+    : undefined;
+
+  // EN の場合は翻訳タイトル・本文を優先
+  if (locale === "en") {
+    const { data: tr } = await supabase
+      .from("post_translations")
+      .select("title, content")
+      .eq("post_id", id)
+      .eq("locale", "en")
+      .single();
+    if (tr?.title) title = tr.title;
+    if (tr?.content) description = tr.content.slice(0, 120);
+  }
+
+  const url = `${BASE_URL}/${locale}/story/${id}`;
+
+  return {
+    title: title ?? undefined,
+    description,
+    alternates: {
+      canonical: url,
+      languages: {
+        ja: `${BASE_URL}/ja/story/${id}`,
+        en: `${BASE_URL}/en/story/${id}`,
+      },
+    },
+    openGraph: {
+      title: title ?? undefined,
+      description,
+      url,
+      type: "article",
+      locale: locale === "en" ? "en_US" : "ja_JP",
+      ...(post.image_url ? { images: [{ url: post.image_url }] } : {}),
+    },
+  };
+}
 
 type PostRow = {
   id: number;
@@ -193,8 +250,28 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
           {/* Reddit風アクションバー（画像の下） */}
           <div className={styles.storyActionBar}>
             <div className={styles.storyActionBarLeft}>
-              <PostVoteButtons postId={post.id} initialScore={initialScore} />
-              <PostBookmarkButton postId={post.id} />
+              <PostVoteButtons
+                postId={post.id}
+                initialScore={initialScore}
+                labels={{
+                  upvote: dict.common.upvote,
+                  downvote: dict.common.downvote,
+                  rateLoginRequired: dict.common.rateLoginRequired,
+                  rateRevokeFailed: dict.common.rateRevokeFailed,
+                  rateFailed: dict.common.rateFailed,
+                  rateChangeFailed: dict.common.rateChangeFailed,
+                }}
+              />
+              <PostBookmarkButton
+                postId={post.id}
+                labels={{
+                  loginRequired: dict.common.loginRequired,
+                  save: dict.common.save,
+                  saved: dict.common.saved,
+                  bookmark: dict.common.bookmark,
+                  unbookmark: dict.common.unbookmark,
+                }}
+              />
               <TranslateButton
                 type="story"
                 id={post.id}
@@ -206,6 +283,13 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                 postId={post.id}
                 authorId={post.user_id}
                 locale={locale}
+                labels={{
+                  edit: dict.common.edit,
+                  delete: dict.common.delete,
+                  deleting: dict.common.deleting,
+                  deleteConfirm: dict.common.deleteConfirmStory,
+                  deleteFailed: dict.common.deleteFailed,
+                }}
               />
             </div>
           </div>
@@ -228,7 +312,26 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
             })}
           </div>
 
-          <PostComments postId={post.id} />
+          <PostComments
+            postId={post.id}
+            locale={locale}
+            labels={{
+              comment: dict.common.comment,
+              commentSubtitle: dict.common.commentSubtitle,
+              commentWritePlaceholder: dict.common.commentWritePlaceholder,
+              commentLoginRequired: dict.common.commentLoginRequired,
+              commentPosting: dict.common.commentPosting,
+              commentSubmit: dict.common.commentSubmit,
+              commentLoading: dict.common.commentLoading,
+              noComments: dict.common.noComments,
+              deletedComment: dict.common.deletedComment,
+              reply: dict.common.reply,
+              replyPlaceholder: dict.common.replyPlaceholder,
+              cancel: dict.common.cancel,
+              replyPosting: dict.common.replyPosting,
+              replySubmit: dict.common.replySubmit,
+            }}
+          />
 
           <section style={{ marginTop: 30 }}>
             <h3>{dict.story.comments}</h3>

@@ -6,6 +6,8 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { getAccessToken, getIsAdmin } from "@/lib/auth";
 import BackButton from "@/components/BackButton";
+import en from "@/locales/en.json";
+import ja from "@/locales/ja.json";
 
 type Notification = {
   id: number;
@@ -33,6 +35,8 @@ type ProfileRow = {
 export default function NotificationsPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
+  const dict = locale === "en" ? en : ja;
+  const dateLocale = locale === "en" ? "en-US" : "ja-JP";
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -100,7 +104,7 @@ export default function NotificationsPage() {
           .in("id", postIds);
         const map: Record<number, string> = {};
         (posts ?? []).forEach((p: { id: number; title: string | null }) => {
-          map[p.id] = p.title ?? "投稿";
+          map[p.id] = p.title ?? dict.notifications.post;
         });
         setPostTitles(map);
       }
@@ -133,7 +137,7 @@ export default function NotificationsPage() {
   if (loading) {
     return (
       <main style={pageStyle}>
-        <div style={shellStyle}>読み込み中...</div>
+        <div style={shellStyle}>{dict.common.loading}</div>
       </main>
     );
   }
@@ -147,7 +151,7 @@ export default function NotificationsPage() {
           <p style={{ fontSize: 11, letterSpacing: "0.15em", color: "#7a6a60", margin: "0 0 4px" }}>
             ACCOUNT
           </p>
-          <h1 style={{ fontSize: 20, color: "#e8d8d0", margin: "0 0 16px" }}>プロフィール</h1>
+          <h1 style={{ fontSize: 20, color: "#e8d8d0", margin: "0 0 16px" }}>{dict.notifications.profileTitle}</h1>
 
           {/* Profile summary */}
           <div style={{
@@ -194,20 +198,20 @@ export default function NotificationsPage() {
                   href={`/${locale}/admin`}
                   style={{ fontSize: 11, color: "#e8a0a0", textDecoration: "none", letterSpacing: "0.05em" }}
                 >
-                  管理画面 →
+                  {dict.notifications.adminLink}
                 </Link>
               )}
               <Link
                 href={profile?.username ? `/${locale}/u/${profile.username}` : `/${locale}/account`}
                 style={{ fontSize: 11, color: "#b08888", textDecoration: "none", letterSpacing: "0.05em" }}
               >
-                公開ページ →
+                {dict.notifications.publicPage}
               </Link>
               <Link
                 href={`/${locale}/account/settings`}
                 style={{ fontSize: 11, color: "#8899bb", textDecoration: "none", letterSpacing: "0.05em" }}
               >
-                設定 →
+                {dict.notifications.settingsLink}
               </Link>
             </div>
           </div>
@@ -217,20 +221,20 @@ export default function NotificationsPage() {
           <p style={{ fontSize: 11, letterSpacing: "0.15em", color: "#7a6a60", margin: "0 0 4px" }}>
             NOTIFICATIONS
           </p>
-          <h2 style={{ fontSize: 16, color: "#e8d8d0", margin: 0 }}>通知</h2>
+          <h2 style={{ fontSize: 16, color: "#e8d8d0", margin: 0 }}>{dict.notifications.heading}</h2>
         </header>
 
         {/* Admin: pending categories */}
         {isAdmin && pendingCategories.length > 0 && (
           <section style={sectionStyle}>
             <h2 style={sectionTitleStyle}>
-              審査待ちカテゴリ（{pendingCategories.length}件）
+              {dict.notifications.pendingCatsSection.replace("{count}", String(pendingCategories.length))}
             </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {pendingCategories.map((cat) => (
                 <div key={cat.id} style={notifItemStyle(true)}>
                   <span style={{ color: "#e0c8c0", fontSize: 14 }}>
-                    新しいカテゴリが審査を待っています：
+                    {dict.notifications.newCategoryAwaiting}
                     <strong style={{ marginLeft: 6 }}>{cat.name}</strong>
                   </span>
                   <div
@@ -243,14 +247,14 @@ export default function NotificationsPage() {
                   >
                     <span style={{ color: "#7a6a60", fontSize: 11 }}>
                       {cat.created_at
-                        ? new Date(cat.created_at).toLocaleString("ja-JP")
+                        ? new Date(cat.created_at).toLocaleString(dateLocale)
                         : "—"}
                     </span>
                     <Link
                       href={`/${locale}/admin`}
                       style={{ color: "#b08888", fontSize: 12, textDecoration: "none" }}
                     >
-                      → 審査する
+                      {dict.notifications.reviewLink}
                     </Link>
                   </div>
                 </div>
@@ -261,17 +265,17 @@ export default function NotificationsPage() {
 
         {/* User notifications */}
         <section style={sectionStyle}>
-          <h2 style={sectionTitleStyle}>コメント・返信</h2>
+          <h2 style={sectionTitleStyle}>{dict.notifications.commentsSection}</h2>
 
           {notifications.length === 0 ? (
             <p style={{ color: "#7a6a60", fontSize: 13, fontStyle: "italic" }}>
-              通知はありません
+              {dict.notifications.noNotifications}
             </p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {notifications.map((n) => {
-                const actor = n.actor_id ? actorNames[n.actor_id] ?? "誰か" : "誰か";
-                const postTitle = n.post_id ? postTitles[n.post_id] ?? "投稿" : "投稿";
+                const actor = n.actor_id ? actorNames[n.actor_id] ?? dict.notifications.someone : dict.notifications.someone;
+                const postTitle = n.post_id ? postTitles[n.post_id] ?? dict.notifications.post : dict.notifications.post;
 
                 return (
                   <div key={n.id} style={notifItemStyle(!n.is_read)}>
@@ -279,12 +283,12 @@ export default function NotificationsPage() {
                       {n.type === "comment" ? (
                         <>
                           <strong style={{ color: "#cfe0ff" }}>@{actor}</strong>{" "}
-                          が「{postTitle}」にコメントしました
+                          {dict.notifications.commentedFull.replace("{post}", postTitle)}
                         </>
                       ) : (
                         <>
                           <strong style={{ color: "#cfe0ff" }}>@{actor}</strong>{" "}
-                          があなたのコメントに返信しました
+                          {dict.notifications.repliedFull}
                         </>
                       )}
                     </span>
@@ -297,14 +301,14 @@ export default function NotificationsPage() {
                       }}
                     >
                       <span style={{ color: "#7a6a60", fontSize: 11 }}>
-                        {new Date(n.created_at).toLocaleString("ja-JP")}
+                        {new Date(n.created_at).toLocaleString(dateLocale)}
                       </span>
                       {n.post_id && (
                         <Link
                           href={`/${locale}/story/${n.post_id}`}
                           style={{ color: "#b08888", fontSize: 12, textDecoration: "none" }}
                         >
-                          → 投稿を見る
+                          {dict.notifications.viewPost}
                         </Link>
                       )}
                     </div>

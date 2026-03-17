@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { getDictionary } from "@/lib/getDictionary";
 import { getStoryTagBySlug } from "@/lib/tags";
 import BackButton from "@/components/BackButton";
 
@@ -26,6 +27,7 @@ type PostRow = {
 
 export default async function StoryTagPage({ params }: TagPageProps) {
   const { locale, slug } = await params;
+  const dict = await getDictionary(locale);
 
   const { data: tagData } = await getStoryTagBySlug(slug);
   const tag = tagData as TagRow | null;
@@ -39,16 +41,34 @@ export default async function StoryTagPage({ params }: TagPageProps) {
 
   const postIds = (joins ?? []).map((row: any) => row.post_id);
 
-  const { data: postsData } =
-    postIds.length > 0
-      ? await supabase
-          .from("post")
-          .select("id, title, content, image_url, view_count, created_at")
-          .eq("is_published", true)
-          .in("id", postIds)
-      : { data: [] };
+  let posts: PostRow[] = [];
 
-  const posts = (postsData ?? []) as PostRow[];
+  if (postIds.length > 0) {
+    if (locale === "en") {
+      const { data } = await supabase
+        .from("post")
+        .select("id, title, content, image_url, view_count, created_at, post_translations!inner(title, content)")
+        .eq("is_published", true)
+        .eq("post_translations.locale", "en")
+        .in("id", postIds);
+
+      posts = (data ?? []).map((p: any) => ({
+        id: p.id,
+        title: p.post_translations?.[0]?.title ?? p.title,
+        content: p.post_translations?.[0]?.content ?? p.content,
+        image_url: p.image_url,
+        view_count: p.view_count,
+        created_at: p.created_at,
+      }));
+    } else {
+      const { data } = await supabase
+        .from("post")
+        .select("id, title, content, image_url, view_count, created_at")
+        .eq("is_published", true)
+        .in("id", postIds);
+      posts = (data ?? []) as PostRow[];
+    }
+  }
 
   return (
     <main
@@ -62,11 +82,11 @@ export default async function StoryTagPage({ params }: TagPageProps) {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <BackButton />
         <h1>#{tag.name}</h1>
-        <p>{tag.description ?? "タグ付き投稿一覧です。"}</p>
+        <p>{tag.description ?? dict.tag.stories}</p>
 
         <div style={{ display: "grid", gap: 14, marginTop: 28 }}>
           {posts.length === 0 ? (
-            <p>このタグの投稿はまだありません。</p>
+            <p>{dict.tag.noStories}</p>
           ) : (
             posts.map((post) => (
               <Link
@@ -82,7 +102,7 @@ export default async function StoryTagPage({ params }: TagPageProps) {
                   textDecoration: "none",
                 }}
               >
-                <h3 style={{ margin: "0 0 10px" }}>{post.title ?? "無題"}</h3>
+                <h3 style={{ margin: "0 0 10px" }}>{post.title ?? dict.story.untitled}</h3>
                 <p style={{ margin: "0 0 10px", color: "#c8d3e4" }}>
                   {(post.content ?? "").slice(0, 120)}
                 </p>
