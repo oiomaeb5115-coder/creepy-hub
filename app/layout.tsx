@@ -4,14 +4,14 @@ import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
   title: {
-    default: "creepy.hub | イナクロ怪集部",
-    template: "%s | creepy.hub",
+    default: "creepy hub | イナクロ怪集部",
+    template: "%s | creepy hub",
   },
   description:
     "イナクロ怪集部が運営する怪談・都市伝説・オカルト情報サイト。怖い話の投稿・閲覧や、オカルトWikiが楽しめます。",
   keywords: [
     "イナクロ怪集部",
-    "creepy.hub",
+    "creepy hub",
     "怪談",
     "都市伝説",
     "オカルト",
@@ -27,14 +27,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "ja_JP",
-    siteName: "creepy.hub",
-    title: "creepy.hub | イナクロ怪集部",
+    siteName: "creepy hub",
+    title: "creepy hub | イナクロ怪集部",
     description:
       "イナクロ怪集部が運営する怪談・都市伝説・オカルト情報サイト。",
   },
   twitter: {
     card: "summary_large_image",
-    title: "creepy.hub | イナクロ怪集部",
+    title: "creepy hub | イナクロ怪集部",
     description:
       "イナクロ怪集部が運営する怪談・都市伝説・オカルト情報サイト。",
     creator: "@inakuro_kaishuu",
