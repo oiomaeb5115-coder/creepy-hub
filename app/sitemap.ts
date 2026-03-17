@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next'
 
-const BASE_URL = 'https://creepy-hub.vercel.app'
+const BASE_URL = 'https://creepyhub.com'
 const locales = ['ja', 'en']
 
 export default function sitemap(): MetadataRoute.Sitemap {

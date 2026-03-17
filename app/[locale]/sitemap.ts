@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { supabase } from "@/lib/supabase";
 
-const baseUrl = "https://creepy-hub.vercel.app";
+const baseUrl = "https://creepyhub.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [storiesResult, wikiResult] = await Promise.all([

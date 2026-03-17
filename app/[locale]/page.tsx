@@ -340,7 +340,7 @@ export default async function HomePage({ params }: HomePageProps) {
           <div className={styles.heroInner}>
             <div className={styles.siteTitleWrap}>
               <h1 className={styles.siteTitleText}>
-                CREEPY<span className={styles.siteTitleDot}>.</span>HUB
+                CREEPY HUB
               </h1>
             </div>
 

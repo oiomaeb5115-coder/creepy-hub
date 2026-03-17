@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://creepy.hub/sitemap.xml
+Sitemap: https://creepyhub.com/sitemap.xml
+Sitemap: https://creepyhub.com/ja/sitemap.xml
