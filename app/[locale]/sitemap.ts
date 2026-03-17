@@ -7,12 +7,10 @@ export async function generateStaticParams() {
   return [{ locale: "ja" }, { locale: "en" }];
 }
 
-export default async function sitemap({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<MetadataRoute.Sitemap> {
-  const { locale } = await params;
+export default async function sitemap(
+  props?: { params?: { locale: string } }
+): Promise<MetadataRoute.Sitemap> {
+  const locale = props?.params?.locale ?? "ja";
 
   const [storiesResult, wikiResult] = await Promise.all([
     // Stories are shared across locales (EN shows translated stories)
