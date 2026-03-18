@@ -37,6 +37,8 @@
   color: rgba(245, 241, 235, 0.88);
   font-family: "装甲明朝", "Soukou Mincho", "Palatino Linotype", "Palatino", "Book Antiqua", serif;
   font-weight: 400;
+  text-align: center;
+  width: 100%;
 }
 
 .bottomNavLabelJa {
@@ -44,6 +46,8 @@
   letter-spacing: 0.1em;
   color: rgba(245, 241, 235, 0.45);
   font-family: "装甲明朝", "Soukou Mincho", serif;
+  text-align: center;
+  width: 100%;
 }
 
 .floatingPostButton {

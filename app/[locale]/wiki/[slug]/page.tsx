@@ -158,17 +158,11 @@ export default async function WikiDetailPage({
       <div className={styles.wikiShell}>
         <BackButton />
         <header className={styles.wikiHeader}>
-          <div>
+          <div className={styles.wikiHeaderTop}>
             <p className={styles.wikiBreadcrumb}>
               ARCHIVE / WIKI / {safePage.page_type.toUpperCase()}
             </p>
-            <h1 className={styles.wikiTitle}>{safePage.title}</h1>
-            <p className={styles.wikiSubtitle}>
-              {safePage.subtitle ?? "Wiki"}
-            </p>
-          </div>
-
-          <div className={styles.headerActions}>
+            <div className={styles.headerActions}>
             <Link href={`/${locale}/wiki`} className={styles.topLink}>
               {dict.wiki.listTitle}
             </Link>
@@ -200,6 +194,13 @@ export default async function WikiDetailPage({
                 deleteFailed: dict.common.deleteFailed,
               }}
             />
+            </div>
+          </div>
+          <div className={styles.wikiTitleRow}>
+            <h1 className={styles.wikiTitle}>{safePage.title}</h1>
+            <p className={styles.wikiSubtitle}>
+              {safePage.subtitle ?? "Wiki"}
+            </p>
           </div>
         </header>
 
