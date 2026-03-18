@@ -206,7 +206,7 @@ export default async function WikiDetailPage({
         <section className={styles.card}>
           <div className={styles.metaRow}>
             <span className={styles.badge}>{pageTypeLabel}</span>
-            <span className={styles.badge}>{dict.story.views}: {displayedViewCount}</span>
+            <span className={styles.badge}>{dict.post.views}: {displayedViewCount}</span>
             <span className={styles.badge}>
               {safePage.updated_at
                 ? new Date(safePage.updated_at).toLocaleDateString(dateLocale)

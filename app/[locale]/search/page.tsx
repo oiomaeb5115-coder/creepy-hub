@@ -88,7 +88,7 @@ export default async function SearchPage({
               {(stories as StoryRow[]).map((post) => (
                 <Link
                   key={post.id}
-                  href={`/${locale}/story/${post.id}`}
+                  href={`/${locale}/post/${post.id}`}
                   style={{
                     display: "block",
                     padding: "16px",
@@ -99,7 +99,7 @@ export default async function SearchPage({
                     textDecoration: "none",
                   }}
                 >
-                  <h3 style={{ margin: "0 0 10px" }}>{post.title ?? dict.story.untitled}</h3>
+                  <h3 style={{ margin: "0 0 10px" }}>{post.title ?? dict.post.untitled}</h3>
                   <p style={{ margin: "0 0 10px", color: "#c8d3e4" }}>
                     {(post.content ?? "").slice(0, 120)}
                   </p>

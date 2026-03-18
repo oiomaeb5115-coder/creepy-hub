@@ -20,7 +20,7 @@ type Props = {
   labels?: Labels;
 };
 
-export default function StoryActionButtons({ postId, authorId, locale, labels }: Props) {
+export default function PostActionButtons({ postId, authorId, locale, labels }: Props) {
   const [canEdit, setCanEdit] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
@@ -51,7 +51,7 @@ export default function StoryActionButtons({ postId, authorId, locale, labels }:
     setDeleting(true);
     try {
       const token = await getAccessToken();
-      const res = await fetch(`/api/story/${postId}`, {
+      const res = await fetch(`/api/post/${postId}`, {
         method: "DELETE",
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       });
@@ -69,7 +69,7 @@ export default function StoryActionButtons({ postId, authorId, locale, labels }:
 
   return (
     <div style={{ display: "flex", gap: 8 }}>
-      <a href={`/${locale}/story/${postId}/edit`} style={editStyle}>
+      <a href={`/${locale}/post/${postId}/edit`} style={editStyle}>
         {t.edit}
       </a>
       <button

@@ -41,7 +41,7 @@ export default function TranslateButton({
   // 英語版が存在する場合は言語切り替えリンクを表示（全ユーザー向け）
   if (locale === "ja" && hasTranslation) {
     const href =
-      type === "story" ? `/en/story/${id}` : `/en/wiki/${slug}`;
+      type === "story" ? `/en/post/${id}` : `/en/wiki/${slug}`;
     return (
       <a href={href} style={linkStyle}>
         {labels.viewInEnglish}
@@ -51,7 +51,7 @@ export default function TranslateButton({
 
   if (locale === "en") {
     const href =
-      type === "story" ? `/ja/story/${id}` : `/ja/wiki/${slug}`;
+      type === "story" ? `/ja/post/${id}` : `/ja/wiki/${slug}`;
     return (
       <a href={href} style={linkStyle}>
         {labels.viewInJapanese}

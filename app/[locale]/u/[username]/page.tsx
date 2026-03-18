@@ -146,7 +146,7 @@ export default function UserProfilePage() {
 
           <div className={styles.feed}>
             {posts.map((post) => {
-              const safeTitle = post.title ?? dict.story.untitled;
+              const safeTitle = post.title ?? dict.post.untitled;
               const safeContent = post.content ?? "";
               const excerpt = safeContent.length > 20
                 ? `${safeContent.slice(0, 20)}…`
@@ -155,7 +155,7 @@ export default function UserProfilePage() {
               return (
                 <Link
                   key={post.id}
-                  href={`/${locale}/story/${post.id}`}
+                  href={`/${locale}/post/${post.id}`}
                   className={styles.postRow}
                 >
                   <div className={styles.thumbCol}>
@@ -172,7 +172,7 @@ export default function UserProfilePage() {
 
                   <div className={styles.postContent}>
                     <div className={styles.tagRow}>
-                      <span className={styles.badge}>{dict.story.label}</span>
+                      <span className={styles.badge}>{dict.post.label}</span>
                     </div>
                     <h3 className={styles.postTitle}>{safeTitle}</h3>
                     {excerpt && (

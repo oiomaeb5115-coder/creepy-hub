@@ -50,7 +50,7 @@ export default function StoryEditPage() {
 
       const isAuthor = post.user_id === session.user.id;
       const isAdmin = await getIsAdmin();
-      if (!isAuthor && !isAdmin) { router.replace(`/${locale}/story/${postId}`); return; }
+      if (!isAuthor && !isAdmin) { router.replace(`/${locale}/post/${postId}`); return; }
 
       setAuthorized(true);
       setTitle(post.title ?? "");
@@ -92,7 +92,7 @@ export default function StoryEditPage() {
         .join("\n\n");
 
       const token = await getAccessToken();
-      const res = await fetch(`/api/story/${postId}`, {
+      const res = await fetch(`/api/post/${postId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -110,7 +110,7 @@ export default function StoryEditPage() {
         alert(`更新失敗: ${json.error ?? res.statusText}`);
         return;
       }
-      router.push(`/${locale}/story/${postId}`);
+      router.push(`/${locale}/post/${postId}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -135,7 +135,7 @@ export default function StoryEditPage() {
             <p style={breadcrumbStyle}>ARCHIVE / STORY / EDIT</p>
             <h1 style={titleStyle}>記事を編集</h1>
           </div>
-          <Link href={`/${locale}/story/${postId}`} style={linkStyle}>キャンセル</Link>
+          <Link href={`/${locale}/post/${postId}`} style={linkStyle}>キャンセル</Link>
         </header>
 
         <section style={cardStyle}>

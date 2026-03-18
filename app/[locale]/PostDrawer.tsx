@@ -201,7 +201,7 @@ export default function PostDrawer({ locale, labels }: Props) {
       setMainImage1(null); setMainImage2(null); setMainImage3(null);
       setDraftRestored(false);
       setIsOpen(false);
-      window.location.href = `/${locale}/story/${data.id}`;
+      window.location.href = `/${locale}/post/${data.id}`;
     } catch {
       // already alerted
     } finally {

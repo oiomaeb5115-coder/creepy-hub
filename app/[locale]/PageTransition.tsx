@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./page-transition.module.css";
 
 // ナビバーのタブ順序。左のタブ → 右のタブへの移動は右スライド、逆は左スライド
-const NAV_ORDER = ["/", "/story", "/wiki", "/u", "/account", "/notifications", "/login", "/register"];
+const NAV_ORDER = ["/", "/post", "/wiki", "/u", "/account", "/notifications", "/login", "/register"];
 
 function getNavIndex(pathname: string, locale: string): number {
   const stripped = pathname.replace(`/${locale}`, "") || "/";

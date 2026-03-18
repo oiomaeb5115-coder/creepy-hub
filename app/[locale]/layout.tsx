@@ -76,7 +76,7 @@ export default async function LocaleLayout({
           </span>
         </Link>
 
-        <Link href={`/${locale}/story`} className={styles.bottomNavItem}>
+        <Link href={`/${locale}/post`} className={styles.bottomNavItem}>
           <span className={styles.bottomNavLabel}>
             <span className={styles.bottomNavLabelEn}>CREEPY POSTS</span>
             <span className={styles.bottomNavLabelJa}>{dict.nav.stories}</span>

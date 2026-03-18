@@ -121,7 +121,7 @@ export default async function StoryCategoryPage({
               <p className={styles.categoryBreadcrumb}>STORIES / CATEGORY</p>
               <h1 className={styles.categoryTitle}>{categoryName}</h1>
               <p className={styles.categorySubtitle}>
-                {category.description ?? `${categoryName} — ${dict.story.label}`}
+                {category.description ?? `${categoryName} — ${dict.post.label}`}
               </p>
             </div>
           </div>
@@ -164,7 +164,7 @@ export default async function StoryCategoryPage({
             <CategoryDeleteButton
               categoryId={category.id}
               deleteApiPath={`/api/category/${category.id}/delete`}
-              redirectTo={`/${locale}/story`}
+              redirectTo={`/${locale}/post`}
               labels={{
                 deleteConfirm: dict.common.deleteConfirmCategory,
                 deleteFailed: dict.common.deleteFailed,
@@ -177,24 +177,24 @@ export default async function StoryCategoryPage({
 
         <section className={styles.cardSection}>
           <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>{dict.story.label}</h2>
+            <h2 className={styles.sectionTitle}>{dict.post.label}</h2>
             <p className={styles.sectionDescription}>
               {categoryName}
             </p>
           </div>
 
           {posts.length === 0 ? (
-            <p className={styles.emptyText}>{dict.story.empty}</p>
+            <p className={styles.emptyText}>{dict.post.empty}</p>
           ) : (
             <div className={styles.postGrid}>
               {posts.map((post) => {
-                const safeTitle = post.title ?? dict.story.untitled;
+                const safeTitle = post.title ?? dict.post.untitled;
                 const safeContent = post.content ?? "";
                 const safeCreatedAt = post.created_at ?? "";
 
                 return (
                   <Link
-                    href={`/${locale}/story/${post.id}`}
+                    href={`/${locale}/post/${post.id}`}
                     key={post.id}
                     className={styles.postCardLink}
                   >
@@ -221,7 +221,7 @@ export default async function StoryCategoryPage({
                           <span className={styles.postCardDate}>
                             {safeCreatedAt
                               ? new Date(safeCreatedAt).toLocaleDateString(dateLocale)
-                              : dict.story.unknownDate}
+                              : dict.post.unknownDate}
                           </span>
                         </div>
 
@@ -235,7 +235,7 @@ export default async function StoryCategoryPage({
 
                         <div className={styles.postCardFooter}>
                           <span className={styles.postCardViews}>
-                            {dict.story.views}: {post.view_count ?? 0}
+                            {dict.post.views}: {post.view_count ?? 0}
                           </span>
                         </div>
                       </div>

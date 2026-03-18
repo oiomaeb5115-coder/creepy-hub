@@ -310,7 +310,7 @@ export default function AdminPage() {
   const restoreStory = async (postId: number) => {
     setTrashStoryStatus((prev) => ({ ...prev, [postId]: "loading" }));
     const token = await getAccessToken();
-    const res = await fetch(`/api/story/${postId}/restore`, {
+    const res = await fetch(`/api/post/${postId}/restore`, {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
@@ -326,7 +326,7 @@ export default function AdminPage() {
     if (!window.confirm(dict.admin.purgeConfirm)) return;
     setTrashStoryStatus((prev) => ({ ...prev, [postId]: "loading" }));
     const token = await getAccessToken();
-    const res = await fetch(`/api/story/${postId}/purge`, {
+    const res = await fetch(`/api/post/${postId}/purge`, {
       method: "DELETE",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
@@ -453,7 +453,7 @@ export default function AdminPage() {
                     <tr key={story.id} style={trStyle}>
                       <td style={tdStyle}>
                         <Link
-                          href={`/${locale}/story/${story.id}`}
+                          href={`/${locale}/post/${story.id}`}
                           style={linkStyle}
                         >
                           {story.title ?? `#${story.id}`}
@@ -710,7 +710,7 @@ export default function AdminPage() {
                       </td>
                       <td style={{ ...tdStyle, display: "flex", gap: 8, alignItems: "center" }}>
                         <Link
-                          href={`/${locale}/story/category/${cat.slug}`}
+                          href={`/${locale}/post/category/${cat.slug}`}
                           style={linkStyle}
                           target="_blank"
                         >

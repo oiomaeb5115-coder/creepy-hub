@@ -68,20 +68,20 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
         <header className={styles.pageHeader}>
           <div>
             <p className={styles.breadcrumb}>HORROR POST / SEARCH</p>
-            <h1 className={styles.pageTitle}>{dict.story.headerTitle} — {dict.search.title}</h1>
+            <h1 className={styles.pageTitle}>{dict.post.headerTitle} — {dict.search.title}</h1>
           </div>
           <div className={styles.headerActions}>
             <Link href={`/${locale}`} className={styles.topLink}>{dict.common.home}</Link>
-            <Link href={`/${locale}/story`} className={styles.topLink}>{dict.nav.stories}</Link>
+            <Link href={`/${locale}/post`} className={styles.topLink}>{dict.nav.stories}</Link>
           </div>
         </header>
 
-        <form action={`/${locale}/story/search`} method="get" className={styles.searchBar}>
+        <form action={`/${locale}/post/search`} method="get" className={styles.searchBar}>
           <input
             type="text"
             name="q"
             defaultValue={q}
-            placeholder={dict.story.searchPlaceholder}
+            placeholder={dict.post.searchPlaceholder}
             className={styles.searchInput}
           />
           <button type="submit" className={styles.searchBtn}>{dict.home.searchButton}</button>
@@ -95,21 +95,21 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
 
         {posts.length === 0 ? (
           <p className={styles.emptyText}>
-            {q ? dict.search.noResults : dict.story.searchPlaceholder}
+            {q ? dict.search.noResults : dict.post.searchPlaceholder}
           </p>
         ) : (
           <div className={styles.feed}>
             {posts.map((post) => {
-              const safeTitle = post.title ?? dict.story.untitled;
+              const safeTitle = post.title ?? dict.post.untitled;
               const safeContent = post.content ?? "";
               const dateStr = post.created_at
                 ? new Date(post.created_at).toLocaleDateString(dateLocale)
-                : dict.story.unknownDate;
+                : dict.post.unknownDate;
 
               return (
                 <Link
                   key={post.id}
-                  href={`/${locale}/story/${post.id}`}
+                  href={`/${locale}/post/${post.id}`}
                   className={styles.postRow}
                 >
                   <div className={styles.scoreCol}>
@@ -119,7 +119,7 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
 
                   <div className={styles.postContent}>
                     <div className={styles.postMeta}>
-                      <span className={styles.badge}>{dict.story.label}</span>
+                      <span className={styles.badge}>{dict.post.label}</span>
                       <span className={styles.postDate}>{dateStr}</span>
                     </div>
                     <h3 className={styles.postTitle}>{safeTitle}</h3>
@@ -129,7 +129,7 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
                         : safeContent}
                     </p>
                     <div className={styles.postFooter}>
-                      <span>👁 {post.view_count ?? 0} {dict.story.views}</span>
+                      <span>👁 {post.view_count ?? 0} {dict.post.views}</span>
                     </div>
                   </div>
 

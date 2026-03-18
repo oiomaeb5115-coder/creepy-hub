@@ -119,7 +119,7 @@ export default function BookmarkPage() {
                   style={{ display: "flex", alignItems: "stretch", marginBottom: 1 }}
                 >
                   <Link
-                    href={`/${locale}/story/${bm.post.id}`}
+                    href={`/${locale}/post/${bm.post.id}`}
                     className={styles.card}
                     style={{ flex: 1 }}
                   >
@@ -134,10 +134,10 @@ export default function BookmarkPage() {
                     )}
                     <div className={styles.cardBody}>
                       <div className={styles.cardMeta}>
-                        <span className={styles.badge}>{dict.story.label}</span>
+                        <span className={styles.badge}>{dict.post.label}</span>
                       </div>
                       <h3 className={styles.cardTitle}>
-                        {bm.post.title ?? dict.story.untitled}
+                        {bm.post.title ?? dict.post.untitled}
                       </h3>
                       {excerpt && (
                         <p className={styles.cardExcerpt}>{excerpt}</p>

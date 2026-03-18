@@ -7,10 +7,10 @@ const locales = ['ja', 'en']
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages = [
     '',
-    '/story',
-    '/story/popular',
-    '/story/hot',
-    '/story/search',
+    '/post',
+    '/post/popular',
+    '/post/hot',
+    '/post/search',
     '/wiki',
     '/wiki/search',
     '/wiki/random',
@@ -63,7 +63,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const locale of locales) {
     for (const post of storiesResult.data ?? []) {
       entries.push({
-        url: `${BASE_URL}/${locale}/story/${post.id}`,
+        url: `${BASE_URL}/${locale}/post/${post.id}`,
         lastModified: new Date(post.updated_at ?? post.created_at),
         changeFrequency: 'weekly',
         priority: 0.7,

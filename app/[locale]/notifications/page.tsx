@@ -305,7 +305,7 @@ export default function NotificationsPage() {
                       </span>
                       {n.post_id && (
                         <Link
-                          href={`/${locale}/story/${n.post_id}`}
+                          href={`/${locale}/post/${n.post_id}`}
                           style={{ color: "#b08888", fontSize: 12, textDecoration: "none" }}
                         >
                           {dict.notifications.viewPost}

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
-import StoryImageGallery from "@/components/StoryImageGallery";
+import PostImageGallery from "@/components/PostImageGallery";
 import styles from "./page.module.css";
 import PostComments from "@/components/PostComments";
 import PostVoteButtons from "@/components/PostVoteButtons";
@@ -11,7 +11,7 @@ import CommentTree from "@/components/CommentTree";
 import PostBookmarkButton from "@/components/PostBookmarkButton";
 import BackButton from "@/components/BackButton";
 import TranslateButton from "@/components/TranslateButton";
-import StoryActionButtons from "@/components/StoryActionButtons";
+import PostActionButtons from "@/components/PostActionButtons";
 
 const BASE_URL = "https://creepyhub.com";
 
@@ -50,7 +50,7 @@ export async function generateMetadata({
     if (tr?.content) description = tr.content.slice(0, 120);
   }
 
-  const url = `${BASE_URL}/${locale}/story/${id}`;
+  const url = `${BASE_URL}/${locale}/post/${id}`;
 
   return {
     title: title ?? undefined,
@@ -58,8 +58,8 @@ export async function generateMetadata({
     alternates: {
       canonical: url,
       languages: {
-        ja: `${BASE_URL}/ja/story/${id}`,
-        en: `${BASE_URL}/en/story/${id}`,
+        ja: `${BASE_URL}/ja/post/${id}`,
+        en: `${BASE_URL}/en/post/${id}`,
       },
     },
     openGraph: {
@@ -155,7 +155,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   const displayTitle =
     locale === "en" && translation?.title
       ? translation.title
-      : (post.title ?? dict.story.label);
+      : (post.title ?? dict.post.label);
 
   const displayContent =
     locale === "en" && translation?.content
@@ -205,8 +205,8 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
         <header className={styles.archiveHeader}>
           <div>
             <p className={styles.archiveBreadcrumb}>ARCHIVE / OCCULT DATABASE</p>
-            <h1 className={styles.archiveTitle}>{dict.story.headerTitle}</h1>
-            <p className={styles.archiveSubtitle}>{dict.story.headerSubtitle}</p>
+            <h1 className={styles.archiveTitle}>{dict.post.headerTitle}</h1>
+            <p className={styles.archiveSubtitle}>{dict.post.headerSubtitle}</p>
           </div>
 
           <div className={styles.archiveActions}>
@@ -227,25 +227,25 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                 @{author.username}
               </Link>
             ) : (
-              <span className={styles.storyAuthor}>{dict.story.unknownAuthor}</span>
+              <span className={styles.storyAuthor}>{dict.post.unknownAuthor}</span>
             )}
             <div className={styles.storyViewCount}>
-              {dict.story.views}: {displayedViewCount}
+              {dict.post.views}: {displayedViewCount}
             </div>
             <Link href={`/${locale}`} className={styles.storyBackButton}>
-              {dict.story.backToHome}
+              {dict.post.backToHome}
             </Link>
           </div>
 
           <p className={styles.storyDetailMeta}>
             {safeCreatedAt
               ? new Date(safeCreatedAt).toLocaleString(dateLocale)
-              : dict.story.unknownDate}
+              : dict.post.unknownDate}
           </p>
 
           <h2 className={styles.storyDetailTitle}>{displayTitle}</h2>
 
-          <StoryImageGallery imageUrls={imageUrls} title={displayTitle} />
+          <PostImageGallery imageUrls={imageUrls} title={displayTitle} />
 
           {/* Reddit風アクションバー（画像の下） */}
           <div className={styles.storyActionBar}>
@@ -279,7 +279,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                 hasTranslation={hasEnglishTranslation}
                 labels={dict.story}
               />
-              <StoryActionButtons
+              <PostActionButtons
                 postId={post.id}
                 authorId={post.user_id}
                 locale={locale}
@@ -334,7 +334,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
           />
 
           <section style={{ marginTop: 30 }}>
-            <h3>{dict.story.comments}</h3>
+            <h3>{dict.post.comments}</h3>
 
             <CommentTree
               comments={comments}

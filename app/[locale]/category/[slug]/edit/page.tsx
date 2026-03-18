@@ -50,7 +50,7 @@ export default function CategoryEditPage() {
         .single();
 
       if (catError || !catData) {
-        router.replace(`/${locale}/story`);
+        router.replace(`/${locale}/post`);
         return;
       }
 
@@ -67,7 +67,7 @@ export default function CategoryEditPage() {
       const isAdmin = profile?.role === "admin";
 
       if (!isCreator && !isAdmin) {
-        router.replace(`/${locale}/story/category/${slug}`);
+        router.replace(`/${locale}/post/category/${slug}`);
         return;
       }
 
@@ -235,7 +235,7 @@ export default function CategoryEditPage() {
             <p className={styles.successTitle}>{dict.categoryEdit.successTitle}</p>
             <button
               className={styles.backBtn}
-              onClick={() => router.push(`/${locale}/story/category/${slug}`)}
+              onClick={() => router.push(`/${locale}/post/category/${slug}`)}
             >
               {dict.categoryEdit.backToCategory}
             </button>

@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import styles from "./StoryImageGallery.module.css";
+import styles from "./PostImageGallery.module.css";
 
-type StoryImageGalleryProps = {
+type PostImageGalleryProps = {
   imageUrls: string[];
   title: string;
 };
 
-export default function StoryImageGallery({
+export default function PostImageGallery({
   imageUrls,
   title,
-}: StoryImageGalleryProps) {
+}: PostImageGalleryProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 

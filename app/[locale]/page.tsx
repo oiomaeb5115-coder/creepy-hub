@@ -75,7 +75,7 @@ function StorySearchBox({
 }) {
   return (
     <form
-      action={`/${locale}/story/search`}
+      action={`/${locale}/post/search`}
       method="get"
       className={styles.searchForm}
     >
@@ -144,7 +144,7 @@ function StoryCard({
   const commentCount = (post.post_comments ?? []).length;
 
   return (
-    <Link href={`/${locale}/story/${post.id}`} className={styles.scrollCardLink}>
+    <Link href={`/${locale}/post/${post.id}`} className={styles.scrollCardLink}>
       <article className={styles.scrollCard}>
         <div className={styles.scrollCardImageWrap}>
           {post.image_url ? (
@@ -381,8 +381,8 @@ export default async function HomePage({ params }: HomePageProps) {
                   key={post.id}
                   post={post}
                   locale={locale}
-                  storyLabel={dict.story.label}
-                  unknownDate={dict.story.unknownDate}
+                  storyLabel={dict.post.label}
+                  unknownDate={dict.post.unknownDate}
                 />
               ))}
             </div>
@@ -408,7 +408,7 @@ export default async function HomePage({ params }: HomePageProps) {
                     dict.pageType[item.page_type as keyof typeof dict.pageType] ??
                     item.page_type
                   }
-                  unknownDate={dict.story.unknownDate}
+                  unknownDate={dict.post.unknownDate}
                   noSummary={dict.wiki.noSummary}
                 />
               ))}
@@ -432,7 +432,7 @@ export default async function HomePage({ params }: HomePageProps) {
                 storyCategories.map((cat) => (
                   <Link
                     key={cat.id}
-                    href={`/${locale}/story/category/${cat.slug}`}
+                    href={`/${locale}/post/category/${cat.slug}`}
                     className={styles.categoryChip}
                   >
                     {locale === "en" ? (cat.name_en ?? cat.name) : cat.name}

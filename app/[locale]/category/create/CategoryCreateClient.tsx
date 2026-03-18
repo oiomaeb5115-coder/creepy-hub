@@ -181,7 +181,7 @@ export default function CategoryCreateClient({ locale, dict }: Props) {
             <p className={styles.successBody}>{dict.successBody}</p>
             <button
               className={styles.backBtn}
-              onClick={() => router.push(`/${locale}/story`)}
+              onClick={() => router.push(`/${locale}/post`)}
             >
               {dict.backToStories}
             </button>

@@ -82,7 +82,7 @@ export default async function WikiSearchPage({ params, searchParams }: Props) {
               {pages.map((page) => {
                 const dateStr = page.updated_at
                   ? new Date(page.updated_at).toLocaleDateString(dateLocale)
-                  : dict.story.unknownDate;
+                  : dict.post.unknownDate;
 
                 return (
                   <Link

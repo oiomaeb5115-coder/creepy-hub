@@ -24,7 +24,7 @@
     "noWiki": "No wiki articles yet.",
     "noCategory": "No categories"
   },
-  "story": {
+  "post": {
     "label": "Story",
     "unknownDate": "Unknown date",
     "unknownAuthor": "Unknown author",
@@ -164,8 +164,8 @@
   "meta": {
     "title": "creepy hub | Horror & Occult Archive",
     "description": "A site for horror stories, urban legends, and occult information. Browse creepy stories and an occult wiki.",
-    "storyTitle": "Stories | creepy hub",
-    "storyDescription": "Browse horror stories, creepypasta, and occult tales on creepy hub.",
+    "postTitle": "Stories | creepy hub",
+    "postDescription": "Browse horror stories, creepypasta, and occult tales on creepy hub.",
     "wikiTitle": "Occult Wiki | creepy hub",
     "wikiDescription": "An archive for occult, urban legends, strange incidents, works, persons, and terms.",
     "searchTitle": "Search | creepy hub"

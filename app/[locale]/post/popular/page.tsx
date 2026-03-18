@@ -105,18 +105,18 @@ export default async function PopularPage({ params }: Props) {
       <div className={styles.archiveShell}>
         <BackButton />
         <h1 className={styles.archiveTitle}>
-          {dict.story.popular} {dict.story.label}
+          {dict.post.popular} {dict.post.label}
         </h1>
 
         <div className={styles.postGrid}>
           {posts.map((post) => {
-            const safeTitle = post.title ?? dict.story.untitled;
+            const safeTitle = post.title ?? dict.post.untitled;
             const safeContent = post.content ?? "";
             const safeCreatedAt = post.created_at ?? "";
 
             return (
               <Link
-                href={`/${locale}/story/${post.id}`}
+                href={`/${locale}/post/${post.id}`}
                 key={post.id}
                 className={styles.postCardLink}
               >
@@ -138,13 +138,13 @@ export default async function PopularPage({ params }: Props) {
                   <div className={styles.postCardBody}>
                     <div className={styles.postCardMetaRow}>
                       <span className={styles.postCardCategory}>
-                        {dict.story.label}
+                        {dict.post.label}
                       </span>
 
                       <span className={styles.postCardDate}>
                         {safeCreatedAt
                           ? new Date(safeCreatedAt).toLocaleDateString(dateLocale)
-                          : dict.story.unknownDate}
+                          : dict.post.unknownDate}
                       </span>
                     </div>
 

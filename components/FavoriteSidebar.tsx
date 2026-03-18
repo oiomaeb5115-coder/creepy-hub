@@ -43,7 +43,7 @@ export default function FavoriteSidebar({ type, locale, labels }: Props) {
   }, [type, locale]);
 
   const basePath = type === "story"
-    ? `/${locale}/story/category`
+    ? `/${locale}/post/category`
     : `/${locale}/wiki/category`;
 
   return (

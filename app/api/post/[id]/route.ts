@@ -74,8 +74,8 @@ export async function PATCH(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  revalidatePath(`/ja/story/${id}`);
-  revalidatePath(`/en/story/${id}`);
+  revalidatePath(`/ja/post/${id}`);
+  revalidatePath(`/en/post/${id}`);
   revalidatePath("/ja");
   revalidatePath("/en");
 
