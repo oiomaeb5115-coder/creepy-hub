@@ -277,7 +277,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                 id={post.id}
                 locale={locale}
                 hasTranslation={hasEnglishTranslation}
-                labels={dict.story}
+                labels={dict.post}
               />
               <PostActionButtons
                 postId={post.id}
