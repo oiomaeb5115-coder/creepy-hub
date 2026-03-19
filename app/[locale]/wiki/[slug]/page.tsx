@@ -156,7 +156,7 @@ export default async function WikiDetailPage({
 
   return (
     <main className={styles.wikiPage}>
-      <div className={styles.wikiShell}>
+      <div className={styles.wikiArticleShell}>
         <BackButton />
         <header className={styles.wikiHeader}>
           <div className={styles.wikiHeaderTop}>
