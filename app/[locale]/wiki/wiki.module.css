@@ -528,4 +528,77 @@
   .categoryGrid {
     grid-template-columns: 1fr;
   }
+
+  .relatedGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── Related pages card grid ── */
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: rgba(161, 102, 108, 0.12);
+}
+
+.relatedCard {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  background: rgba(14, 5, 7, 0.9);
+  transition: background 0.12s;
+  overflow: hidden;
+}
+
+.relatedCard:hover {
+  background: rgba(32, 9, 13, 0.97);
+}
+
+.relatedCardImg {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  border-bottom: 1px solid rgba(161, 102, 108, 0.15);
+}
+
+.relatedCardImgPlaceholder {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: rgba(30, 8, 12, 0.8);
+  border-bottom: 1px solid rgba(161, 102, 108, 0.15);
+}
+
+.relatedCardBody {
+  padding: 10px 12px 12px;
+}
+
+.relatedCardTitle {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #f0ece4;
+  line-height: 1.35;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.relatedCard:hover .relatedCardTitle {
+  color: #fff;
+}
+
+.relatedCardText {
+  margin: 0;
+  font-size: 11px;
+  color: #7a6a62;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }

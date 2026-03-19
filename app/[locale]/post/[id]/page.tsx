@@ -107,6 +107,13 @@ type TranslationRow = {
   content: string | null;
 };
 
+type RelatedPostRow = {
+  id: number;
+  title: string | null;
+  image_url: string | null;
+  created_at: string | null;
+};
+
 export default async function StoryDetailPage({ params }: StoryPageProps) {
   const { locale, id } = await params;
   const dict = await getDictionary(locale);
@@ -195,6 +202,16 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
     .order("created_at", { ascending: true });
 
   const comments = (commentsData ?? []) as CommentRow[];
+
+  const { data: relatedPostsData } = await supabase
+    .from("post")
+    .select("id, title, image_url, created_at")
+    .eq("is_published", true)
+    .neq("id", post.id)
+    .order("created_at", { ascending: false })
+    .limit(6);
+
+  const relatedPosts = (relatedPostsData ?? []) as RelatedPostRow[];
 
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
@@ -341,6 +358,33 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
               postId={post.id}
             />
           </section>
+
+          {relatedPosts.length > 0 && (
+            <section className={styles.relatedSection}>
+              <h3 className={styles.relatedTitle}>
+                {locale === "en" ? "Related Posts" : "関連記事"}
+              </h3>
+              <div className={styles.relatedGrid}>
+                {relatedPosts.map((rp) => (
+                  <Link key={rp.id} href={`/${locale}/post/${rp.id}`} className={styles.relatedCard}>
+                    {rp.image_url ? (
+                      <img src={rp.image_url} alt={rp.title ?? ""} className={styles.relatedCardImg} />
+                    ) : (
+                      <div className={styles.relatedCardImgPlaceholder} />
+                    )}
+                    <div className={styles.relatedCardBody}>
+                      <h4 className={styles.relatedCardTitle}>{rp.title}</h4>
+                      <p className={styles.relatedCardText}>
+                        {rp.created_at
+                          ? new Date(rp.created_at).toLocaleDateString(dateLocale)
+                          : ""}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </section>
       </div>
     </main>

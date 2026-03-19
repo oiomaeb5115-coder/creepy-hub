@@ -77,6 +77,7 @@ type RelatedRow = {
   slug: string;
   title: string;
   summary: string | null;
+  image_url: string | null;
 };
 
 type WikiLinkItem = {
@@ -110,7 +111,7 @@ export default async function WikiDetailPage({
 
   const { data: related } = await supabase
     .from("wiki_pages")
-    .select("id, slug, title, summary")
+    .select("id, slug, title, summary, image_url")
     .eq("locale", locale)
     .eq("page_type", safePage.page_type)
     .eq("is_published", true)
@@ -257,19 +258,24 @@ export default async function WikiDetailPage({
           {relatedItems.length === 0 ? (
             <p className={styles.emptyText}>{dict.wiki.noRelated}</p>
           ) : (
-            <div className={styles.list}>
+            <div className={styles.relatedGrid}>
               {relatedItems.map((item) => (
                 <Link
                   key={item.id}
                   href={`/${locale}/wiki/${item.slug}`}
-                  className={styles.listLink}
+                  className={styles.relatedCard}
                 >
-                  <article className={styles.listItem}>
-                    <h3 className={styles.itemTitle}>{item.title}</h3>
-                    <p className={styles.itemText}>
-                      {item.summary ?? dict.wiki.noSummary}
+                  {item.image_url ? (
+                    <img src={item.image_url} alt={item.title} className={styles.relatedCardImg} />
+                  ) : (
+                    <div className={styles.relatedCardImgPlaceholder} />
+                  )}
+                  <div className={styles.relatedCardBody}>
+                    <h3 className={styles.relatedCardTitle}>{item.title}</h3>
+                    <p className={styles.relatedCardText}>
+                      {(item.summary ?? dict.wiki.noSummary).slice(0, 20)}
                     </p>
-                  </article>
+                  </div>
                 </Link>
               ))}
             </div>
