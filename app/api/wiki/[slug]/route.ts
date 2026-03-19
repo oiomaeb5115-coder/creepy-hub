@@ -38,7 +38,7 @@ export async function PATCH(
 
   const { data: page } = await supabase
     .from("wiki_pages")
-    .select("author_id")
+    .select("id, author_id")
     .eq("slug", slug)
     .eq("locale", "ja")
     .single();
@@ -53,7 +53,7 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { title, subtitle, summary, content, page_type } = body;
+  const { title, subtitle, summary, content, page_type, category_ids } = body;
 
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -74,6 +74,15 @@ export async function PATCH(
     .eq("locale", "ja");
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  if (Array.isArray(category_ids)) {
+    await adminSupabase.from("wiki_page_categories").delete().eq("wiki_page_id", page.id);
+    if (category_ids.length > 0) {
+      await adminSupabase.from("wiki_page_categories").insert(
+        category_ids.map((cat_id: number) => ({ wiki_page_id: page.id, category_id: cat_id }))
+      );
+    }
+  }
 
   revalidatePath(`/ja/wiki/${slug}`);
   revalidatePath(`/en/wiki/${slug}`);

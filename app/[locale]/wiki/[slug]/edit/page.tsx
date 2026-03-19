@@ -9,6 +9,7 @@ import BackButton from "@/components/BackButton";
 
 type PageType = "general" | "urban_legend" | "incident" | "work" | "region" | "term" | "person";
 type Chapter = { id: number; title: string; body: string };
+type Category = { id: number; slug: string; name: string };
 
 function parseChapters(content: string): Chapter[] {
   if (!content.trim()) return [{ id: 1, title: "", body: "" }];
@@ -36,6 +37,8 @@ export default function WikiEditPage() {
   const [pageType, setPageType] = useState<PageType>("general");
   const [chapters, setChapters] = useState<Chapter[]>([{ id: 1, title: "", body: "" }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
 
   useEffect(() => {
     const init = async () => {
@@ -44,7 +47,7 @@ export default function WikiEditPage() {
 
       const { data: page, error } = await supabase
         .from("wiki_pages")
-        .select("title, subtitle, summary, content, page_type, author_id")
+        .select("id, title, subtitle, summary, content, page_type, author_id")
         .eq("slug", slug)
         .eq("locale", "ja")
         .single();
@@ -61,6 +64,14 @@ export default function WikiEditPage() {
       setSummary(page.summary ?? "");
       setPageType((page.page_type as PageType) ?? "general");
       setChapters(parseChapters(page.content ?? ""));
+
+      const [joinsResult, catsResult] = await Promise.all([
+        supabase.from("wiki_page_categories").select("category_id").eq("wiki_page_id", page.id),
+        supabase.from("categories").select("id, slug, name").eq("locale", locale).eq("is_active", true).order("created_at", { ascending: true }),
+      ]);
+      setSelectedCategoryIds(((joinsResult.data ?? []) as { category_id: number }[]).map((j) => j.category_id));
+      setAllCategories((catsResult.data ?? []) as Category[]);
+
       setLoading(false);
     };
     init();
@@ -110,6 +121,7 @@ export default function WikiEditPage() {
           summary: summary.trim(),
           content,
           page_type: pageType,
+          category_ids: selectedCategoryIds,
         }),
       });
 
@@ -169,6 +181,30 @@ export default function WikiEditPage() {
                 <option value="term">用語</option>
                 <option value="person">人物</option>
               </select>
+            </div>
+
+            <div style={groupStyle}>
+              <label style={labelStyle}>カテゴリー</label>
+              {allCategories.length === 0 ? (
+                <p style={{ margin: "6px 0 0", fontSize: 13, color: "#a49080" }}>カテゴリーがまだありません。</p>
+              ) : (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", marginTop: 6, marginBottom: 8 }}>
+                  {allCategories.map((cat) => (
+                    <label key={cat.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "#e0d0c8", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedCategoryIds.includes(cat.id)}
+                        onChange={(e) => {
+                          setSelectedCategoryIds((prev) =>
+                            e.target.checked ? [...prev, cat.id] : prev.filter((id) => id !== cat.id)
+                          );
+                        }}
+                      />
+                      {cat.name}
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div style={groupStyle}>

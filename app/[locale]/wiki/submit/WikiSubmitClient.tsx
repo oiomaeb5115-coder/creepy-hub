@@ -16,6 +16,8 @@ type PageType =
   | "term"
   | "person";
 
+type Category = { id: number; slug: string; name: string };
+
 type Chapter = {
   id: number;
   title: string;
@@ -76,6 +78,9 @@ type WikiSubmitLabels = {
   sectionTitle: string;
   sectionDesc: string;
   chapterSection: string;
+  categoryLabel: string;
+  categoryNone: string;
+  categoryCreate: string;
   pageTypes: {
     general: string;
     urban_legend: string;
@@ -106,6 +111,8 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
   const [pageType, setPageType] = useState<PageType>("general");
   const [isPublished, setIsPublished] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
 
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState("");
@@ -128,6 +135,17 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
   }, [resolvedLocale]);
 
   useEffect(() => {
+    if (!authChecked) return;
+    supabase
+      .from("categories")
+      .select("id, slug, name")
+      .eq("locale", resolvedLocale)
+      .eq("is_active", true)
+      .order("created_at", { ascending: true })
+      .then(({ data }) => setCategories((data ?? []) as Category[]));
+  }, [authChecked, resolvedLocale]);
+
+  useEffect(() => {
     if (!userId) return;
     const raw = localStorage.getItem(`draft_wiki_${userId}`);
     if (!raw) return;
@@ -137,6 +155,7 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
       if (draft.subtitle) setSubtitle(draft.subtitle);
       if (draft.summary) setSummary(draft.summary);
       if (draft.pageType) setPageType(draft.pageType as PageType);
+      if (Array.isArray(draft.selectedCategoryIds)) setSelectedCategoryIds(draft.selectedCategoryIds);
       if (draft.chapters) {
         setChapters(
           draft.chapters.map((ch: { id: number; title: string; body: string }) => ({
@@ -157,16 +176,17 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       const savableChapters = chapters.map(({ id, title, body }) => ({ id, title, body }));
-      localStorage.setItem(`draft_wiki_${userId}`, JSON.stringify({ title, subtitle, summary, pageType, chapters: savableChapters }));
+      localStorage.setItem(`draft_wiki_${userId}`, JSON.stringify({ title, subtitle, summary, pageType, selectedCategoryIds, chapters: savableChapters }));
     }, 500);
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [userId, title, subtitle, summary, pageType, chapters]);
+  }, [userId, title, subtitle, summary, pageType, selectedCategoryIds, chapters]);
 
   const deleteDraftFn = () => {
     if (!userId) return;
     localStorage.removeItem(`draft_wiki_${userId}`);
     setDraftRestored(false);
     setTitle(""); setSubtitle(""); setSummary(""); setPageType("general");
+    setSelectedCategoryIds([]);
     setChapters([{ id: 1, title: "", body: "", imageFile: null, imagePreview: "" }]);
   };
 
@@ -335,12 +355,21 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
       const { data, error } = await supabase
         .from("wiki_pages")
         .insert([payload])
-        .select("slug")
+        .select("slug, id")
         .single();
 
       if (error) {
         alert(`${labels.alertWikiFail}: ${error.message}`);
         return;
+      }
+
+      if (selectedCategoryIds.length > 0 && data?.id) {
+        await supabase.from("wiki_page_categories").insert(
+          selectedCategoryIds.map((cat_id) => ({
+            wiki_page_id: data.id,
+            category_id: cat_id,
+          }))
+        );
       }
 
       localStorage.removeItem(`draft_wiki_${uid}`);
@@ -453,6 +482,35 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
                 <option value="term">{labels.pageTypes.term}</option>
                 <option value="person">{labels.pageTypes.person}</option>
               </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>{labels.categoryLabel}</label>
+              {categories.length === 0 ? (
+                <p className={styles.helpText}>{labels.categoryNone}</p>
+              ) : (
+                <div className={styles.categoryCheckList}>
+                  {categories.map((cat) => (
+                    <label key={cat.id} className={styles.categoryCheckItem}>
+                      <input
+                        type="checkbox"
+                        checked={selectedCategoryIds.includes(cat.id)}
+                        onChange={(e) => {
+                          setSelectedCategoryIds((prev) =>
+                            e.target.checked
+                              ? [...prev, cat.id]
+                              : prev.filter((id) => id !== cat.id)
+                          );
+                        }}
+                      />
+                      {cat.name}
+                    </label>
+                  ))}
+                </div>
+              )}
+              <Link href={`/${resolvedLocale}/wiki/category/create`} className={styles.categoryCreateLink}>
+                {labels.categoryCreate}
+              </Link>
             </div>
 
             <div className={styles.formGroup}>

@@ -50,6 +50,9 @@ export default async function WikiSubmitPage({ params }: Props) {
     sectionTitle: dict.wikiSubmit.title,
     sectionDesc: locale === "en" ? "You can add images to the thumbnail and each chapter." : "サムネイル・各章に画像を追加できます。",
     chapterSection: locale === "en" ? "Chapter" : "章",
+    categoryLabel: locale === "en" ? "Categories" : "カテゴリー",
+    categoryNone: locale === "en" ? "No categories yet." : "カテゴリーがまだありません。",
+    categoryCreate: locale === "en" ? "+ Create new category" : "+ カテゴリーを作成",
     pageTypes: {
       general: dict.pageType.general,
       urban_legend: dict.pageType.urban_legend,
