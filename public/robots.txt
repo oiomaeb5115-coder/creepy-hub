@@ -2,4 +2,3 @@ User-agent: *
 Allow: /
 
 Sitemap: https://creepyhub.com/sitemap.xml
-Sitemap: https://creepyhub.com/ja/sitemap.xml
