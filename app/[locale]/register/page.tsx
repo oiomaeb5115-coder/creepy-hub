@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 import en from "@/locales/en.json";
@@ -29,16 +29,15 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
+      const json = await res.json();
 
-      if (error) {
-        alert(`${dict.auth.registerFailed}${error.message}`);
+      if (!res.ok) {
+        alert(`${dict.auth.registerFailed}${json.error}`);
         return;
       }
 

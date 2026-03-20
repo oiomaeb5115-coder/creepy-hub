@@ -95,12 +95,13 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
     }
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
-      if (error) { alert(`${labels.alertRegisterFailed}${error.message}`); return; }
+      const json = await res.json();
+      if (!res.ok) { alert(`${labels.alertRegisterFailed}${json.error}`); return; }
       alert(labels.alertVerifyEmail);
       window.location.href = `/${locale}/login`;
     } finally {

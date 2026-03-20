@@ -1,0 +1,106 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { Resend } from "resend";
+
+export async function POST(req: NextRequest) {
+  const { email, password } = await req.json();
+
+  if (!email || !password) {
+    return NextResponse.json({ error: "メールアドレスとパスワードを入力してください" }, { status: 400 });
+  }
+
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const origin = process.env.SITE_URL ?? req.headers.get("origin") ?? "";
+
+  // 既存ユーザーか確認
+  const { data: existingData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+  const existingUser = existingData?.users.find((u) => u.email === email);
+
+  if (existingUser?.email_confirmed_at) {
+    return NextResponse.json({ error: "このメールアドレスはすでに登録済みです。" }, { status: 400 });
+  }
+
+  // 未確認ユーザーが存在する場合は削除して再作成
+  if (existingUser) {
+    await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
+  }
+
+  const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+    type: "signup",
+    email,
+    password,
+    options: { redirectTo: `${origin}/auth/callback` },
+  });
+
+  if (error || !data?.properties?.action_link) {
+    return NextResponse.json({ error: error?.message ?? "登録に失敗しました" }, { status: 400 });
+  }
+
+  const confirmationUrl = data.properties.action_link;
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const { error: emailError } = await resend.emails.send({
+    from: "creepy.hub <noreply@creepyhub.com>",
+    to: email,
+    subject: "【creepy.hub】メールアドレスの確認",
+    html: buildEmailHtml(confirmationUrl),
+  });
+
+  if (emailError) {
+    return NextResponse.json({ error: "メール送信に失敗しました" }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
+}
+
+function buildEmailHtml(confirmationUrl: string): string {
+  return `<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="520" cellpadding="0" cellspacing="0" style="background:#111111;border:1px solid #222222;padding:48px 40px;">
+          <tr>
+            <td align="center" style="padding-bottom:32px;border-bottom:1px solid #222222;">
+              <p style="margin:0;color:#888888;font-size:11px;letter-spacing:0.2em;">HORROR ARCHIVE</p>
+              <h1 style="margin:8px 0 0;color:#ffffff;font-size:22px;letter-spacing:0.15em;font-weight:400;">creepy.hub</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 0 24px;">
+              <p style="margin:0 0 8px;color:#cccccc;font-size:15px;">メールアドレスの確認</p>
+              <p style="margin:0;color:#888888;font-size:13px;line-height:1.7;">
+                creepy.hub にご登録いただきありがとうございます。<br>
+                下のボタンをクリックしてメールアドレスを確認してください。
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:8px 0 32px;">
+              <a href="${confirmationUrl}"
+                 style="display:inline-block;padding:14px 36px;background:#ffffff;color:#000000;text-decoration:none;font-size:13px;font-weight:bold;letter-spacing:0.1em;">
+                メールアドレスを確認する
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td style="border-top:1px solid #222222;padding-top:24px;">
+              <p style="margin:0;color:#555555;font-size:11px;line-height:1.7;">
+                このメールに心当たりがない場合は無視していただいて構いません。<br>
+                リンクの有効期限は24時間です。
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
