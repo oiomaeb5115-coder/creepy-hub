@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import FollowButton from "@/components/FollowButton";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
 
@@ -113,9 +114,12 @@ export default function UserProfilePage() {
           )}
 
           <div className={styles.userInfo}>
-            <h1>
-              {profile.display_name ?? profile.username}
-            </h1>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+              <h1 style={{ margin: 0 }}>
+                {profile.display_name ?? profile.username}
+              </h1>
+              <FollowButton targetUserId={profile.id} />
+            </div>
 
             <p className={styles.username}>
               @{profile.username}

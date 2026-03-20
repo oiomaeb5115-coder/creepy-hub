@@ -8,6 +8,7 @@ import PostDrawer from "./PostDrawer";
 import AuthDrawer from "./AuthDrawer";
 import Link from "next/link";
 import styles from "./layout.module.css";
+import WelcomeVideoModal from "@/components/WelcomeVideoModal";
 
 const locales = ["ja", "en"] as const;
 const BASE_URL = "https://creepyhub.com";
@@ -95,6 +96,7 @@ export default async function LocaleLayout({
 
       <PostDrawer locale={locale} labels={dict.postDrawer} />
       <AuthDrawer locale={locale} labels={dict.authDrawer} />
+      <WelcomeVideoModal videoSrc="/welcome.webm/web用-1.webm" />
     </>
   );
 }

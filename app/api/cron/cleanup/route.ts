@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
 
 export async function GET(req: NextRequest) {
-  // Vercel Cron からのリクエストのみ許可
+  // Vercel Cron からのリクエストのみ許可（タイミングアタック対策）
   const authHeader = req.headers.get("Authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : "";
+  const secret = process.env.CRON_SECRET ?? "";
+  const valid =
+    token.length > 0 &&
+    secret.length > 0 &&
+    token.length === secret.length &&
+    crypto.timingSafeEqual(Buffer.from(token), Buffer.from(secret));
+  if (!valid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

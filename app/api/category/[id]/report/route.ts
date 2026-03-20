@@ -71,16 +71,8 @@ export async function POST(
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
 
-  // reported_count をインクリメント
-  const { data: current } = await supabase
-    .from("story_categories")
-    .select("reported_count")
-    .eq("id", categoryId)
-    .single();
-  await supabase
-    .from("story_categories")
-    .update({ reported_count: (current?.reported_count ?? 0) + 1 })
-    .eq("id", categoryId);
+  // reported_count をアトミックにインクリメント（レースコンディション防止）
+  await supabase.rpc("increment_category_report_count", { cat_id: categoryId });
 
   return NextResponse.json({ success: true }, { status: 201 });
 }

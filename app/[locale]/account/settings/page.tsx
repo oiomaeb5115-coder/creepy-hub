@@ -86,6 +86,17 @@ export default function AccountSettingsPage() {
     file: File,
     bucket: "avatars" | "banners"
   ): Promise<string | null> => {
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      alert("画像ファイル（JPEG / PNG / WebP / GIF）のみアップロード可能です");
+      return null;
+    }
+    if (file.size > MAX_SIZE) {
+      alert("ファイルサイズは5MB以内にしてください");
+      return null;
+    }
+
     const {
       data: { session },
       error: sessionError,

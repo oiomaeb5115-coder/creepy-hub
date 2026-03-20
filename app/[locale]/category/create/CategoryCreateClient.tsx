@@ -86,6 +86,14 @@ export default function CategoryCreateClient({ locale, dict }: Props) {
     userId: string,
     type: "icon" | "header"
   ): Promise<string | null> => {
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      throw new Error("画像ファイル（JPEG / PNG / WebP / GIF）のみアップロード可能です");
+    }
+    if (file.size > MAX_SIZE) {
+      throw new Error("ファイルサイズは5MB以内にしてください");
+    }
     const fileExt = file.name.split(".").pop() || "jpg";
     const fileName = `${type}s/${userId}/${Date.now()}.${fileExt}`;
     const { error: uploadError } = await supabase.storage

@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
 export async function POST(req: NextRequest) {
-  const { email, password } = await req.json();
+  const { email, password, locale } = await req.json();
 
   if (!email || !password) {
     return NextResponse.json({ error: "メールアドレスとパスワードを入力してください" }, { status: 400 });
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     type: "signup",
     email,
     password,
-    options: { redirectTo: `${origin}/auth/callback` },
+    options: { redirectTo: `${origin}/auth/callback?locale=${locale ?? "ja"}&type=register` },
   });
 
   if (error || !data?.properties?.action_link) {

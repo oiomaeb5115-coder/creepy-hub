@@ -141,7 +141,7 @@ export default function StoryEditPage() {
         <section style={cardStyle}>
           <form onSubmit={handleSubmit} style={formStyle}>
             <div style={groupStyle}>
-              <label style={labelStyle}>ジャンル</label>
+              <label style={labelStyle}>カテゴリー</label>
               <select style={controlStyle} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
                 <option value="">選択してください</option>
                 {genres.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}

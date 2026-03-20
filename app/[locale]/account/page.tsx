@@ -83,6 +83,16 @@ export default function AccountPage() {
   };
 
   const uploadImage = async (file: File, bucket: "avatars" | "banners"): Promise<string | null> => {
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      alert("画像ファイル（JPEG / PNG / WebP / GIF）のみアップロード可能です");
+      return null;
+    }
+    if (file.size > MAX_SIZE) {
+      alert("ファイルサイズは5MB以内にしてください");
+      return null;
+    }
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return null;
     const fileExt = file.name.split(".").pop() || "jpg";
@@ -190,6 +200,15 @@ export default function AccountPage() {
             )}
             <Link href={`/${locale}/bookmark`} className={styles.topLink}>
               {dict.account.bookmarks}
+            </Link>
+            <Link href={`/${locale}/account/stories`} className={styles.topLink}>
+              {locale === "en" ? "My Stories" : "マイストーリー"}
+            </Link>
+            <Link href={`/${locale}/account/following`} className={styles.topLink}>
+              {locale === "en" ? "Following" : "フォロー中"}
+            </Link>
+            <Link href={`/${locale}/account/follower`} className={styles.topLink}>
+              {locale === "en" ? "Followers" : "フォロワー"}
             </Link>
             <Link href={`/${locale}/account/settings`} className={styles.topLink}>
               {dict.account.settingsEdit}

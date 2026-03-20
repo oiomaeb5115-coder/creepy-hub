@@ -98,7 +98,7 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, locale }),
       });
       const json = await res.json();
       if (!res.ok) { alert(`${labels.alertRegisterFailed}${json.error}`); return; }
