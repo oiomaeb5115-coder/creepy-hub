@@ -39,6 +39,8 @@ export default function UserProfilePage() {
   const [notFound, setNotFound] = useState(false);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [posts, setPosts] = useState<PostRow[]>([]);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   useEffect(() => {
     if (!username) return;
@@ -59,15 +61,27 @@ export default function UserProfilePage() {
       const p = profileData as ProfileRow;
       setProfile(p);
 
-      const { data: postData } = await supabase
-        .from("post")
-        .select("id, title, content, image_url, view_count, created_at")
-        .eq("user_id", p.id)
-        .eq("is_published", true)
-        .order("created_at", { ascending: false })
-        .limit(20);
+      const [{ data: postData }, { count: fcCount }, { count: fgCount }] = await Promise.all([
+        supabase
+          .from("post")
+          .select("id, title, content, image_url, view_count, created_at")
+          .eq("user_id", p.id)
+          .eq("is_published", true)
+          .order("created_at", { ascending: false })
+          .limit(20),
+        supabase
+          .from("follows")
+          .select("*", { count: "exact", head: true })
+          .eq("following_id", p.id),
+        supabase
+          .from("follows")
+          .select("*", { count: "exact", head: true })
+          .eq("follower_id", p.id),
+      ]);
 
       setPosts((postData ?? []) as PostRow[]);
+      setFollowerCount(fcCount ?? 0);
+      setFollowingCount(fgCount ?? 0);
       setLoading(false);
     };
 
@@ -130,6 +144,17 @@ export default function UserProfilePage() {
                 📍 {profile.location}
               </p>
             )}
+
+            <div className={styles.followStats}>
+              <div className={styles.followStat}>
+                <span className={styles.followCount}>{followingCount}</span>
+                <span className={styles.followLabel}>{dict.profile.following}</span>
+              </div>
+              <div className={styles.followStat}>
+                <span className={styles.followCount}>{followerCount}</span>
+                <span className={styles.followLabel}>{dict.profile.followers}</span>
+              </div>
+            </div>
 
             {profile.bio && (
               <p className={styles.bio}>

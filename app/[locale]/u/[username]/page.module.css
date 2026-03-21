@@ -58,6 +58,35 @@
   color: #8a7870;
 }
 
+.followStats {
+  display: flex;
+  gap: 20px;
+  margin: 8px 0;
+}
+
+.followStat {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.followStat:hover .followCount {
+  color: #e8c8c8;
+}
+
+.followCount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f5f1eb;
+}
+
+.followLabel {
+  font-size: 13px;
+  color: #8a7870;
+}
+
 .bio {
   margin-top: 10px;
   line-height: 1.7;

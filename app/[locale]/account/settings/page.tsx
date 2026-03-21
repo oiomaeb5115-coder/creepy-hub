@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
@@ -24,9 +24,12 @@ export default function AccountSettingsPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
   const dict = locale === "en" ? en : ja;
+  const router = useRouter();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
@@ -41,42 +44,44 @@ export default function AccountSettingsPage() {
 
   useEffect(() => {
     const loadProfile = async () => {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
 
-      if (sessionError || !session?.user) {
-        window.location.href = `/${locale}/login`;
-        return;
+        if (sessionError || !session?.user) {
+          window.location.href = `/${locale}/login`;
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select(
+            "username, display_name, avatar_url, banner_url, bio, website_url, location, is_public"
+          )
+          .eq("id", session.user.id)
+          .single();
+
+        if (error) {
+          console.error("profile load error:", error);
+        }
+
+        const profile = (data as ProfileRow | null) ?? null;
+
+        if (profile) {
+          setUsername(profile.username ?? "");
+          setDisplayName(profile.display_name ?? "");
+          setAvatarUrl(profile.avatar_url ?? "");
+          setBannerUrl(profile.banner_url ?? "");
+          setBio(profile.bio ?? "");
+          setWebsiteUrl(profile.website_url ?? "");
+          setLocation(profile.location ?? "");
+          setIsPublic(profile.is_public ?? true);
+        }
+      } finally {
+        setLoading(false);
       }
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(
-          "username, display_name, avatar_url, banner_url, bio, website_url, location, is_public"
-        )
-        .eq("id", session.user.id)
-        .single();
-
-      if (error) {
-        console.error("profile load error:", error);
-      }
-
-      const profile = (data as ProfileRow | null) ?? null;
-
-      if (profile) {
-        setUsername(profile.username ?? "");
-        setDisplayName(profile.display_name ?? "");
-        setAvatarUrl(profile.avatar_url ?? "");
-        setBannerUrl(profile.banner_url ?? "");
-        setBio(profile.bio ?? "");
-        setWebsiteUrl(profile.website_url ?? "");
-        setLocation(profile.location ?? "");
-        setIsPublic(profile.is_public ?? true);
-      }
-
-      setLoading(false);
     };
 
     loadProfile();
@@ -165,6 +170,8 @@ export default function AccountSettingsPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setSaveError("");
+    setSaveSuccess(false);
 
     try {
       const {
@@ -173,7 +180,7 @@ export default function AccountSettingsPage() {
       } = await supabase.auth.getSession();
 
       if (sessionError || !session?.user) {
-        window.location.href = `/${locale}/login`;
+        router.push(`/${locale}/login`);
         return;
       }
 
@@ -192,12 +199,12 @@ export default function AccountSettingsPage() {
       const { error } = await supabase.from("profiles").upsert(payload);
 
       if (error) {
-        alert(`${dict.account.profileFailed}${error.message}`);
+        setSaveError(`${dict.account.profileFailed}${error.message}`);
         return;
       }
 
-      alert(dict.account.profileSaved);
-      window.location.href = `/${locale}/account`;
+      setSaveSuccess(true);
+      setTimeout(() => router.push(`/${locale}/account`), 1000);
     } finally {
       setSaving(false);
     }
@@ -375,6 +382,16 @@ export default function AccountSettingsPage() {
               </label>
             </div>
 
+            {saveError && (
+              <p style={{ color: "#e8a0a0", marginBottom: "12px", fontSize: "14px" }}>
+                {saveError}
+              </p>
+            )}
+            {saveSuccess && (
+              <p style={{ color: "#a0e8b0", marginBottom: "12px", fontSize: "14px" }}>
+                {dict.account.profileSaved}
+              </p>
+            )}
             <div className={styles.submitRow}>
               <button
                 type="submit"

@@ -43,32 +43,35 @@ export default function AccountPage() {
 
   useEffect(() => {
     const loadAccount = async () => {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
 
-      if (sessionError || !session?.user) {
-        window.location.href = `/${locale}/login`;
-        return;
+        if (sessionError || !session?.user) {
+          window.location.href = `/${locale}/login`;
+          return;
+        }
+
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select(
+            "id, username, display_name, avatar_url, banner_url, bio, website_url, location, is_public"
+          )
+          .eq("id", session.user.id)
+          .single();
+
+        if (profileError) {
+          console.error("profile fetch error:", profileError);
+        }
+
+        const adminFlag = await getIsAdmin();
+        setIsAdmin(adminFlag);
+        setProfile((profileData as ProfileRow | null) ?? null);
+      } finally {
+        setLoading(false);
       }
-
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select(
-          "id, username, display_name, avatar_url, banner_url, bio, website_url, location, is_public"
-        )
-        .eq("id", session.user.id)
-        .single();
-
-      if (profileError) {
-        console.error("profile fetch error:", profileError);
-      }
-
-      const adminFlag = await getIsAdmin();
-      setIsAdmin(adminFlag);
-      setProfile((profileData as ProfileRow | null) ?? null);
-      setLoading(false);
     };
 
     loadAccount();
