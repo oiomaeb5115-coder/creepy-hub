@@ -96,7 +96,7 @@ export default async function LocaleLayout({
 
       <PostDrawer locale={locale} labels={dict.postDrawer} />
       <AuthDrawer locale={locale} labels={dict.authDrawer} />
-      <WelcomeVideoModal videoSrc="/welcome.webm/web用-1.webm" />
+      <WelcomeVideoModal videoSrc="/welcome.webm/welcome-1.webm" />
     </>
   );
 }
