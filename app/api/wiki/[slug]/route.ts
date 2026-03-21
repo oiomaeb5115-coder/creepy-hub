@@ -20,7 +20,14 @@ async function getAuthorizedUser(req: NextRequest) {
     .eq("id", userData.user.id)
     .single();
 
-  return { id: userData.user.id, role: profile?.role ?? "user" };
+  const { count: postCount } = await supabase
+    .from("post")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userData.user.id)
+    .eq("is_published", true)
+    .is("deleted_at", null);
+
+  return { id: userData.user.id, role: profile?.role ?? "user", postCount: postCount ?? 0 };
 }
 
 export async function PATCH(
@@ -47,8 +54,9 @@ export async function PATCH(
 
   const isAuthor = page.author_id === user.id;
   const isAdmin = user.role === "admin";
+  const hasEnoughPosts = user.postCount >= 5;
 
-  if (!isAuthor && !isAdmin) {
+  if (!isAuthor && !isAdmin && !hasEnoughPosts) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -119,8 +127,9 @@ export async function DELETE(
 
   const isAuthor = page.author_id === user.id;
   const isAdmin = user.role === "admin";
+  const hasEnoughPosts = user.postCount >= 5;
 
-  if (!isAuthor && !isAdmin) {
+  if (!isAuthor && !isAdmin && !hasEnoughPosts) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

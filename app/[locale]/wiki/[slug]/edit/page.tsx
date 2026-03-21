@@ -67,7 +67,17 @@ export default function WikiEditPage() {
 
       const isAuthor = page.author_id === session.user.id;
       const isAdmin = await getIsAdmin();
-      if (!isAuthor && !isAdmin) { router.replace(`/${locale}/wiki/${slug}`); return; }
+      let hasEnoughPosts = false;
+      if (!isAuthor && !isAdmin) {
+        const { count } = await supabase
+          .from("post")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", session.user.id)
+          .eq("is_published", true)
+          .is("deleted_at", null);
+        hasEnoughPosts = (count ?? 0) >= 5;
+      }
+      if (!isAuthor && !isAdmin && !hasEnoughPosts) { router.replace(`/${locale}/wiki/${slug}`); return; }
 
       setAuthorized(true);
       setTitle(page.title ?? "");

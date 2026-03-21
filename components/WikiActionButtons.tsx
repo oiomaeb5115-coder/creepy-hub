@@ -39,7 +39,14 @@ export default function WikiActionButtons({ slug, authorId, locale, labels }: Pr
       if (!session?.user) return;
       const isAuthor = session.user.id === authorId;
       const isAdmin = await getIsAdmin();
-      setCanEdit(isAuthor || isAdmin);
+      if (isAuthor || isAdmin) { setCanEdit(true); return; }
+      const { count } = await supabase
+        .from("post")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", session.user.id)
+        .eq("is_published", true)
+        .is("deleted_at", null);
+      setCanEdit((count ?? 0) >= 5);
     };
     check();
   }, [authorId]);
