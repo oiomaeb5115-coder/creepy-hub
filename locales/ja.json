@@ -178,7 +178,7 @@
     "deleting": "削除中...",
     "deleted": "削除済",
     "deleteConfirmStory": "この投稿を削除しますか？この操作は取り消せません。",
-    "deleteConfirmWiki": "このWiki記事を削除しますか？この操作は取り消せません。",
+    "deleteConfirmWiki": "このWiki記事を削除しますか？削除された記事は管理者のゴミ箱に3日間保存され、その後自動削除されます。",
     "deleteConfirmCategory": "このカテゴリを削除しますか？この操作は元に戻せません。",
     "deleteFailed": "削除失敗: ",
     "imageSettings": "画像設定",

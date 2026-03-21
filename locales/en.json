@@ -178,7 +178,7 @@
     "deleting": "Deleting...",
     "deleted": "Deleted",
     "deleteConfirmStory": "Delete this post? This action cannot be undone.",
-    "deleteConfirmWiki": "Delete this wiki article? This action cannot be undone.",
+    "deleteConfirmWiki": "Delete this wiki article? It will be kept in the admin trash for 3 days before being permanently deleted.",
     "deleteConfirmCategory": "Delete this category? This action cannot be undone.",
     "deleteFailed": "Delete failed: ",
     "imageSettings": "Image Settings",

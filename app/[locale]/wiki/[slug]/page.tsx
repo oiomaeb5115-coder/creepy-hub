@@ -183,18 +183,6 @@ export default async function WikiDetailPage({
               hasTranslation={hasEnglishTranslation}
               labels={dict.wiki}
             />
-            <WikiActionButtons
-              slug={safePage.slug}
-              authorId={safePage.author_id}
-              locale={locale}
-              labels={{
-                edit: dict.common.edit,
-                delete: dict.common.delete,
-                deleting: dict.common.deleting,
-                deleteConfirm: dict.common.deleteConfirmWiki,
-                deleteFailed: dict.common.deleteFailed,
-              }}
-            />
             </div>
           </div>
           <div className={styles.wikiTitleRow}>
@@ -203,6 +191,18 @@ export default async function WikiDetailPage({
               {safePage.subtitle ?? "Wiki"}
             </p>
           </div>
+          <WikiActionButtons
+            slug={safePage.slug}
+            authorId={safePage.author_id}
+            locale={locale}
+            labels={{
+              edit: dict.common.edit,
+              delete: dict.common.delete,
+              deleting: dict.common.deleting,
+              deleteConfirm: dict.common.deleteConfirmWiki,
+              deleteFailed: dict.common.deleteFailed,
+            }}
+          />
         </header>
 
         <section className={styles.card}>

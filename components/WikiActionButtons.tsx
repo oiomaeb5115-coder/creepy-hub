@@ -67,7 +67,7 @@ export default function WikiActionButtons({ slug, authorId, locale, labels }: Pr
   };
 
   return (
-    <div style={{ display: "flex", gap: 8 }}>
+    <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
       <a href={`/${locale}/wiki/${slug}/edit`} style={editStyle}>
         {t.edit}
       </a>
@@ -83,25 +83,27 @@ export default function WikiActionButtons({ slug, authorId, locale, labels }: Pr
 }
 
 const base: React.CSSProperties = {
-  padding: "5px 12px",
-  fontSize: 12,
+  padding: "6px 16px",
+  fontSize: 13,
   cursor: "pointer",
   borderRadius: 4,
   textDecoration: "none",
-  display: "inline-block",
+  display: "inline-flex",
+  alignItems: "center",
   border: "1px solid",
+  fontFamily: "inherit",
 };
 
 const editStyle: React.CSSProperties = {
   ...base,
-  background: "rgba(216, 216, 216, 0.08)",
-  borderColor: "rgba(216, 216, 216, 0.3)",
-  color: "#d8d8d8",
+  background: "rgba(100, 160, 100, 0.15)",
+  borderColor: "rgba(100, 180, 100, 0.5)",
+  color: "#a8d8a8",
 };
 
 const deleteStyle: React.CSSProperties = {
   ...base,
-  background: "rgba(216, 216, 216, 0.05)",
-  borderColor: "rgba(216, 216, 216, 0.2)",
-  color: "#d8d8d8",
+  background: "rgba(180, 80, 80, 0.12)",
+  borderColor: "rgba(200, 80, 80, 0.4)",
+  color: "#e0a0a0",
 };
