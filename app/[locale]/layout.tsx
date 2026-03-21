@@ -67,7 +67,7 @@ export default async function LocaleLayout({
           __html: `document.documentElement.lang="${locale}";`,
         }}
       />
-      <PageTransition locale={locale}>{children}</PageTransition>
+      <PageTransition>{children}</PageTransition>
 
       <nav className={styles.bottomNav}>
         <Link href={`/${locale}`} className={styles.bottomNavItem}>
