@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
 
     if (shouldLock) {
       // パスワードリセットメールを送信
-      await sendResetEmail(supabaseAdmin, email, locale ?? "ja", origin);
+      await sendResetEmail(email, locale ?? "ja", origin);
       return NextResponse.json(
         { error: "locked", justLocked: true },
         { status: 423 }
@@ -116,11 +116,14 @@ export async function POST(req: NextRequest) {
 }
 
 async function sendResetEmail(
-  supabaseAdmin: ReturnType<typeof createClient>,
   email: string,
   locale: string,
   origin: string
 ) {
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
   const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
     type: "recovery",
     email,
