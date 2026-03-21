@@ -53,23 +53,26 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { title, subtitle, summary, content, page_type, category_ids } = body;
+  const { title, subtitle, summary, content, page_type, category_ids, image_url } = body;
 
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  const updatePayload: Record<string, unknown> = {
+    title,
+    subtitle: subtitle || null,
+    summary,
+    content,
+    page_type,
+    updated_at: new Date().toISOString(),
+  };
+  if (image_url !== undefined) updatePayload.image_url = image_url;
+
   const { error } = await adminSupabase
     .from("wiki_pages")
-    .update({
-      title,
-      subtitle: subtitle || null,
-      summary,
-      content,
-      page_type,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq("slug", slug)
     .eq("locale", "ja");
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { clearAuthCache } from "@/lib/auth";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 import en from "@/locales/en.json";
@@ -29,16 +30,33 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, locale }),
       });
+      const json = await res.json();
 
-      if (error) {
-        alert(`${dict.auth.loginFailed}${error.message}`);
+      if (res.status === 423) {
+        if (json.justLocked) {
+          alert(dict.auth.lockoutJustLocked);
+        } else {
+          alert(dict.auth.lockoutStillLocked.replace("{mins}", String(json.remainingMinutes ?? 30)));
+        }
         return;
       }
 
+      if (!res.ok) {
+        if (json.attemptsLeft != null) {
+          alert(dict.auth.attemptsLeftWarning.replace("{count}", String(json.attemptsLeft)));
+        } else {
+          alert(`${dict.auth.loginFailed}${json.error}`);
+        }
+        return;
+      }
+
+      await supabase.auth.setSession(json.session);
+      clearAuthCache();
       window.location.href = `/${locale}`;
     } finally {
       setIsSubmitting(false);
@@ -115,6 +133,11 @@ export default function LoginPage() {
             <Link href={`/${locale}/register`} className={styles.inlineLink}>
               {dict.auth.loginToRegister}
             </Link>
+            <p style={{ marginTop: "14px" }}>
+              <Link href={`/${locale}/forgot-password`} className={styles.inlineLink}>
+                {dict.auth.forgotPassword}
+              </Link>
+            </p>
           </div>
 
         </section>

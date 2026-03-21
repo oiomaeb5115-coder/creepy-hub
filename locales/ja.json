@@ -126,7 +126,10 @@
     "alertEmailPassword": "メールアドレスとパスワードを入力してください。",
     "alertLoginFailed": "ログイン失敗: ",
     "alertRegisterFailed": "登録失敗: ",
-    "alertVerifyEmail": "確認メールを送信しました。"
+    "alertVerifyEmail": "確認メールを送信しました。",
+    "alertLockoutJustLocked": "パスワードを5回間違えたためアカウントをロックしました。パスワードリセットメールをお送りしました。",
+    "alertLockoutStillLocked": "アカウントがロックされています。あと{mins}分後に再試行するか、リセットメールをご確認ください。",
+    "alertAttemptsLeft": "ログイン失敗: あと{count}回間違えるとロックされます。"
   },
   "categoryCreate": {
     "breadcrumb": "STORIES / CATEGORY / NEW",
@@ -451,6 +454,18 @@
     "registerToLogin": "ログインページへ",
     "emailLabel": "メールアドレス",
     "passwordLabel": "パスワード",
-    "emptyFields": "メールアドレスとパスワードを入力してください。"
+    "emptyFields": "メールアドレスとパスワードを入力してください。",
+    "lockoutJustLocked": "パスワードを5回間違えたためアカウントをロックしました。パスワードリセットメールをお送りしました。",
+    "lockoutStillLocked": "アカウントがロックされています。あと{mins}分後に再試行するか、リセットメールをご確認ください。",
+    "attemptsLeftWarning": "ログイン失敗: あと{count}回間違えるとロックされます。",
+    "forgotPassword": "パスワードをお忘れですか？",
+    "resetPasswordHeading": "新しいパスワードを設定",
+    "resetPasswordInstruction": "新しいパスワードを入力してください。設定後、アカウントのロックが解除されます。",
+    "newPasswordLabel": "新しいパスワード",
+    "confirmPasswordLabel": "パスワード（確認）",
+    "resetPasswordSubmit": "パスワードを変更する",
+    "resetPasswordSuccess": "パスワードを変更しました。新しいパスワードでログインしてください。",
+    "resetPasswordMismatch": "パスワードが一致しません。",
+    "resetPasswordFailed": "パスワードの変更に失敗しました: "
   }
 }

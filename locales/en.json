@@ -126,7 +126,10 @@
     "alertEmailPassword": "Please enter your email and password.",
     "alertLoginFailed": "Login failed: ",
     "alertRegisterFailed": "Registration failed: ",
-    "alertVerifyEmail": "Verification email sent."
+    "alertVerifyEmail": "Verification email sent.",
+    "alertLockoutJustLocked": "Your account has been locked after 5 failed attempts. A password reset email has been sent.",
+    "alertLockoutStillLocked": "Your account is locked. Please try again in {mins} minutes or check your reset email.",
+    "alertAttemptsLeft": "Login failed: {count} more attempt(s) before your account is locked."
   },
   "categoryCreate": {
     "breadcrumb": "STORIES / CATEGORY / NEW",
@@ -451,6 +454,18 @@
     "registerToLogin": "Go to Login",
     "emailLabel": "Email Address",
     "passwordLabel": "Password",
-    "emptyFields": "Please enter your email address and password."
+    "emptyFields": "Please enter your email address and password.",
+    "lockoutJustLocked": "Your account has been locked after 5 failed attempts. A password reset email has been sent.",
+    "lockoutStillLocked": "Your account is locked. Please try again in {mins} minutes or check your reset email.",
+    "attemptsLeftWarning": "Login failed: {count} more attempt(s) before your account is locked.",
+    "forgotPassword": "Forgot your password?",
+    "resetPasswordHeading": "Set New Password",
+    "resetPasswordInstruction": "Enter your new password. Your account will be unlocked after saving.",
+    "newPasswordLabel": "New Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "resetPasswordSubmit": "Change Password",
+    "resetPasswordSuccess": "Password changed. Please log in with your new password.",
+    "resetPasswordMismatch": "Passwords do not match.",
+    "resetPasswordFailed": "Failed to change password: "
   }
 }

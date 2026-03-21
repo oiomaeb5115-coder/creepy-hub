@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { clearAuthCache } from "@/lib/auth";
 import styles from "./auth-drawer.module.css";
 
 type Mode = "login" | "register";
@@ -26,6 +27,9 @@ type Labels = {
   alertLoginFailed: string;
   alertRegisterFailed: string;
   alertVerifyEmail: string;
+  alertLockoutJustLocked: string;
+  alertLockoutStillLocked: string;
+  alertAttemptsLeft: string;
 };
 
 function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels }) {
@@ -79,8 +83,33 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
     }
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) { alert(`${labels.alertLoginFailed}${error.message}`); return; }
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, locale }),
+      });
+      const json = await res.json();
+
+      if (res.status === 423) {
+        if (json.justLocked) {
+          alert(labels.alertLockoutJustLocked);
+        } else {
+          alert(labels.alertLockoutStillLocked.replace("{mins}", String(json.remainingMinutes ?? 30)));
+        }
+        return;
+      }
+
+      if (!res.ok) {
+        if (json.attemptsLeft != null) {
+          alert(labels.alertAttemptsLeft.replace("{count}", String(json.attemptsLeft)));
+        } else {
+          alert(`${labels.alertLoginFailed}${json.error}`);
+        }
+        return;
+      }
+
+      await supabase.auth.setSession(json.session);
+      clearAuthCache();
       window.location.href = `/${locale}`;
     } finally {
       setIsSubmitting(false);

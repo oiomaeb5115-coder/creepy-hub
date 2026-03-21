@@ -7,6 +7,13 @@ export async function GET(request: Request) {
   const locale = requestUrl.searchParams.get("locale") ?? "ja";
   const type = requestUrl.searchParams.get("type");
 
+  // recovery の場合はクライアント側でセッションを確立するため、code をそのまま転送する
+  if (type === "recovery") {
+    return NextResponse.redirect(
+      new URL(`/${locale}/reset-password?code=${code ?? ""}`, request.url)
+    );
+  }
+
   if (code) {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,

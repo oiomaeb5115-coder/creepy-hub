@@ -8,18 +8,25 @@ import { getIsAdmin, getAccessToken } from "@/lib/auth";
 import BackButton from "@/components/BackButton";
 
 type PageType = "general" | "urban_legend" | "incident" | "work" | "region" | "term" | "person";
-type Chapter = { id: number; title: string; body: string };
+type Chapter = { id: number; title: string; body: string; imageFile: File | null; imagePreview: string; existingImageUrl: string };
 type Category = { id: number; slug: string; name: string };
 
 function parseChapters(content: string): Chapter[] {
-  if (!content.trim()) return [{ id: 1, title: "", body: "" }];
+  if (!content.trim()) return [{ id: 1, title: "", body: "", imageFile: null, imagePreview: "", existingImageUrl: "" }];
   const parts = content.split(/\n\n(?=## )/);
   return parts.map((part, i) => {
     const lines = part.split("\n");
     const titleLine = lines[0] ?? "";
     const title = titleLine.startsWith("## ") ? titleLine.slice(3) : "";
-    const body = lines.slice(title ? 2 : 0).join("\n").trim();
-    return { id: i + 1, title, body };
+    let body = lines.slice(title ? 2 : 0).join("\n").trim();
+    // 末尾の画像マークダウンを抽出
+    const imgMatch = body.match(/\n\n!\[.*?\]\((https?:\/\/[^)]+)\)\s*$/);
+    let existingImageUrl = "";
+    if (imgMatch) {
+      existingImageUrl = imgMatch[1];
+      body = body.slice(0, imgMatch.index!).trim();
+    }
+    return { id: i + 1, title, body, imageFile: null, imagePreview: "", existingImageUrl };
   });
 }
 
@@ -35,10 +42,14 @@ export default function WikiEditPage() {
   const [subtitle, setSubtitle] = useState("");
   const [summary, setSummary] = useState("");
   const [pageType, setPageType] = useState<PageType>("general");
-  const [chapters, setChapters] = useState<Chapter[]>([{ id: 1, title: "", body: "" }]);
+  const [chapters, setChapters] = useState<Chapter[]>([{ id: 1, title: "", body: "", imageFile: null, imagePreview: "", existingImageUrl: "" }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [allCategories, setAllCategories] = useState<Category[]>([]);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+  // サムネイル
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState("");
+  const [existingThumbnailUrl, setExistingThumbnailUrl] = useState("");
 
   useEffect(() => {
     const init = async () => {
@@ -47,7 +58,7 @@ export default function WikiEditPage() {
 
       const { data: page, error } = await supabase
         .from("wiki_pages")
-        .select("id, title, subtitle, summary, content, page_type, author_id")
+        .select("id, title, subtitle, summary, content, page_type, author_id, image_url")
         .eq("slug", slug)
         .eq("locale", "ja")
         .single();
@@ -64,6 +75,7 @@ export default function WikiEditPage() {
       setSummary(page.summary ?? "");
       setPageType((page.page_type as PageType) ?? "general");
       setChapters(parseChapters(page.content ?? ""));
+      setExistingThumbnailUrl(page.image_url ?? "");
 
       const [joinsResult, catsResult] = await Promise.all([
         supabase.from("wiki_page_categories").select("category_id").eq("wiki_page_id", page.id),
@@ -78,7 +90,7 @@ export default function WikiEditPage() {
   }, [locale, slug, router]);
 
   const addChapter = () =>
-    setChapters((prev) => [...prev, { id: Date.now(), title: "", body: "" }]);
+    setChapters((prev) => [...prev, { id: Date.now(), title: "", body: "", imageFile: null, imagePreview: "", existingImageUrl: "" }]);
 
   const removeChapter = (id: number) => {
     if (chapters.length === 1) { alert("章は最低1つ必要です。"); return; }
@@ -98,15 +110,77 @@ export default function WikiEditPage() {
   const updateChapter = (i: number, key: "title" | "body", val: string) =>
     setChapters((prev) => prev.map((c, idx) => idx === i ? { ...c, [key]: val } : c));
 
+  const uploadImage = async (file: File, uid: string, suffix: string): Promise<string> => {
+    const fileExt = file.name.split(".").pop() || "jpg";
+    const fileName = `${uid}/${Date.now()}-${suffix}.${fileExt}`;
+    const { error } = await supabase.storage
+      .from("wiki-images")
+      .upload(fileName, file, { cacheControl: "3600", upsert: false });
+    if (error) throw new Error(error.message);
+    const { data } = supabase.storage.from("wiki-images").getPublicUrl(fileName);
+    return data.publicUrl;
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setThumbnailFile(file);
+    setThumbnailPreview(URL.createObjectURL(file));
+  };
+
+  const handleChapterImageChange = (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setChapters((prev) =>
+      prev.map((c, idx) => idx === i ? { ...c, imageFile: file, imagePreview: URL.createObjectURL(file) } : c)
+    );
+  };
+
+  const removeChapterImage = (i: number) => {
+    setChapters((prev) =>
+      prev.map((c, idx) => idx === i ? { ...c, imageFile: null, imagePreview: "", existingImageUrl: "" } : c)
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) { alert("タイトルを入力してください。"); return; }
     if (!summary.trim()) { alert("概要を入力してください。"); return; }
     setIsSubmitting(true);
     try {
-      const content = chapters
-        .map((ch, i) => `## ${ch.title.trim() || `章${i + 1}`}\n\n${ch.body.trim()}`)
-        .join("\n\n");
+      const { data: { session } } = await supabase.auth.getSession();
+      const uid = session?.user?.id ?? "";
+
+      // サムネイルのアップロード
+      let imageUrl: string | null = existingThumbnailUrl || null;
+      if (thumbnailFile) {
+        try {
+          imageUrl = await uploadImage(thumbnailFile, uid, "thumb");
+        } catch (err) {
+          alert(`サムネイルのアップロードに失敗しました: ${err instanceof Error ? err.message : ""}`);
+          return;
+        }
+      }
+
+      // 章ごとの本文＋画像を構築
+      const chapterParts: string[] = [];
+      for (let i = 0; i < chapters.length; i++) {
+        const ch = chapters[i];
+        let part = `## ${ch.title.trim() || `章${i + 1}`}\n\n${ch.body.trim()}`;
+        if (ch.imageFile) {
+          try {
+            const imgUrl = await uploadImage(ch.imageFile, uid, `ch${i}`);
+            part += `\n\n![章${i + 1}](${imgUrl})`;
+          } catch (err) {
+            alert(`章${i + 1}の画像アップロードに失敗しました: ${err instanceof Error ? err.message : ""}`);
+            return;
+          }
+        } else if (ch.existingImageUrl) {
+          part += `\n\n![章${i + 1}](${ch.existingImageUrl})`;
+        }
+        chapterParts.push(part);
+      }
+      const content = chapterParts.join("\n\n");
 
       const token = await getAccessToken();
       const res = await fetch(`/api/wiki/${slug}`, {
@@ -122,6 +196,7 @@ export default function WikiEditPage() {
           content,
           page_type: pageType,
           category_ids: selectedCategoryIds,
+          image_url: imageUrl,
         }),
       });
 
@@ -212,6 +287,26 @@ export default function WikiEditPage() {
               <textarea style={{ ...controlStyle, height: 80, resize: "vertical" }} value={summary} onChange={(e) => setSummary(e.target.value)} />
             </div>
 
+            <div style={groupStyle}>
+              <label style={labelStyle}>サムネイル画像</label>
+              {(thumbnailPreview || existingThumbnailUrl) && (
+                <img
+                  src={thumbnailPreview || existingThumbnailUrl}
+                  alt="サムネイル"
+                  style={{ width: "100%", maxHeight: 200, objectFit: "cover", borderRadius: 4, marginBottom: 8, border: "1px solid rgba(180,100,110,0.2)" }}
+                />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleThumbnailChange}
+                style={{ fontSize: 12, color: "#a09080" }}
+              />
+              {existingThumbnailUrl && !thumbnailPreview && (
+                <p style={{ margin: "4px 0 0", fontSize: 11, color: "#7a6a60" }}>現在の画像を使用中。新しい画像を選択すると上書きされます。</p>
+              )}
+            </div>
+
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h3 style={{ margin: 0, fontSize: 14, color: "#c8b8b0" }}>章構成</h3>
               <button type="button" style={secondaryBtn} onClick={addChapter}>章を追加</button>
@@ -234,6 +329,31 @@ export default function WikiEditPage() {
                 <div style={groupStyle}>
                   <label style={labelStyle}>本文</label>
                   <textarea style={{ ...controlStyle, height: 180, resize: "vertical" }} value={ch.body} onChange={(e) => updateChapter(i, "body", e.target.value)} />
+                </div>
+                <div style={groupStyle}>
+                  <label style={labelStyle}>章の画像（任意）</label>
+                  {(ch.imagePreview || ch.existingImageUrl) && (
+                    <div style={{ position: "relative", marginBottom: 6 }}>
+                      <img
+                        src={ch.imagePreview || ch.existingImageUrl}
+                        alt={`章${i + 1}の画像`}
+                        style={{ width: "100%", maxHeight: 160, objectFit: "cover", borderRadius: 3, border: "1px solid rgba(180,100,110,0.2)" }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeChapterImage(i)}
+                        style={{ position: "absolute", top: 4, right: 4, background: "rgba(0,0,0,0.6)", border: "none", color: "#e08080", cursor: "pointer", borderRadius: 3, padding: "2px 6px", fontSize: 11 }}
+                      >
+                        削除
+                      </button>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleChapterImageChange(i, e)}
+                    style={{ fontSize: 12, color: "#a09080" }}
+                  />
                 </div>
               </div>
             ))}
