@@ -129,7 +129,10 @@
     "alertVerifyEmail": "Verification email sent.",
     "alertLockoutJustLocked": "Your account has been locked after 5 failed attempts. A password reset email has been sent.",
     "alertLockoutStillLocked": "Your account is locked. Please try again in {mins} minutes or check your reset email.",
-    "alertAttemptsLeft": "Login failed: {count} more attempt(s) before your account is locked."
+    "alertAttemptsLeft": "Login failed: {count} more attempt(s) before your account is locked.",
+    "orDivider": "or",
+    "googleLogin": "Sign in with Google",
+    "googleRegister": "Sign up with Google"
   },
   "categoryCreate": {
     "breadcrumb": "STORIES / CATEGORY / NEW",
@@ -466,6 +469,9 @@
     "resetPasswordSubmit": "Change Password",
     "resetPasswordSuccess": "Password changed. Please log in with your new password.",
     "resetPasswordMismatch": "Passwords do not match.",
-    "resetPasswordFailed": "Failed to change password: "
+    "resetPasswordFailed": "Failed to change password: ",
+    "orDivider": "or",
+    "googleLogin": "Sign in with Google",
+    "googleRegister": "Sign up with Google"
   }
 }

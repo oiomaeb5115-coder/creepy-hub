@@ -129,7 +129,10 @@
     "alertVerifyEmail": "確認メールを送信しました。",
     "alertLockoutJustLocked": "パスワードを5回間違えたためアカウントをロックしました。パスワードリセットメールをお送りしました。",
     "alertLockoutStillLocked": "アカウントがロックされています。あと{mins}分後に再試行するか、リセットメールをご確認ください。",
-    "alertAttemptsLeft": "ログイン失敗: あと{count}回間違えるとロックされます。"
+    "alertAttemptsLeft": "ログイン失敗: あと{count}回間違えるとロックされます。",
+    "orDivider": "または",
+    "googleLogin": "Google でログイン",
+    "googleRegister": "Google で登録"
   },
   "categoryCreate": {
     "breadcrumb": "STORIES / CATEGORY / NEW",
@@ -466,6 +469,9 @@
     "resetPasswordSubmit": "パスワードを変更する",
     "resetPasswordSuccess": "パスワードを変更しました。新しいパスワードでログインしてください。",
     "resetPasswordMismatch": "パスワードが一致しません。",
-    "resetPasswordFailed": "パスワードの変更に失敗しました: "
+    "resetPasswordFailed": "パスワードの変更に失敗しました: ",
+    "orDivider": "または",
+    "googleLogin": "Google でログイン",
+    "googleRegister": "Google で登録"
   }
 }
