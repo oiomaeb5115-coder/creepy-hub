@@ -350,15 +350,6 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
             }}
           />
 
-          <section style={{ marginTop: 30 }}>
-            <h3>{dict.post.comments}</h3>
-
-            <CommentTree
-              comments={comments}
-              postId={post.id}
-            />
-          </section>
-
           {relatedPosts.length > 0 && (
             <section className={styles.relatedSection}>
               <h3 className={styles.relatedTitle}>

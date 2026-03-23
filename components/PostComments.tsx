@@ -225,7 +225,7 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
     <section
       style={{
         marginTop: "28px",
-        borderTop: "1px solid rgba(94, 118, 155, 0.18)",
+        borderTop: "1px solid rgba(161, 102, 108, 0.24)",
         paddingTop: "24px",
       }}
     >
@@ -234,7 +234,7 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
           style={{
             margin: 0,
             fontSize: "24px",
-            color: "#f1f5fc",
+            color: "#f5f1eb",
           }}
         >
           {t.comment}
@@ -242,7 +242,7 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
         <p
           style={{
             margin: "10px 0 0",
-            color: "#9eb0c8",
+            color: "#c0b5a8",
             lineHeight: 1.8,
           }}
         >
@@ -250,63 +250,10 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
         </p>
       </div>
 
-      <form onSubmit={handlePost} style={{ marginBottom: "24px" }}>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder={
-            currentUser
-              ? t.commentWritePlaceholder
-              : t.commentLoginRequired
-          }
-          disabled={!currentUser || posting}
-          style={{
-            width: "100%",
-            minHeight: "120px",
-            padding: "14px 16px",
-            boxSizing: "border-box",
-            borderRadius: "10px",
-            border: "1px solid rgba(99, 124, 165, 0.28)",
-            background: "rgba(3, 10, 19, 0.96)",
-            color: "#eef4ff",
-            fontSize: "16px",
-            outline: "none",
-            resize: "vertical",
-          }}
-        />
-
-        <div
-          style={{
-            marginTop: "12px",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <button
-            type="submit"
-            disabled={!currentUser || posting}
-            style={{
-              minHeight: "44px",
-              padding: "0 18px",
-              borderRadius: "10px",
-              border: "1px solid rgba(143, 174, 223, 0.34)",
-              background:
-                "linear-gradient(to bottom, rgba(84, 116, 163, 0.96), rgba(57, 82, 121, 0.96))",
-              color: "#eef4ff",
-              fontWeight: 700,
-              cursor: !currentUser || posting ? "not-allowed" : "pointer",
-              opacity: !currentUser || posting ? 0.7 : 1,
-            }}
-          >
-            {posting ? t.commentPosting : t.commentSubmit}
-          </button>
-        </div>
-      </form>
-
       {loading ? (
-        <p style={{ color: "#aebcd1" }}>{t.commentLoading}</p>
+        <p style={{ color: "#9a8880" }}>{t.commentLoading}</p>
       ) : rootComments.length === 0 ? (
-        <p style={{ color: "#aebcd1" }}>{t.noComments}</p>
+        <p style={{ color: "#9a8880" }}>{t.noComments}</p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           {rootComments.map((comment) => {
@@ -317,8 +264,8 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
               <article
                 key={comment.id}
                 style={{
-                  border: "1px solid rgba(104, 128, 165, 0.24)",
-                  background: "rgba(7, 14, 25, 0.94)",
+                  border: "1px solid rgba(161, 102, 108, 0.24)",
+                  background: "#140a0c",
                   borderRadius: "12px",
                   padding: "16px",
                 }}
@@ -332,10 +279,10 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
                     flexWrap: "wrap",
                   }}
                 >
-                  <div style={{ color: "#cfe0ff", fontWeight: 700 }}>
+                  <div style={{ color: "#f5f1eb", fontWeight: 700 }}>
                     @{author?.username ?? "unknown"}
                   </div>
-                  <div style={{ color: "#8ea4c2", fontSize: "13px" }}>
+                  <div style={{ color: "#8a7870", fontSize: "13px" }}>
                     {new Date(comment.created_at).toLocaleString(dateLocale)}
                   </div>
                 </div>
@@ -343,7 +290,7 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
                 <p
                   style={{
                     margin: 0,
-                    color: "#d8e0ed",
+                    color: "#e0d8d0",
                     lineHeight: 1.9,
                   }}
                 >
@@ -367,9 +314,9 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
                       minHeight: "34px",
                       padding: "0 12px",
                       borderRadius: "8px",
-                      border: "1px solid rgba(104, 128, 165, 0.24)",
-                      background: "rgba(11, 19, 32, 0.9)",
-                      color: "#cfe0ff",
+                      border: "1px solid rgba(177, 110, 115, 0.28)",
+                      background: "rgba(50, 15, 20, 0.72)",
+                      color: "#c0b5a8",
                       cursor: "pointer",
                     }}
                   >
@@ -394,9 +341,9 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
                         padding: "12px 14px",
                         boxSizing: "border-box",
                         borderRadius: "10px",
-                        border: "1px solid rgba(99, 124, 165, 0.28)",
-                        background: "rgba(3, 10, 19, 0.96)",
-                        color: "#eef4ff",
+                        border: "1px solid rgba(165, 99, 104, 0.28)",
+                        background: "rgba(10, 3, 5, 0.96)",
+                        color: "#e0d8d0",
                         fontSize: "15px",
                         outline: "none",
                         resize: "vertical",
@@ -421,9 +368,9 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
                           minHeight: "38px",
                           padding: "0 14px",
                           borderRadius: "8px",
-                          border: "1px solid rgba(104, 128, 165, 0.24)",
-                          background: "rgba(11, 19, 32, 0.9)",
-                          color: "#cfe0ff",
+                          border: "1px solid rgba(177, 110, 115, 0.28)",
+                          background: "rgba(50, 15, 20, 0.72)",
+                          color: "#c0b5a8",
                           cursor: "pointer",
                         }}
                       >
@@ -438,10 +385,10 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
                           minHeight: "38px",
                           padding: "0 14px",
                           borderRadius: "8px",
-                          border: "1px solid rgba(143, 174, 223, 0.34)",
+                          border: "1px solid rgba(200, 100, 110, 0.34)",
                           background:
-                            "linear-gradient(to bottom, rgba(84, 116, 163, 0.96), rgba(57, 82, 121, 0.96))",
-                          color: "#eef4ff",
+                            "linear-gradient(to bottom, rgba(140, 40, 50, 0.96), rgba(100, 25, 35, 0.96))",
+                          color: "#f5f1eb",
                           fontWeight: 700,
                           cursor: !currentUser || replyPosting ? "not-allowed" : "pointer",
                           opacity: !currentUser || replyPosting ? 0.7 : 1,
@@ -458,7 +405,7 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
                     style={{
                       marginTop: "16px",
                       paddingLeft: "16px",
-                      borderLeft: "2px solid rgba(104, 128, 165, 0.24)",
+                      borderLeft: "2px solid rgba(161, 102, 108, 0.24)",
                       display: "flex",
                       flexDirection: "column",
                       gap: "12px",
@@ -472,7 +419,7 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
                           key={reply.id}
                           style={{
                             borderRadius: "10px",
-                            background: "rgba(11, 19, 32, 0.9)",
+                            background: "rgba(18, 5, 8, 0.96)",
                             padding: "12px 14px",
                           }}
                         >
@@ -485,10 +432,10 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
                               flexWrap: "wrap",
                             }}
                           >
-                            <div style={{ color: "#cfe0ff", fontWeight: 700 }}>
+                            <div style={{ color: "#f5f1eb", fontWeight: 700 }}>
                               @{replyAuthor?.username ?? "unknown"}
                             </div>
-                            <div style={{ color: "#8ea4c2", fontSize: "12px" }}>
+                            <div style={{ color: "#8a7870", fontSize: "12px" }}>
                               {new Date(reply.created_at).toLocaleString(dateLocale)}
                             </div>
                           </div>
@@ -496,7 +443,7 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
                           <p
                             style={{
                               margin: 0,
-                              color: "#d8e0ed",
+                              color: "#e0d8d0",
                               lineHeight: 1.8,
                             }}
                           >
@@ -514,6 +461,63 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
           })}
         </div>
       )}
+
+      <form onSubmit={handlePost} style={{ marginTop: "24px" }}>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder={
+            currentUser
+              ? t.commentWritePlaceholder
+              : t.commentLoginRequired
+          }
+          disabled={!currentUser || posting}
+          style={{
+            width: "100%",
+            minHeight: "120px",
+            padding: "14px 16px",
+            boxSizing: "border-box",
+            borderRadius: "10px",
+            border: "1px solid rgba(165, 99, 104, 0.28)",
+            background: "rgba(10, 3, 5, 0.96)",
+            color: "#e0d8d0",
+            fontSize: "16px",
+            outline: "none",
+            resize: "vertical",
+          }}
+        />
+
+        <div
+          style={{
+            marginTop: "12px",
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <button
+            type="submit"
+            disabled={!currentUser || posting}
+            style={{
+              width: "100%",
+              minHeight: "48px",
+              padding: "0 24px",
+              borderRadius: "0",
+              border: "1px solid rgba(200, 100, 110, 0.5)",
+              borderTop: "2px solid rgba(220, 120, 130, 0.6)",
+              background:
+                "linear-gradient(to bottom, rgba(140, 40, 50, 0.96), rgba(80, 18, 26, 0.98))",
+              color: "#f5f1eb",
+              fontWeight: 700,
+              fontSize: "14px",
+              letterSpacing: "0.12em",
+              cursor: !currentUser || posting ? "not-allowed" : "pointer",
+              opacity: !currentUser || posting ? 0.6 : 1,
+            }}
+          >
+            {posting ? t.commentPosting : t.commentSubmit}
+          </button>
+        </div>
+      </form>
     </section>
   );
 }
