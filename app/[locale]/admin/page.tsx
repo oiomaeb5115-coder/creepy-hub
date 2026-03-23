@@ -37,6 +37,15 @@ type ApproveStatus = "idle" | "loading" | "done" | "error";
 type DeleteStatus = "idle" | "loading" | "done" | "error";
 type TrashStatus = "idle" | "loading" | "restored" | "purged" | "error";
 
+type ProfileRow = {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  banner_url: string | null;
+  bio: string | null;
+};
+
 export default function AdminPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
@@ -63,6 +72,17 @@ export default function AdminPage() {
   const [trashWikiStatus, setTrashWikiStatus] = useState<Record<string, TrashStatus>>({});
   const [trashCatStatus, setTrashCatStatus] = useState<Record<number, TrashStatus>>({});
 
+  // プロフィール編集
+  const [profile, setProfile] = useState<ProfileRow | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editDisplayName, setEditDisplayName] = useState("");
+  const [editAvatarUrl, setEditAvatarUrl] = useState("");
+  const [editBannerUrl, setEditBannerUrl] = useState("");
+  const [editBio, setEditBio] = useState("");
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     const init = async () => {
       // キャッシュに依存しない直接クエリで管理者チェック
@@ -80,6 +100,14 @@ export default function AdminPage() {
         router.replace(`/${locale}`);
         return;
       }
+
+      // 管理者自身のプロフィールを取得
+      const { data: myProfile } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url, banner_url, bio")
+        .eq("id", session.user.id)
+        .single();
+      setProfile((myProfile as ProfileRow | null) ?? null);
 
       // 未翻訳ストーリーを取得
       const { data: allStories } = await supabase
@@ -174,6 +202,99 @@ export default function AdminPage() {
 
     init();
   }, [locale, router]);
+
+  // ── プロフィール編集ヘルパー ──
+  const uploadImage = async (file: File, bucket: "avatars" | "banners"): Promise<string | null> => {
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      alert("画像ファイル（JPEG / PNG / WebP / GIF）のみアップロード可能です");
+      return null;
+    }
+    if (file.size > MAX_SIZE) {
+      alert("ファイルサイズは5MB以内にしてください");
+      return null;
+    }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return null;
+    const fileExt = file.name.split(".").pop() || "jpg";
+    const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
+    const { error: uploadError } = await supabase.storage
+      .from(bucket)
+      .upload(fileName, file, { cacheControl: "3600", upsert: true });
+    if (uploadError) {
+      alert(`${dict.account.imageFailed}${uploadError.message}`);
+      return null;
+    }
+    const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
+    return data.publicUrl;
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    try {
+      const url = await uploadImage(file, "avatars");
+      if (url) setEditAvatarUrl(url);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingBanner(true);
+    try {
+      const url = await uploadImage(file, "banners");
+      if (url) setEditBannerUrl(url);
+    } finally {
+      setUploadingBanner(false);
+    }
+  };
+
+  const openEdit = () => {
+    setEditDisplayName(profile?.display_name ?? "");
+    setEditAvatarUrl(profile?.avatar_url ?? "");
+    setEditBannerUrl(profile?.banner_url ?? "");
+    setEditBio(profile?.bio ?? "");
+    setEditing(true);
+  };
+
+  const handleSave = async () => {
+    if (!profile) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          display_name: editDisplayName.trim() || null,
+          avatar_url: editAvatarUrl.trim() || null,
+          banner_url: editBannerUrl.trim() || null,
+          bio: editBio.trim() || null,
+        })
+        .eq("id", profile.id);
+      if (error) {
+        alert(`${dict.account.saveFailed}${error.message}`);
+        return;
+      }
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              display_name: editDisplayName.trim() || null,
+              avatar_url: editAvatarUrl.trim() || null,
+              banner_url: editBannerUrl.trim() || null,
+              bio: editBio.trim() || null,
+            }
+          : prev
+      );
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const translateStory = async (postId: number) => {
     setStoryStatus((prev) => ({ ...prev, [postId]: "loading" }));
@@ -429,6 +550,139 @@ export default function AdminPage() {
             {dict.admin.homeLink}
           </Link>
         </header>
+
+        {/* 管理者プロフィール */}
+        <section style={profileSectionStyle}>
+          <h2 style={sectionTitleStyle}>ADMIN PROFILE</h2>
+          <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+            {/* アバター */}
+            <div style={{ flexShrink: 0 }}>
+              {profile?.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={profile.display_name ?? "avatar"}
+                  style={profileAvatarStyle}
+                />
+              ) : (
+                <div style={profileAvatarPlaceholderStyle}>AVATAR</div>
+              )}
+            </div>
+
+            {/* 本体 */}
+            <div style={{ flex: 1 }}>
+              {editing ? (
+                /* ── 編集フォーム ── */
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div>
+                    <label style={profileLabelStyle}>{dict.account.displayNameLabel}</label>
+                    <input
+                      style={profileInputStyle}
+                      value={editDisplayName}
+                      onChange={(e) => setEditDisplayName(e.target.value)}
+                      placeholder={dict.account.displayNameLabel}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={profileLabelStyle}>{dict.account.uploadAvatar}</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={profileInputStyle}
+                      onChange={handleAvatarUpload}
+                      disabled={uploadingAvatar}
+                    />
+                    {uploadingAvatar && <p style={profileHintStyle}>{dict.account.uploading}</p>}
+                  </div>
+
+                  <div>
+                    <label style={profileLabelStyle}>{dict.account.avatarUrlLabel}</label>
+                    <input
+                      style={profileInputStyle}
+                      value={editAvatarUrl}
+                      onChange={(e) => setEditAvatarUrl(e.target.value)}
+                      placeholder="https://..."
+                    />
+                  </div>
+
+                  {editAvatarUrl && (
+                    <img src={editAvatarUrl} alt="avatar preview" style={{ width: 60, height: 60, borderRadius: "50%", objectFit: "cover" }} />
+                  )}
+
+                  <div>
+                    <label style={profileLabelStyle}>{dict.account.uploadBanner}</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={profileInputStyle}
+                      onChange={handleBannerUpload}
+                      disabled={uploadingBanner}
+                    />
+                    {uploadingBanner && <p style={profileHintStyle}>{dict.account.uploading}</p>}
+                  </div>
+
+                  <div>
+                    <label style={profileLabelStyle}>{dict.account.bannerUrlLabel}</label>
+                    <input
+                      style={profileInputStyle}
+                      value={editBannerUrl}
+                      onChange={(e) => setEditBannerUrl(e.target.value)}
+                      placeholder="https://..."
+                    />
+                  </div>
+
+                  {editBannerUrl && (
+                    <img src={editBannerUrl} alt="banner preview" style={{ width: "100%", maxHeight: 120, objectFit: "cover", borderRadius: 4 }} />
+                  )}
+
+                  <div>
+                    <label style={profileLabelStyle}>{dict.account.bioInputLabel}</label>
+                    <textarea
+                      style={profileTextareaStyle}
+                      value={editBio}
+                      onChange={(e) => setEditBio(e.target.value)}
+                      placeholder={dict.account.bioInputLabel}
+                      rows={3}
+                    />
+                  </div>
+
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      style={profileSaveBtnStyle}
+                      onClick={handleSave}
+                      disabled={saving || uploadingAvatar || uploadingBanner}
+                    >
+                      {saving ? dict.account.saving : dict.account.saveButton}
+                    </button>
+                    <button
+                      style={profileCancelBtnStyle}
+                      onClick={() => setEditing(false)}
+                      disabled={saving}
+                    >
+                      {dict.common.cancel}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* ── 表示モード ── */
+                <>
+                  <p style={{ margin: "0 0 2px", fontSize: 16, fontWeight: 600, color: "#e8d8d0" }}>
+                    {profile?.display_name ?? "—"}
+                  </p>
+                  <p style={{ margin: "0 0 8px", fontSize: 12, color: "#7a6a60" }}>
+                    @{profile?.username ?? "username"}
+                  </p>
+                  <p style={{ margin: "0 0 12px", fontSize: 13, color: "#c8b8b0", whiteSpace: "pre-wrap" }}>
+                    {profile?.bio ?? "—"}
+                  </p>
+                  <button style={profileEditBtnStyle} onClick={openEdit}>
+                    {dict.account.editBtn}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </section>
 
         {/* ストーリー翻訳 */}
         <section style={sectionStyle}>
@@ -1039,6 +1293,102 @@ const purgeButtonStyle: React.CSSProperties = {
   background: "rgba(80, 10, 10, 0.7)",
   border: "1px solid rgba(200, 60, 60, 0.4)",
   color: "#e09090",
+  cursor: "pointer",
+  borderRadius: 4,
+};
+
+/* ---- プロフィール編集スタイル ---- */
+const profileSectionStyle: React.CSSProperties = {
+  marginBottom: 48,
+  paddingBottom: 32,
+  borderBottom: "1px solid rgba(180,100,110,0.15)",
+};
+
+const profileAvatarStyle: React.CSSProperties = {
+  width: 64,
+  height: 64,
+  borderRadius: "50%",
+  objectFit: "cover",
+  border: "1px solid rgba(180,100,110,0.3)",
+};
+
+const profileAvatarPlaceholderStyle: React.CSSProperties = {
+  width: 64,
+  height: 64,
+  borderRadius: "50%",
+  background: "rgba(180,100,110,0.1)",
+  border: "1px solid rgba(180,100,110,0.25)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: 10,
+  color: "#7a6a60",
+  letterSpacing: "0.1em",
+};
+
+const profileLabelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: 11,
+  color: "#7a6a60",
+  letterSpacing: "0.1em",
+  marginBottom: 4,
+};
+
+const profileInputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "6px 10px",
+  fontSize: 13,
+  background: "rgba(20,10,12,0.8)",
+  border: "1px solid rgba(180,100,110,0.3)",
+  borderRadius: 4,
+  color: "#e8d8d0",
+  boxSizing: "border-box",
+};
+
+const profileTextareaStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "6px 10px",
+  fontSize: 13,
+  background: "rgba(20,10,12,0.8)",
+  border: "1px solid rgba(180,100,110,0.3)",
+  borderRadius: 4,
+  color: "#e8d8d0",
+  boxSizing: "border-box",
+  resize: "vertical",
+};
+
+const profileHintStyle: React.CSSProperties = {
+  fontSize: 11,
+  color: "#7a6a60",
+  margin: "4px 0 0",
+};
+
+const profileEditBtnStyle: React.CSSProperties = {
+  padding: "5px 14px",
+  fontSize: 12,
+  background: "rgba(40, 10, 15, 0.85)",
+  border: "1px solid rgba(180, 100, 110, 0.4)",
+  color: "#c8a8b0",
+  cursor: "pointer",
+  borderRadius: 4,
+};
+
+const profileSaveBtnStyle: React.CSSProperties = {
+  padding: "5px 14px",
+  fontSize: 12,
+  background: "rgba(40, 80, 40, 0.4)",
+  border: "1px solid rgba(80, 160, 80, 0.4)",
+  color: "#80c080",
+  cursor: "pointer",
+  borderRadius: 4,
+};
+
+const profileCancelBtnStyle: React.CSSProperties = {
+  padding: "5px 14px",
+  fontSize: 12,
+  background: "rgba(40, 10, 15, 0.6)",
+  border: "1px solid rgba(180, 100, 110, 0.25)",
+  color: "#a08888",
   cursor: "pointer",
   borderRadius: 4,
 };
