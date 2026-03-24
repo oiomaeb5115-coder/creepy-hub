@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "../page.module.css";
@@ -20,7 +21,15 @@ type StoryPost = {
 
 export default async function StorySearchPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { q = "" } = await searchParams;
+  const sp = await searchParams;
+  const rawQ = sp.q;
+  const q = (rawQ ?? "").trim();
+
+  // 空クエリでフォーム送信された場合はクリーンなURLにリダイレクト
+  if (rawQ !== undefined && q === "") {
+    redirect(`/${locale}/post/search`);
+  }
+
   const dict = await getDictionary(locale);
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
