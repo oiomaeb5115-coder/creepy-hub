@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAccessToken } from "@/lib/auth";
+import { getAllStoryTags } from "@/lib/tags";
 import styles from "./post-drawer.module.css";
 
 type Labels = {
@@ -43,9 +44,10 @@ export default function PostDrawer({ locale, labels }: Props) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [categories, setCategories] = useState<{ id: number; name: string; name_en: string | null }[]>([]);
+  const [availableTags, setAvailableTags] = useState<{ id: number; slug: string; name: string }[]>([]);
   const [categoryId, setCategoryId] = useState("");
   const [title, setTitle] = useState("");
-  const [tags, setTags] = useState("");
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [body, setBody] = useState("");
   const [mainImage1, setMainImage1] = useState<File | null>(null);
   const [mainImage2, setMainImage2] = useState<File | null>(null);
@@ -83,7 +85,7 @@ export default function PostDrawer({ locale, labels }: Props) {
       const draft = JSON.parse(raw);
       if (draft.title) setTitle(draft.title);
       if (draft.body) setBody(draft.body);
-      if (draft.tags) setTags(draft.tags);
+      if (draft.selectedTagIds) setSelectedTagIds(draft.selectedTagIds);
       if (draft.categoryId) setCategoryId(draft.categoryId);
       setDraftRestored(true);
     } catch { /* ignore */ }
@@ -93,21 +95,21 @@ export default function PostDrawer({ locale, labels }: Props) {
     if (!userId) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
-      localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, tags, body }));
+      localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, selectedTagIds, body }));
     }, 500);
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [userId, categoryId, title, tags, body]);
+  }, [userId, categoryId, title, selectedTagIds, body]);
 
   const deleteDraft = () => {
     if (!userId) return;
     localStorage.removeItem(`draft_post_${userId}`);
     setDraftRestored(false);
-    setCategoryId(""); setTitle(""); setTags(""); setBody("");
+    setCategoryId(""); setTitle(""); setSelectedTagIds([]); setBody("");
   };
 
   const saveDraftManually = () => {
     if (!userId) return;
-    localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, tags, body }));
+    localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, selectedTagIds, body }));
     setIsSaved(true);
     if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
     savedTimerRef.current = setTimeout(() => setIsSaved(false), 2000);
@@ -129,7 +131,17 @@ export default function PostDrawer({ locale, labels }: Props) {
       .then(({ data }) => {
         if (data) setCategories(data as { id: number; name: string; name_en: string | null }[]);
       });
+
+    getAllStoryTags().then(({ data }) => {
+      if (data) setAvailableTags(data as { id: number; slug: string; name: string }[]);
+    });
   }, []);
+
+  const toggleTag = (tagId: number) => {
+    setSelectedTagIds((prev) =>
+      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
+    );
+  };
 
   const uploadImage = async (
     file: File | null,
@@ -204,8 +216,15 @@ export default function PostDrawer({ locale, labels }: Props) {
         }]);
       }
 
+      // タグを post_story_tags に保存
+      if (selectedTagIds.length > 0 && data) {
+        await supabase.from("post_story_tags").insert(
+          selectedTagIds.map((tagId) => ({ post_id: data.id, tag_id: tagId }))
+        );
+      }
+
       if (userId) localStorage.removeItem(`draft_post_${userId}`);
-      setTitle(""); setBody(""); setTags(""); setCategoryId("");
+      setTitle(""); setBody(""); setSelectedTagIds([]); setCategoryId("");
       setMainImage1(null); setMainImage2(null); setMainImage3(null);
       setDraftRestored(false);
       setIsOpen(false);
@@ -274,8 +293,23 @@ export default function PostDrawer({ locale, labels }: Props) {
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="drawer-tags">{labels.tagsLabel}</label>
-                <input id="drawer-tags" type="text" className={styles.formControl} placeholder="Backrooms, ARG, Liminal Space" value={tags} onChange={(e) => setTags(e.target.value)} />
+                <label>{labels.tagsLabel}</label>
+                {availableTags.length > 0 ? (
+                  <div className={styles.tagChipRow}>
+                    {availableTags.map((tag) => (
+                      <button
+                        type="button"
+                        key={tag.id}
+                        className={`${styles.tagChip} ${selectedTagIds.includes(tag.id) ? styles.tagChipActive : ""}`}
+                        onClick={() => toggleTag(tag.id)}
+                      >
+                        {tag.name}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className={styles.tagChipEmpty}>タグがありません</p>
+                )}
               </div>
 
               <div className={styles.formGroup}>

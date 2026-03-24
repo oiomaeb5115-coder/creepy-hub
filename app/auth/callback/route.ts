@@ -1,6 +1,43 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+function generateRandomUsername(): string {
+  const n = Math.floor(100000 + Math.random() * 900000);
+  return `user_${n}`;
+}
+
+async function ensureSafeUsername(userId: string) {
+  const admin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("username")
+    .eq("id", userId)
+    .single();
+
+  const current: string | null = profile?.username ?? null;
+  if (current && !current.includes("@")) return; // 既に安全なユーザー名
+
+  // ユニークなユーザー名を生成（最大5回リトライ）
+  for (let i = 0; i < 5; i++) {
+    const candidate = generateRandomUsername();
+    const { data: existing } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("username", candidate)
+      .maybeSingle();
+    if (!existing) {
+      await admin
+        .from("profiles")
+        .upsert({ id: userId, username: candidate });
+      return;
+    }
+  }
+}
+
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
@@ -20,7 +57,10 @@ export async function GET(request: Request) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    await supabase.auth.exchangeCodeForSession(code);
+    const { data } = await supabase.auth.exchangeCodeForSession(code);
+    if (data.session?.user?.id) {
+      await ensureSafeUsername(data.session.user.id);
+    }
   }
 
   const destination = type === "register"

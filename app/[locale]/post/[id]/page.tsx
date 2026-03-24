@@ -12,6 +12,7 @@ import PostBookmarkButton from "@/components/PostBookmarkButton";
 import BackButton from "@/components/BackButton";
 import TranslateButton from "@/components/TranslateButton";
 import PostActionButtons from "@/components/PostActionButtons";
+import PostReadTracker from "@/components/PostReadTracker";
 
 const BASE_URL = "https://creepyhub.com";
 
@@ -217,6 +218,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
 
   return (
     <main className={styles.archivePage}>
+      <PostReadTracker id={String(post.id)} />
       <div className={styles.archiveShell}>
         <BackButton />
         <header className={styles.archiveHeader}>

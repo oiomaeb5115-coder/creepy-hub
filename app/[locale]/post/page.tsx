@@ -4,6 +4,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
+import PostRandomButton from "@/components/PostRandomButton";
 
 export const dynamic = "force-dynamic";
 
@@ -93,6 +94,11 @@ export default async function StoryIndex({ params, searchParams }: Props) {
           </div>
           <div className={styles.headerActions}>
             <Link href={`/${locale}`} className={styles.topLink}>{dict.nav.home}</Link>
+            <PostRandomButton
+              locale={locale}
+              label={dict.post.random}
+              className={`${styles.topLink} ${styles.topLinkAccent}`}
+            />
           </div>
         </header>
 

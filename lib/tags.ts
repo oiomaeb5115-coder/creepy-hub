@@ -8,3 +8,11 @@ export async function getStoryTagBySlug(slug: string) {
     .eq("is_active", true)
     .single();
 }
+
+export async function getAllStoryTags() {
+  return supabase
+    .from("story_tags")
+    .select("id, slug, name")
+    .eq("is_active", true)
+    .order("name", { ascending: true });
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getIsAdmin } from "@/lib/auth";
@@ -15,6 +15,8 @@ export default function HomeAuthButtons({ locale }: Props) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -36,7 +38,18 @@ export default function HomeAuthButtons({ locale }: Props) {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleLogout = async () => {
+    setMenuOpen(false);
     await supabase.auth.signOut();
     window.location.href = `/${locale}`;
   };
@@ -45,32 +58,41 @@ export default function HomeAuthButtons({ locale }: Props) {
 
   if (loggedIn) {
     return (
-      <>
-        <span style={{
-          fontSize: "11px",
-          color: isAdmin ? "#e8a0a0" : "#8899bb",
-          letterSpacing: "0.05em",
-          opacity: 0.85,
-        }}>
-          {isAdmin ? "adminとしてログイン" : "ログイン中"}
-        </span>
-        {isAdmin && (
-          <Link
-            href={`/${locale}/admin`}
-            className={styles.topTextButton}
-            style={{ color: "#e8a0a0" }}
-          >
-            管理画面
-          </Link>
-        )}
+      <div ref={menuRef} className={styles.userMenuWrapper}>
         <button
           type="button"
-          onClick={handleLogout}
-          className={styles.topTextButton}
+          className={`${styles.topTextButton} ${styles.userMenuButton}`}
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-expanded={menuOpen}
         >
-          logout
+          {isAdmin ? "ADMIN" : "MENU"} ▾
         </button>
-      </>
+
+        {menuOpen && (
+          <div className={styles.userDropdown}>
+            <span className={styles.userDropdownStatus}>
+              {isAdmin ? "adminとしてログイン" : "ログイン中"}
+            </span>
+            {isAdmin && (
+              <Link
+                href={`/${locale}/admin`}
+                className={styles.userDropdownItem}
+                style={{ color: "#e8a0a0" }}
+                onClick={() => setMenuOpen(false)}
+              >
+                管理画面
+              </Link>
+            )}
+            <button
+              type="button"
+              className={styles.userDropdownItem}
+              onClick={handleLogout}
+            >
+              logout
+            </button>
+          </div>
+        )}
+      </div>
     );
   }
 

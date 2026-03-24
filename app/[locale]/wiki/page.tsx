@@ -162,7 +162,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
           </div>
           <div className={styles.headerActions}>
             <Link href={`/${locale}`} className={styles.topLink}>{dict.nav.home}</Link>
-            <Link href={`/${locale}/wiki/random`} className={styles.topLink}>{dict.wiki.random}</Link>
+            <Link href={`/${locale}/wiki/random`} className={`${styles.topLink} ${styles.topLinkAccent}`}>{dict.wiki.random}</Link>
             <Link href={`/${locale}/wiki/submit`} className={styles.topLink}>{dict.wiki.submit}</Link>
           </div>
         </header>
@@ -183,15 +183,9 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
                 {dict.pageType[key]}
               </Link>
             ))}
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/${locale}/wiki/category/${cat.slug}`}
-              className={styles.categoryChip}
-            >
-              {cat.name}
-            </Link>
-          ))}
+          <Link href={`/${locale}/wiki/categories`} className={styles.categoryChipMore}>
+            {dict.wiki.allCategories}
+          </Link>
           <Link href={`/${locale}/wiki/category/create`} className={styles.categoryChipNew}>
             {dict.wiki.createCategory}
           </Link>
@@ -208,25 +202,26 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
           <button type="submit" className={styles.searchBtn}>{dict.home.searchButton}</button>
         </form>
 
-        {/* Main feed with sort toggle */}
+        {/* Sort toggle — applies to all sections below */}
+        <div className={styles.sortTabs}>
+          <Link
+            href={`/${locale}/wiki?sort=new`}
+            className={`${styles.sortTab} ${!isPopular ? styles.sortTabActive : ""}`}
+          >
+            {dict.wiki.newest}
+          </Link>
+          <Link
+            href={`/${locale}/wiki?sort=popular`}
+            className={`${styles.sortTab} ${isPopular ? styles.sortTabActive : ""}`}
+          >
+            {dict.wiki.popular}
+          </Link>
+        </div>
+
+        {/* Main feed */}
         <section className={styles.card}>
           <div className={styles.sectionHead}>
             <h2 className={styles.sectionTitle}>{dict.wiki.listTitle}</h2>
-          </div>
-
-          <div className={styles.sortTabs}>
-            <Link
-              href={`/${locale}/wiki?sort=new`}
-              className={`${styles.sortTab} ${!isPopular ? styles.sortTabActive : ""}`}
-            >
-              {dict.wiki.newest}
-            </Link>
-            <Link
-              href={`/${locale}/wiki?sort=popular`}
-              className={`${styles.sortTab} ${isPopular ? styles.sortTabActive : ""}`}
-            >
-              {dict.wiki.popular}
-            </Link>
           </div>
 
           {mainItems.length === 0 ? (
@@ -274,7 +269,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
         {/* Type sections */}
         {pageTypeSections.map((section) =>
           section.items.length === 0 ? null : (
-            <section className={styles.card} key={section.key}>
+            <section className={`${styles.card}${section.key === "work" ? ` ${styles.cardFeatured}` : ""}`} key={section.key}>
               <div className={styles.sectionHead}>
                 <h2 className={styles.sectionTitle}>{section.label}</h2>
                 <span className={styles.sectionDescription}>

@@ -41,6 +41,13 @@ export default function UserProfilePage() {
   const [posts, setPosts] = useState<PostRow[]>([]);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setCurrentUserId(session?.user?.id ?? null);
+    });
+  }, []);
 
   useEffect(() => {
     if (!username) return;
@@ -132,7 +139,23 @@ export default function UserProfilePage() {
               <h1 style={{ margin: 0 }}>
                 {profile.display_name ?? profile.username}
               </h1>
-              <FollowButton targetUserId={profile.id} />
+              {currentUserId === profile.id ? (
+                <Link
+                  href={`/${locale}/account/settings`}
+                  style={{
+                    padding: "6px 14px",
+                    border: "1px solid #555",
+                    color: "#ccc",
+                    fontSize: "13px",
+                    textDecoration: "none",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  プロフィールを編集
+                </Link>
+              ) : (
+                <FollowButton targetUserId={profile.id} />
+              )}
             </div>
 
             <p className={styles.username}>

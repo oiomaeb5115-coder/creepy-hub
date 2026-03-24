@@ -97,6 +97,18 @@
   background: rgba(80, 28, 34, 0.92);
 }
 
+.topLinkAccent {
+  border-color: rgba(200, 100, 110, 0.75);
+  background: rgba(72, 18, 24, 0.85);
+  color: #ffded8;
+}
+
+.topLinkAccent:hover {
+  background: rgba(110, 28, 36, 0.96);
+  border-color: rgba(220, 120, 128, 0.9);
+  color: #fff;
+}
+
 /* ── Search bar ── */
 
 .searchBar {
@@ -190,6 +202,26 @@
   color: #f5f1eb;
 }
 
+.categoryChipMore {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border: 1px solid rgba(161, 102, 108, 0.5);
+  background: rgba(30, 10, 14, 0.6);
+  color: rgba(210, 170, 170, 0.9);
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.categoryChipMore:hover {
+  background: rgba(80, 28, 34, 0.9);
+  border-color: rgba(200, 120, 128, 0.8);
+  color: #f5f1eb;
+}
+
 /* ── Sort tabs ── */
 
 .sortTabs {
@@ -226,6 +258,20 @@
   border: 1px solid rgba(161, 102, 108, 0.2);
   background: rgba(12, 4, 6, 0.7);
   margin-bottom: 24px;
+}
+
+.cardFeatured {
+  border-color: rgba(185, 115, 80, 0.35);
+  background: rgba(18, 7, 3, 0.78);
+}
+
+.cardFeatured .sectionHead {
+  border-bottom-color: rgba(185, 115, 80, 0.2);
+  background: rgba(30, 12, 5, 0.5);
+}
+
+.cardFeatured .sectionTitle {
+  color: #f0c8a0;
 }
 
 .sectionHead {
@@ -483,6 +529,38 @@
 .inlineLink {
   color: #c49090;
   text-decoration: none;
+}
+
+.randomBottomWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(167, 108, 113, 0.15);
+}
+
+.randomBottomButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border: 1px solid rgba(170, 108, 112, 0.45);
+  background: rgba(48, 18, 22, 0.78);
+  color: #f5f1eb;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.randomBottomButton:hover {
+  background: rgba(80, 28, 34, 0.92);
+}
+
+.randomBottomButton:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .emptyText {

@@ -9,6 +9,8 @@ import styles from "../wiki.module.css";
 import BackButton from "@/components/BackButton";
 import TranslateButton from "@/components/TranslateButton";
 import WikiActionButtons from "@/components/WikiActionButtons";
+import WikiRandomButton from "@/components/WikiRandomButton";
+import WikiReadTracker from "@/components/WikiReadTracker";
 
 const BASE_URL = "https://creepyhub.com";
 
@@ -176,6 +178,11 @@ export default async function WikiDetailPage({
             >
               {dict.wiki.history}
             </Link>
+            <WikiRandomButton
+              locale={locale}
+              label={dict.wiki.randomArticle}
+              className={styles.topLink}
+            />
             <TranslateButton
               type="wiki"
               slug={safePage.slug}
@@ -280,7 +287,17 @@ export default async function WikiDetailPage({
               ))}
             </div>
           )}
+
+          <div className={styles.randomBottomWrap}>
+            <WikiRandomButton
+              locale={locale}
+              label={`🎲 ${dict.wiki.randomArticleBottom}`}
+              className={styles.randomBottomButton}
+            />
+          </div>
         </section>
+
+        <WikiReadTracker slug={safePage.slug} />
       </div>
     </main>
   );

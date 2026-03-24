@@ -144,27 +144,25 @@ function StoryCard({
   const commentCount = (post.post_comments ?? []).length;
 
   return (
-    <Link href={`/${locale}/post/${post.id}`} className={styles.scrollCardLink}>
-      <article className={styles.scrollCard}>
-        <div className={styles.scrollCardImageWrap}>
+    <Link href={`/${locale}/post/${post.id}`} className={styles.timelineCardLink}>
+      <article className={styles.timelineCard}>
+        <div className={styles.timelineCardImageWrap}>
           {post.image_url ? (
             <img
               src={post.image_url}
               alt={safeTitle}
-              className={styles.scrollCardImage}
+              className={styles.timelineCardImage}
               loading="lazy"
             />
           ) : (
-            <div
-              className={`${styles.scrollCardImage} ${styles.scrollCardImagePlaceholder}`}
-            >
+            <div className={styles.timelineCardImagePlaceholder}>
               NO IMAGE
             </div>
           )}
         </div>
 
-        <div className={styles.scrollCardBody}>
-          <div className={styles.scrollCardMeta}>
+        <div className={styles.timelineCardBody}>
+          <div className={styles.timelineCardMeta}>
             <span>{storyLabel}</span>
             <span>
               {safeCreatedAt
@@ -173,13 +171,13 @@ function StoryCard({
             </span>
           </div>
 
-          <h3 className={styles.scrollCardTitle}>{safeTitle}</h3>
+          <h3 className={styles.timelineCardTitle}>{safeTitle}</h3>
 
-          <p className={styles.scrollCardExcerpt}>
-            {safeContent.length > 80 ? `${safeContent.slice(0, 80)}...` : safeContent}
+          <p className={styles.timelineCardExcerpt}>
+            {safeContent.length > 100 ? `${safeContent.slice(0, 100)}...` : safeContent}
           </p>
 
-          <div className={styles.scrollCardFooter}>
+          <div className={styles.timelineCardFooter}>
             <span>▲ {score}</span>
             <span>💬 {commentCount}</span>
             <span>👁 {post.view_count ?? 0}</span>
@@ -347,6 +345,7 @@ export default async function HomePage({ params }: HomePageProps) {
             <div className={styles.topSearchRow}>
               <div className={styles.searchColumn}>
                 <span className={styles.searchHeadingText}>{dict.home.storySearch}</span>
+                <span className={styles.searchDesc}>{dict.home.storySearchDesc}</span>
                 <StorySearchBox
                   locale={locale}
                   placeholder={dict.home.storySearchPlaceholder}
@@ -356,6 +355,7 @@ export default async function HomePage({ params }: HomePageProps) {
 
               <div className={styles.searchColumn}>
                 <span className={styles.searchHeadingText}>{dict.home.wikiSearch}</span>
+                <span className={styles.searchDesc}>{dict.home.wikiSearchDesc}</span>
                 <WikiSearchBox
                   locale={locale}
                   placeholder={dict.home.wikiSearchPlaceholder}
@@ -375,7 +375,7 @@ export default async function HomePage({ params }: HomePageProps) {
           {latestStories.length === 0 ? (
             <p className={styles.emptyText}>{dict.home.noStories}</p>
           ) : (
-            <div className={styles.horizontalScrollRow}>
+            <div className={styles.timelineRow}>
               {latestStories.map((post) => (
                 <StoryCard
                   key={post.id}

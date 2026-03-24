@@ -22,7 +22,9 @@
     "categories": "Browse by Category",
     "noStories": "No stories yet.",
     "noWiki": "No wiki articles yet.",
-    "noCategory": "No categories"
+    "noCategory": "No categories",
+    "storySearchDesc": "User-submitted horror stories, ghost experiences & creepypasta",
+    "wikiSearchDesc": "Encyclopedia of urban legends, strange incidents & occult terms"
   },
   "post": {
     "label": "Story",
@@ -46,7 +48,8 @@
     "popular": "Popular",
     "empty": "No horror stories yet.",
     "untitled": "Untitled",
-    "createCategory": "+ Create Category"
+    "createCategory": "+ Create Category",
+    "random": "Random"
   },
   "wiki": {
     "listTitle": "Wiki List",
@@ -59,6 +62,7 @@
     "noContent": "No content yet.",
     "viewRelatedCategory": "View Related Category",
     "randomArticle": "Random Article",
+    "randomArticleBottom": "Read a Random Article",
     "translateButton": "Translate to English (AI)",
     "translating": "Translating…",
     "translateDone": "Translation saved",
@@ -80,7 +84,8 @@
     "categoryArticlesTitle": "Articles",
     "categoryFetchFailed": "Failed to load articles: ",
     "categoryEmptyInCat": "No articles in this category.",
-    "categoryDefaultDesc": "Wiki articles in this category."
+    "categoryDefaultDesc": "Wiki articles in this category.",
+    "allCategories": "All Categories ›"
   },
   "postDrawer": {
     "loginRequired": "Login required to post",

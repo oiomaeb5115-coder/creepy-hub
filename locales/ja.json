@@ -22,7 +22,9 @@
     "categories": "カテゴリから探す",
     "noStories": "まだ怪談記事がありません。",
     "noWiki": "まだWiki記事がありません。",
-    "noCategory": "カテゴリなし"
+    "noCategory": "カテゴリなし",
+    "storySearchDesc": "ユーザー投稿の怪談・ホラー体験談・Creepypasta",
+    "wikiSearchDesc": "都市伝説・怪事件・オカルト用語を調べる百科辞典"
   },
   "post": {
     "label": "怪談",
@@ -46,7 +48,8 @@
     "popular": "人気順",
     "empty": "まだ怪談記事がありません。",
     "untitled": "無題",
-    "createCategory": "＋ カテゴリを作成"
+    "createCategory": "＋ カテゴリを作成",
+    "random": "ランダム"
   },
   "wiki": {
     "listTitle": "Wiki 一覧",
@@ -59,6 +62,7 @@
     "noContent": "本文はまだありません。",
     "viewRelatedCategory": "関連分類を見る",
     "randomArticle": "ランダム記事",
+    "randomArticleBottom": "ランダム記事を読む",
     "translateButton": "英語に翻訳 (AI)",
     "translating": "翻訳中…",
     "translateDone": "英語訳を保存しました",
@@ -80,7 +84,8 @@
     "categoryArticlesTitle": "所属ページ",
     "categoryFetchFailed": "記事の取得に失敗しました: ",
     "categoryEmptyInCat": "このカテゴリにはまだ記事がありません。",
-    "categoryDefaultDesc": "このカテゴリの wiki 記事一覧です。"
+    "categoryDefaultDesc": "このカテゴリの wiki 記事一覧です。",
+    "allCategories": "すべてのカテゴリ ›"
   },
   "postDrawer": {
     "loginRequired": "投稿するにはログインが必要です",

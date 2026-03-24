@@ -70,6 +70,18 @@
   background: rgba(80, 28, 34, 0.92);
 }
 
+.topLinkAccent {
+  border-color: rgba(200, 100, 110, 0.75);
+  background: rgba(72, 18, 24, 0.85);
+  color: #ffded8;
+}
+
+.topLinkAccent:hover {
+  background: rgba(110, 28, 36, 0.96);
+  border-color: rgba(220, 120, 128, 0.9);
+  color: #fff;
+}
+
 /* ── Search bar ── */
 
 .searchBar {
