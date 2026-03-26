@@ -29,10 +29,8 @@ export async function POST(req: NextRequest) {
     });
 
   if (error || !linkData?.properties?.action_link) {
-    return NextResponse.json(
-      { error: "リセットリンクの生成に失敗しました" },
-      { status: 400 }
-    );
+    // エラー詳細を返さない（メールアドレス列挙攻撃を防ぐため）
+    return NextResponse.json({ success: true });
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);

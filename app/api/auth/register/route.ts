@@ -16,12 +16,22 @@ export async function POST(req: NextRequest) {
 
   const origin = process.env.SITE_URL ?? req.headers.get("origin") ?? "";
 
-  // 既存ユーザーか確認
-  const { data: existingData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
-  const existingUser = existingData?.users.find((u) => u.email === email);
+  // 既存ユーザーか確認（email フィルターで1件だけ取得）
+  const lookupRes = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}&per_page=1`,
+    {
+      headers: {
+        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+      },
+    }
+  );
+  const lookupJson = await lookupRes.json();
+  const existingUser = (lookupJson?.users as { id: string; email_confirmed_at: string | null }[] | undefined)?.[0];
 
   if (existingUser?.email_confirmed_at) {
-    return NextResponse.json({ error: "このメールアドレスはすでに登録済みです。" }, { status: 400 });
+    // すでに登録済みでも同一レスポンスを返す（メールアドレス列挙攻撃を防ぐため）
+    return NextResponse.json({ success: true });
   }
 
   // 未確認ユーザーが存在する場合は削除して再作成

@@ -14,11 +14,11 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   },
   allowedStyles: {
     img: {
-      "max-width": [/.*/],
-      width: [/.*/],
-      margin: [/.*/],
-      display: [/.*/],
-      border: [/.*/],
+      "max-width": [/^\d+(\.\d+)?(%|px|em|rem|vw|vh)$/],
+      width: [/^\d+(\.\d+)?(%|px|em|rem|vw|vh)$/],
+      margin: [/^(0|auto|[\d.]+(px|em|rem)(\s+(0|auto|[\d.]+(px|em|rem))){0,3})$/],
+      display: [/^(block|inline|inline-block|flex|none)$/],
+      border: [/^\d+(\.\d+)?px\s+(solid|dashed|dotted|none)\s+(#[0-9a-fA-F]{3,8}|[a-z]+)$/],
     },
   },
 };

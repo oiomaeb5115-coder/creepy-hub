@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (insertError) {
-    return NextResponse.json({ error: insertError.message }, { status: 500 });
+    return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
   }
 
   return NextResponse.json({ success: true }, { status: 201 });

@@ -72,7 +72,7 @@ export async function PATCH(
     .update({ title, content, category_id: category_id ?? null })
     .eq("id", id);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
 
   revalidatePath(`/ja/post/${id}`);
   revalidatePath(`/en/post/${id}`);
@@ -130,7 +130,7 @@ export async function DELETE(
     .from("post")
     .update({ is_published: false, deleted_at: new Date().toISOString() })
     .eq("id", id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
 
   revalidatePath("/ja");
   revalidatePath("/en");

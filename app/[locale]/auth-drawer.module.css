@@ -235,3 +235,26 @@
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.22);
 }
+
+.discordButton {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(88, 101, 242, 0.4);
+  color: #f5f1eb;
+  padding: 11px;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.discordButton:hover {
+  background: rgba(88, 101, 242, 0.08);
+  border-color: rgba(88, 101, 242, 0.7);
+}

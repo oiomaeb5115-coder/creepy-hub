@@ -61,24 +61,14 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) {
-    // 失敗カウントをインクリメント
-    const currentCount = attemptRow?.failed_count ?? 0;
-    const newCount = currentCount + 1;
-    const shouldLock = newCount >= MAX_ATTEMPTS;
+    // DB レベルでアトミックにインクリメント（競合状態を防ぐ）
+    const { data: rpcResult } = await supabaseAdmin
+      .rpc("record_login_failure", { p_email: email, p_max_attempts: MAX_ATTEMPTS });
 
-    await supabaseAdmin
-      .from("login_attempts")
-      .upsert(
-        {
-          email,
-          failed_count: newCount,
-          locked_at: shouldLock ? new Date().toISOString() : null,
-          last_failed_at: new Date().toISOString(),
-        },
-        { onConflict: "email" }
-      );
+    const newCount: number = rpcResult?.[0]?.new_count ?? 1;
+    const justLocked: boolean = rpcResult?.[0]?.just_locked ?? false;
 
-    if (shouldLock) {
+    if (justLocked) {
       // パスワードリセットメールを送信
       await sendResetEmail(email, locale ?? "ja", origin);
       return NextResponse.json(

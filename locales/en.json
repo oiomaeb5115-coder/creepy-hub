@@ -137,7 +137,9 @@
     "alertAttemptsLeft": "Login failed: {count} more attempt(s) before your account is locked.",
     "orDivider": "or",
     "googleLogin": "Sign in with Google",
-    "googleRegister": "Sign up with Google"
+    "googleRegister": "Sign up with Google",
+    "discordLogin": "Sign in with Discord",
+    "discordRegister": "Sign up with Discord"
   },
   "categoryCreate": {
     "breadcrumb": "STORIES / CATEGORY / NEW",
@@ -477,6 +479,8 @@
     "resetPasswordFailed": "Failed to change password: ",
     "orDivider": "or",
     "googleLogin": "Sign in with Google",
-    "googleRegister": "Sign up with Google"
+    "googleRegister": "Sign up with Google",
+    "discordLogin": "Sign in with Discord",
+    "discordRegister": "Sign up with Discord"
   }
 }

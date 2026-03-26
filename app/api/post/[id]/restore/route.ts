@@ -24,7 +24,7 @@ export async function POST(
     .update({ is_published: true, deleted_at: null })
     .eq("id", id);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
 
   revalidatePath("/ja");
   revalidatePath("/en");

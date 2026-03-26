@@ -27,7 +27,7 @@ export async function POST(
     .eq("is_user_created", true);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });

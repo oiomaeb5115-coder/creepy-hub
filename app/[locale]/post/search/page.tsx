@@ -33,7 +33,11 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
   const dict = await getDictionary(locale);
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
-  const keyword = `%${q}%`;
+  const safeQ = q
+    .replace(/\\/g, "\\\\")
+    .replace(/%/g, "\\%")
+    .replace(/_/g, "\\_");
+  const keyword = `%${safeQ}%`;
 
   let posts: StoryPost[] = [];
 

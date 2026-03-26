@@ -20,7 +20,7 @@ export async function DELETE(
   );
 
   const { error } = await supabase.from("wiki_pages").delete().eq("slug", slug);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
 
   revalidatePath("/ja/wiki");
   revalidatePath("/en/wiki");

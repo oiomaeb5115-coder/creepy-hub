@@ -967,6 +967,7 @@ export default function AdminPage() {
                           href={`/${locale}/post/category/${cat.slug}`}
                           style={linkStyle}
                           target="_blank"
+                          rel="noopener noreferrer"
                         >
                           {dict.admin.viewBtn}
                         </Link>

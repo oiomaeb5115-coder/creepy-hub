@@ -1,7 +1,13 @@
 import { supabase } from "@/lib/supabase";
 
 export async function searchAll(query: string, locale: string) {
-  const keyword = `%${query}%`;
+  // LIKE ワイルドカード（% _）とPostgRESTフィルタ特殊文字をエスケープ
+  const safeQuery = query
+    .replace(/\\/g, "\\\\") // バックスラッシュを先にエスケープ
+    .replace(/%/g, "\\%")   // LIKE ワイルドカード
+    .replace(/_/g, "\\_")   // LIKE 単一文字ワイルドカード
+    .replace(/[(),]/g, ""); // PostgREST フィルタ注入防止
+  const keyword = `%${safeQuery}%`;
 
   const [storiesResult, wikiResult] = await Promise.all([
     supabase

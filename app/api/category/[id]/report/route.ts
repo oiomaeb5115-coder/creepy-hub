@@ -68,7 +68,7 @@ export async function POST(
         { status: 409 }
       );
     }
-    return NextResponse.json({ error: insertError.message }, { status: 500 });
+    return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
   }
 
   // reported_count をアトミックにインクリメント（レースコンディション防止）

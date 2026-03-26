@@ -41,7 +41,8 @@ async function ensureSafeUsername(userId: string) {
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const locale = requestUrl.searchParams.get("locale") ?? "ja";
+  const rawLocale = requestUrl.searchParams.get("locale") ?? "ja";
+  const locale = ["ja", "en"].includes(rawLocale) ? rawLocale : "ja";
   const type = requestUrl.searchParams.get("type");
 
   // recovery の場合はクライアント側でセッションを確立するため、code をそのまま転送する

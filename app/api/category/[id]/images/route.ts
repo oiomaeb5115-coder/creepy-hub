@@ -57,6 +57,22 @@ export async function PATCH(
     header_image_url?: string | null;
   };
 
+  // URL スキーム検証: https: のみ許可（null は削除を意味するので許可）
+  const isValidUrl = (url: unknown): boolean => {
+    if (url === null || url === undefined) return true;
+    if (typeof url !== "string") return false;
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
+
+  if (!isValidUrl(icon_url) || !isValidUrl(header_image_url)) {
+    return NextResponse.json({ error: "URLはhttpsで始まる必要があります" }, { status: 400 });
+  }
+
   const updateData: Record<string, string | null> = {};
   if (icon_url !== undefined) updateData.icon_url = icon_url;
   if (header_image_url !== undefined) updateData.header_image_url = header_image_url;
@@ -71,7 +87,7 @@ export async function PATCH(
     .eq("id", id);
 
   if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
+    return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });

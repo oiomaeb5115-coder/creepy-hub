@@ -137,7 +137,9 @@
     "alertAttemptsLeft": "ログイン失敗: あと{count}回間違えるとロックされます。",
     "orDivider": "または",
     "googleLogin": "Google でログイン",
-    "googleRegister": "Google で登録"
+    "googleRegister": "Google で登録",
+    "discordLogin": "Discord でログイン",
+    "discordRegister": "Discord で登録"
   },
   "categoryCreate": {
     "breadcrumb": "STORIES / CATEGORY / NEW",
@@ -477,6 +479,8 @@
     "resetPasswordFailed": "パスワードの変更に失敗しました: ",
     "orDivider": "または",
     "googleLogin": "Google でログイン",
-    "googleRegister": "Google で登録"
+    "googleRegister": "Google で登録",
+    "discordLogin": "Discord でログイン",
+    "discordRegister": "Discord で登録"
   }
 }

@@ -54,14 +54,25 @@ export async function PATCH(
 
   const isAuthor = page.author_id === user.id;
   const isAdmin = user.role === "admin";
-  const hasEnoughPosts = user.postCount >= 5;
 
-  if (!isAuthor && !isAdmin && !hasEnoughPosts) {
+  if (!isAuthor && !isAdmin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body = await req.json();
   const { title, subtitle, summary, content, page_type, category_ids, image_url } = body;
+
+  // image_url スキーム検証: https: のみ許可（null は削除を意味するので許可）
+  if (image_url !== undefined && image_url !== null) {
+    try {
+      const parsed = new URL(image_url);
+      if (parsed.protocol !== "https:") {
+        return NextResponse.json({ error: "image_urlはhttpsで始まる必要があります" }, { status: 400 });
+      }
+    } catch {
+      return NextResponse.json({ error: "image_urlの形式が正しくありません" }, { status: 400 });
+    }
+  }
 
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -84,7 +95,7 @@ export async function PATCH(
     .eq("slug", slug)
     .eq("locale", "ja");
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
 
   if (Array.isArray(category_ids)) {
     await adminSupabase.from("wiki_page_categories").delete().eq("wiki_page_id", page.id);
@@ -127,9 +138,8 @@ export async function DELETE(
 
   const isAuthor = page.author_id === user.id;
   const isAdmin = user.role === "admin";
-  const hasEnoughPosts = user.postCount >= 5;
 
-  if (!isAuthor && !isAdmin && !hasEnoughPosts) {
+  if (!isAuthor && !isAdmin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -143,7 +153,7 @@ export async function DELETE(
     .from("wiki_pages")
     .update({ is_published: false, deleted_at: new Date().toISOString() })
     .eq("slug", slug);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
 
   revalidatePath("/ja/wiki");
   revalidatePath("/en/wiki");
