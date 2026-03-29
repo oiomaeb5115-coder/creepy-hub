@@ -62,6 +62,20 @@ export async function PATCH(
   const body = await req.json();
   const { title, subtitle, summary, content, page_type, category_ids, image_url } = body;
 
+  // 文字数制限バリデーション
+  if (typeof title === "string" && title.length > 200) {
+    return NextResponse.json({ error: "タイトルは200文字以内にしてください" }, { status: 400 });
+  }
+  if (typeof subtitle === "string" && subtitle.length > 300) {
+    return NextResponse.json({ error: "サブタイトルは300文字以内にしてください" }, { status: 400 });
+  }
+  if (typeof summary === "string" && summary.length > 1000) {
+    return NextResponse.json({ error: "概要は1000文字以内にしてください" }, { status: 400 });
+  }
+  if (typeof content === "string" && content.length > 100000) {
+    return NextResponse.json({ error: "本文は100000文字以内にしてください" }, { status: 400 });
+  }
+
   // image_url スキーム検証: https: のみ許可（null は削除を意味するので許可）
   if (image_url !== undefined && image_url !== null) {
     try {

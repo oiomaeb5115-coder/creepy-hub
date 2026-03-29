@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
 
   if (!token) {
-    return NextResponse.json({ unread: 0, pendingCategories: 0, isAdmin: false });
+    return NextResponse.json({ unread: 0, pendingCategories: 0 });
   }
 
   const supabase = createClient(
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ unread: 0, pendingCategories: 0, isAdmin: false });
+    return NextResponse.json({ unread: 0, pendingCategories: 0 });
   }
 
   const { count: unread } = await supabase
@@ -50,6 +50,5 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     unread: unread ?? 0,
     pendingCategories,
-    isAdmin,
   });
 }

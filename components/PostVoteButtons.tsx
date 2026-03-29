@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { getAccessToken } from "@/lib/auth";
 
 type Labels = {
   rateLoginRequired?: string;
@@ -140,11 +141,17 @@ export default function PostVoteButtons({
   // スコアが5以上になったら自動翻訳を発火
   useEffect(() => {
     if (score >= 5) {
-      fetch("/api/translate/story-auto", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId }),
-      }).catch(() => {});
+      getAccessToken().then((token) => {
+        if (!token) return;
+        fetch("/api/translate/story-auto", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ postId }),
+        }).catch(() => {});
+      });
     }
   }, [score, postId]);
 

@@ -220,11 +220,17 @@ export default function WikiEditPage() {
 
       // JA編集の場合、バックグラウンドで英語版を再翻訳
       if (locale === "ja") {
-        fetch("/api/translate/wiki-auto", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slug, force: true }),
-        }).catch(() => {}); // fire-and-forget
+        getAccessToken().then((tk) => {
+          if (!tk) return;
+          fetch("/api/translate/wiki-auto", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tk}`,
+            },
+            body: JSON.stringify({ slug, force: true }),
+          }).catch(() => {});
+        }); // fire-and-forget
       }
 
       router.push(`/${locale}/wiki/${slug}`);

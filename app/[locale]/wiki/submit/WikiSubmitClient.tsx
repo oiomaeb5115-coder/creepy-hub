@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { getAccessToken } from "@/lib/auth";
 import { validateImageFile } from "@/lib/validateImageFile";
 import { compressImage } from "@/lib/compressImage";
 import styles from "./page.module.css";
@@ -396,11 +397,17 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
 
       // JA公開の場合、バックグラウンドで自動英語翻訳
       if (isPublished && resolvedLocale === "ja" && data?.slug) {
-        fetch("/api/translate/wiki-auto", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slug: data.slug }),
-        }).catch(() => {}); // fire-and-forget
+        getAccessToken().then((tk) => {
+          if (!tk) return;
+          fetch("/api/translate/wiki-auto", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tk}`,
+            },
+            body: JSON.stringify({ slug: data.slug }),
+          }).catch(() => {});
+        }); // fire-and-forget
       }
 
       localStorage.removeItem(`draft_wiki_${uid}`);

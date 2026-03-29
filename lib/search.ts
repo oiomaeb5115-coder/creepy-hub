@@ -1,12 +1,24 @@
 import { supabase } from "@/lib/supabase";
 
-export async function searchAll(query: string, locale: string) {
-  // LIKE ワイルドカード（% _）とPostgRESTフィルタ特殊文字をエスケープ
-  const safeQuery = query
+/**
+ * PostgREST フィルタ文字列内で安全に使えるよう、
+ * LIKE ワイルドカードおよび PostgREST 構文上の特殊文字をすべてエスケープ/除去する。
+ */
+function sanitizeForPostgrest(raw: string): string {
+  return raw
     .replace(/\\/g, "\\\\") // バックスラッシュを先にエスケープ
     .replace(/%/g, "\\%")   // LIKE ワイルドカード
     .replace(/_/g, "\\_")   // LIKE 単一文字ワイルドカード
-    .replace(/[(),]/g, ""); // PostgREST フィルタ注入防止
+    .replace(/[(),.:"]/g, ""); // PostgREST 演算子・区切り文字の注入防止
+}
+
+export async function searchAll(query: string, locale: string) {
+  const trimmed = query.trim();
+  if (!trimmed) {
+    return { stories: [], wiki: [], storyError: null, wikiError: null };
+  }
+
+  const safeQuery = sanitizeForPostgrest(trimmed);
   const keyword = `%${safeQuery}%`;
 
   const [storiesResult, wikiResult] = await Promise.all([

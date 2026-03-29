@@ -1,13 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { translateStoryToEnglish } from "@/lib/googleTranslate";
 
 /**
  * 投稿公開時に自動で英語翻訳を生成するエンドポイント。
- * 認証不要（投稿直後にクライアントから fire-and-forget で呼ばれる）。
+ * ログインユーザーのみ実行可能。
  * 既に翻訳済みの場合はスキップ。
  */
 export async function POST(req: NextRequest) {
+  // 認証チェック
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const token = authHeader.slice(7);
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data: userData, error: authError } = await supabase.auth.getUser(token);
+  if (authError || !userData.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { postId, force } = (await req.json()) as { postId: number; force?: boolean };
 
   if (!postId) {

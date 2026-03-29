@@ -4,9 +4,12 @@ const nextConfig: NextConfig = {
   async headers() {
     const csp = [
       "default-src 'self'",
-      // Next.js のインラインスクリプト（nonce なし構成）に必要
-      // TODO: Next.js の nonce ベース CSP に移行して 'unsafe-inline' を除去する
+      // ⚠ SECURITY: 'unsafe-inline' は XSS 保護を弱めるため要改善。
+      // Next.js App Router はインラインスクリプトを生成するので nonce なしでは除去不可。
+      // 対策: middleware.ts で nonce を生成し、script-src 'nonce-xxx' に移行すること。
+      // 参考: https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy
       "script-src 'self' 'unsafe-inline'",
+      // Tailwind CSS / Next.js がインラインスタイルを使用するため必要
       "style-src 'self' 'unsafe-inline'",
       // Supabase Storage・外部画像を許可（data: は XSS ベクターとなるため除外）
       "img-src 'self' https:",
