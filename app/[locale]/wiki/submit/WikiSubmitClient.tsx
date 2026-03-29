@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { validateImageFile } from "@/lib/validateImageFile";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 
@@ -151,21 +152,35 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
     if (!raw) return;
     try {
       const draft = JSON.parse(raw);
-      if (draft.title) setTitle(draft.title);
-      if (draft.subtitle) setSubtitle(draft.subtitle);
-      if (draft.summary) setSummary(draft.summary);
-      if (draft.pageType) setPageType(draft.pageType as PageType);
-      if (Array.isArray(draft.selectedCategoryIds)) setSelectedCategoryIds(draft.selectedCategoryIds);
-      if (draft.chapters) {
-        setChapters(
-          draft.chapters.map((ch: { id: number; title: string; body: string }) => ({
-            id: ch.id,
-            title: ch.title,
-            body: ch.body,
-            imageFile: null,
-            imagePreview: "",
-          }))
+      if (typeof draft.title === "string") setTitle(draft.title);
+      if (typeof draft.subtitle === "string") setSubtitle(draft.subtitle);
+      if (typeof draft.summary === "string") setSummary(draft.summary);
+      const validPageTypes: PageType[] = ["general", "urban_legend", "incident", "work", "region", "term", "person"];
+      if (typeof draft.pageType === "string" && validPageTypes.includes(draft.pageType as PageType)) {
+        setPageType(draft.pageType as PageType);
+      }
+      if (Array.isArray(draft.selectedCategoryIds) && draft.selectedCategoryIds.every((v: unknown) => typeof v === "number")) {
+        setSelectedCategoryIds(draft.selectedCategoryIds);
+      }
+      if (Array.isArray(draft.chapters)) {
+        const validChapters = draft.chapters.filter(
+          (ch: unknown): ch is { id: number; title: string; body: string } =>
+            typeof ch === "object" && ch !== null &&
+            typeof (ch as Record<string, unknown>).id === "number" &&
+            typeof (ch as Record<string, unknown>).title === "string" &&
+            typeof (ch as Record<string, unknown>).body === "string"
         );
+        if (validChapters.length > 0) {
+          setChapters(
+            validChapters.map((ch: { id: number; title: string; body: string }) => ({
+              id: ch.id,
+              title: ch.title,
+              body: ch.body,
+              imageFile: null,
+              imagePreview: "",
+            }))
+          );
+        }
       }
       setDraftRestored(true);
     } catch { /* ignore invalid data */ }
@@ -191,6 +206,11 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
   };
 
   const uploadImage = async (file: File, uid: string, suffix: string): Promise<string> => {
+    // ファイルの実際の内容（magic bytes）を検証
+    const isValidImage = await validateImageFile(file);
+    if (!isValidImage) {
+      throw new Error("ファイルの内容が画像形式と一致しません");
+    }
     const fileExt = file.name.split(".").pop() || "jpg";
     const fileName = `${uid}/${Date.now()}-${suffix}.${fileExt}`;
     const { error } = await supabase.storage

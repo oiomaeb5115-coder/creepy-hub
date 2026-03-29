@@ -27,7 +27,7 @@ async function getAuthorizedUser(req: NextRequest) {
     .eq("is_published", true)
     .is("deleted_at", null);
 
-  return { id: userData.user.id, role: profile?.role ?? "user", postCount: postCount ?? 0 };
+  return { id: userData.user.id, role: profile?.role ?? "user", postCount: postCount ?? 0, token };
 }
 
 export async function PATCH(
@@ -74,6 +74,8 @@ export async function PATCH(
     }
   }
 
+  // NOTE: サービスロールキーを使用（RLSバイパス）。認証・認可チェック済みのため許容。
+  // TODO: RLSポリシーを整備してユーザートークンベースに移行することを推奨。
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -143,6 +145,8 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  // NOTE: サービスロールキーを使用（RLSバイパス）。認証・認可チェック済みのため許容。
+  // TODO: RLSポリシーを整備してユーザートークンベースに移行することを推奨。
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!

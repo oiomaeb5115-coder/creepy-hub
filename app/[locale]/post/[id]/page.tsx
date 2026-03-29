@@ -13,6 +13,7 @@ import BackButton from "@/components/BackButton";
 import TranslateButton from "@/components/TranslateButton";
 import PostActionButtons from "@/components/PostActionButtons";
 import PostReadTracker from "@/components/PostReadTracker";
+import ReportButton from "@/components/ReportButton";
 
 const BASE_URL = "https://creepyhub.com";
 
@@ -308,6 +309,16 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                   deleting: dict.common.deleting,
                   deleteConfirm: dict.common.deleteConfirmStory,
                   deleteFailed: dict.common.deleteFailed,
+                }}
+              />
+              <ReportButton
+                reportUrl={`/api/post/${post.id}/report`}
+                labels={{
+                  report: dict.common.reportThisPost,
+                  reportAccepted: dict.common.reportAccepted,
+                  reportLoginRequired: dict.common.reportLoginRequired,
+                  reporting: dict.common.reporting,
+                  retry: dict.common.retry,
                 }}
               />
             </div>

@@ -20,7 +20,9 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const origin = process.env.SITE_URL ?? req.headers.get("origin") ?? "";
+  // SITE_URL を使用し、未設定時はハードコードされたデフォルトにフォールバック
+  // （信頼できない origin ヘッダーは使用しない）
+  const origin = process.env.SITE_URL ?? "https://creepyhub.com";
 
   // ---- ロックアウト状態を確認 ----
   const { data: attemptRow } = await supabaseAdmin
@@ -133,7 +135,12 @@ async function sendResetEmail(
   });
 }
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function buildResetEmailHtml(resetUrl: string): string {
+  const safeUrl = escapeHtml(resetUrl);
   return `<!DOCTYPE html>
 <html lang="ja">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -159,7 +166,7 @@ function buildResetEmailHtml(resetUrl: string): string {
           </tr>
           <tr>
             <td align="center" style="padding:8px 0 32px;">
-              <a href="${resetUrl}"
+              <a href="${safeUrl}"
                  style="display:inline-block;padding:14px 36px;background:#ffffff;color:#000000;text-decoration:none;font-size:13px;font-weight:bold;letter-spacing:0.1em;">
                 パスワードをリセットする
               </a>

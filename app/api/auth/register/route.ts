@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+import { checkRateLimit } from "@/lib/rateLimit";
+
+const REGISTER_RATE_LIMIT = {
+  name: "register",
+  windowMs: 15 * 60 * 1000, // 15分
+  maxRequests: 5,            // 15分あたり5回まで
+};
 
 export async function POST(req: NextRequest) {
   const { email, password, locale } = await req.json();
@@ -9,14 +16,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "メールアドレスとパスワードを入力してください" }, { status: 400 });
   }
 
+  // IPアドレスベースのレート制限
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const rateCheck = checkRateLimit(REGISTER_RATE_LIMIT, ip);
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      { error: "リクエストが多すぎます。しばらくしてからお試しください。" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rateCheck.retryAfterMs / 1000)) } }
+    );
+  }
+
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const origin = process.env.SITE_URL ?? req.headers.get("origin") ?? "";
+  // SITE_URL を使用し、未設定時はハードコードされたデフォルトにフォールバック
+  // （信頼できない origin ヘッダーは使用しない）
+  const origin = process.env.SITE_URL ?? "https://creepyhub.com";
 
   // 既存ユーザーか確認（email フィルターで1件だけ取得）
+  // NOTE: メールアドレスがURLクエリパラメータに含まれるが、これはサーバーサイド(Route Handler)から
+  // Supabase への直接通信であり、ブラウザには露出しない。Supabase Admin API は GET のみ対応のため
+  // クエリパラメータでの指定が必須。
   const lookupRes = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}&per_page=1`,
     {
@@ -67,7 +89,12 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ success: true });
 }
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function buildEmailHtml(confirmationUrl: string): string {
+  const safeUrl = escapeHtml(confirmationUrl);
   return `<!DOCTYPE html>
 <html lang="ja">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -93,7 +120,7 @@ function buildEmailHtml(confirmationUrl: string): string {
           </tr>
           <tr>
             <td align="center" style="padding:8px 0 32px;">
-              <a href="${confirmationUrl}"
+              <a href="${safeUrl}"
                  style="display:inline-block;padding:14px 36px;background:#ffffff;color:#000000;text-decoration:none;font-size:13px;font-weight:bold;letter-spacing:0.1em;">
                 メールアドレスを確認する
               </a>

@@ -11,6 +11,7 @@ import TranslateButton from "@/components/TranslateButton";
 import WikiActionButtons from "@/components/WikiActionButtons";
 import WikiRandomButton from "@/components/WikiRandomButton";
 import WikiReadTracker from "@/components/WikiReadTracker";
+import ReportButton from "@/components/ReportButton";
 
 const BASE_URL = "https://creepyhub.com";
 
@@ -208,6 +209,16 @@ export default async function WikiDetailPage({
               deleting: dict.common.deleting,
               deleteConfirm: dict.common.deleteConfirmWiki,
               deleteFailed: dict.common.deleteFailed,
+            }}
+          />
+          <ReportButton
+            reportUrl={`/api/wiki-page/${safePage.id}/report`}
+            labels={{
+              report: dict.common.reportThisWiki,
+              reportAccepted: dict.common.reportAccepted,
+              reportLoginRequired: dict.common.reportLoginRequired,
+              reporting: dict.common.reporting,
+              retry: dict.common.retry,
             }}
           />
         </header>

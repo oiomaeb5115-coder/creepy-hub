@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import CategorySidebar from "@/components/CategorySidebar";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
 import PostRandomButton from "@/components/PostRandomButton";
 
@@ -27,6 +28,7 @@ type StoryCategoryRow = {
   slug: string;
   name: string;
   name_en: string | null;
+  icon_url: string | null;
 };
 
 export default async function StoryIndex({ params, searchParams }: Props) {
@@ -70,7 +72,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
 
   const { data: categoriesData } = await supabase
     .from("story_categories")
-    .select("id, slug, name, name_en")
+    .select("id, slug, name, name_en, icon_url")
     .eq("is_active", true)
     .order("sort_order", { ascending: true })
     .limit(20);
@@ -80,11 +82,24 @@ export default async function StoryIndex({ params, searchParams }: Props) {
   return (
     <main className={styles.storyPage}>
       <div className={styles.pageLayout}>
-      <FavoriteSidebar
-        type="story"
-        locale={locale}
-        labels={{ title: dict.common.favoriteSidebar, empty: dict.common.favoriteNone }}
-      />
+      <CategorySidebar
+        title="CREEPY POSTS"
+        categories={categories.map((cat) => ({
+          slug: cat.slug,
+          name: locale === "en" ? (cat.name_en ?? cat.name) : cat.name,
+          icon_url: cat.icon_url,
+          href: `/${locale}/post/category/${cat.slug}`,
+        }))}
+      >
+        <div style={{ marginTop: 8 }}>
+          <FavoriteSidebar
+            type="story"
+            locale={locale}
+            labels={{ title: dict.common.favoriteSidebar, empty: dict.common.favoriteNone }}
+            embedded
+          />
+        </div>
+      </CategorySidebar>
       <div className={styles.storyShell}>
         <BackButton />
         <header className={styles.pageHeader}>

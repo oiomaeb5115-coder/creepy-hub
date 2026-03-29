@@ -31,6 +31,8 @@ type PendingWikiCategory = {
 type TrashStory = { id: number; title: string | null; deleted_at: string };
 type TrashWiki = { slug: string; title: string; deleted_at: string };
 type TrashCategory = { id: number; name: string; slug: string; deleted_at: string };
+type ReportedPost = { id: number; title: string | null; reported_count: number };
+type ReportedWiki = { id: number; slug: string; title: string; reported_count: number };
 
 type TranslateStatus = "idle" | "loading" | "done" | "error" | "exists";
 type ApproveStatus = "idle" | "loading" | "done" | "error";
@@ -71,6 +73,10 @@ export default function AdminPage() {
   const [trashStoryStatus, setTrashStoryStatus] = useState<Record<number, TrashStatus>>({});
   const [trashWikiStatus, setTrashWikiStatus] = useState<Record<string, TrashStatus>>({});
   const [trashCatStatus, setTrashCatStatus] = useState<Record<number, TrashStatus>>({});
+  const [reportedPosts, setReportedPosts] = useState<ReportedPost[]>([]);
+  const [reportedWikis, setReportedWikis] = useState<ReportedWiki[]>([]);
+  const [reportedPostDeleteStatus, setReportedPostDeleteStatus] = useState<Record<number, DeleteStatus>>({});
+  const [reportedWikiDeleteStatus, setReportedWikiDeleteStatus] = useState<Record<number, DeleteStatus>>({});
 
   // プロフィール編集
   const [profile, setProfile] = useState<ProfileRow | null>(null);
@@ -171,6 +177,27 @@ export default function AdminPage() {
         .gte("reported_count", 3)
         .order("reported_count", { ascending: false });
       setReportedCategories((reportedCats ?? []) as PendingCategory[]);
+
+      // 報告された投稿を取得（reported_count >= 1）
+      const { data: repPostsData } = await supabase
+        .from("post")
+        .select("id, title, reported_count")
+        .eq("is_published", true)
+        .is("deleted_at", null)
+        .gte("reported_count", 1)
+        .order("reported_count", { ascending: false });
+      setReportedPosts((repPostsData ?? []) as ReportedPost[]);
+
+      // 報告された Wiki を取得（locale="ja"、reported_count >= 1）
+      const { data: repWikisData } = await supabase
+        .from("wiki_pages")
+        .select("id, slug, title, reported_count")
+        .eq("locale", "ja")
+        .eq("is_published", true)
+        .is("deleted_at", null)
+        .gte("reported_count", 1)
+        .order("reported_count", { ascending: false });
+      setReportedWikis((repWikisData ?? []) as ReportedWiki[]);
 
       // ゴミ箱: ソフトデリートされた投稿
       const { data: tStories } = await supabase
@@ -424,6 +451,46 @@ export default function AdminPage() {
       }
     } catch {
       setDeleteStatus((prev) => ({ ...prev, [categoryId]: "error" }));
+    }
+  };
+
+  const deleteReportedPost = async (postId: number) => {
+    if (!window.confirm(dict.common.deleteConfirmStory)) return;
+    setReportedPostDeleteStatus((prev) => ({ ...prev, [postId]: "loading" }));
+    try {
+      const token = await getAccessToken();
+      const res = await fetch(`/api/post/${postId}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setReportedPostDeleteStatus((prev) => ({ ...prev, [postId]: "done" }));
+        setReportedPosts((prev) => prev.filter((p) => p.id !== postId));
+      } else {
+        setReportedPostDeleteStatus((prev) => ({ ...prev, [postId]: "error" }));
+      }
+    } catch {
+      setReportedPostDeleteStatus((prev) => ({ ...prev, [postId]: "error" }));
+    }
+  };
+
+  const deleteReportedWiki = async (wiki: ReportedWiki) => {
+    if (!window.confirm(dict.common.deleteConfirmWiki)) return;
+    setReportedWikiDeleteStatus((prev) => ({ ...prev, [wiki.id]: "loading" }));
+    try {
+      const token = await getAccessToken();
+      const res = await fetch(`/api/wiki/${wiki.slug}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setReportedWikiDeleteStatus((prev) => ({ ...prev, [wiki.id]: "done" }));
+        setReportedWikis((prev) => prev.filter((w) => w.id !== wiki.id));
+      } else {
+        setReportedWikiDeleteStatus((prev) => ({ ...prev, [wiki.id]: "error" }));
+      }
+    } catch {
+      setReportedWikiDeleteStatus((prev) => ({ ...prev, [wiki.id]: "error" }));
     }
   };
 
@@ -975,6 +1042,112 @@ export default function AdminPage() {
                           style={deleteButtonStyle(dst)}
                           disabled={dst === "loading" || dst === "done"}
                           onClick={() => deleteCategory(cat.id)}
+                        >
+                          {dst === "loading" ? dict.admin.deleting : dst === "done" ? dict.common.deleted : dst === "error" ? dict.common.retry : dict.admin.deleteBtn}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </section>
+
+        {/* 報告された投稿 */}
+        <section style={sectionStyle}>
+          <h2 style={sectionTitleStyle}>
+            {dict.admin.reportedPosts.replace("{count}", String(reportedPosts.length))}
+          </h2>
+          {reportedPosts.length === 0 ? (
+            <p style={emptyStyle}>{dict.admin.noReportedPosts}</p>
+          ) : (
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>{dict.admin.titleCol}</th>
+                  <th style={thStyle}>{dict.admin.reportCountCol}</th>
+                  <th style={thStyle}>{dict.admin.actionCol}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reportedPosts.map((post) => {
+                  const dst = reportedPostDeleteStatus[post.id] ?? "idle";
+                  return (
+                    <tr key={post.id} style={trStyle}>
+                      <td style={tdStyle}>{post.title ?? `#${post.id}`}</td>
+                      <td style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
+                        {post.reported_count}
+                      </td>
+                      <td style={{ ...tdStyle, display: "flex", gap: 8, alignItems: "center" }}>
+                        <Link
+                          href={`/${locale}/post/${post.id}`}
+                          style={linkStyle}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {dict.admin.viewBtn}
+                        </Link>
+                        <button
+                          style={deleteButtonStyle(dst)}
+                          disabled={dst === "loading" || dst === "done"}
+                          onClick={() => deleteReportedPost(post.id)}
+                        >
+                          {dst === "loading" ? dict.admin.deleting : dst === "done" ? dict.common.deleted : dst === "error" ? dict.common.retry : dict.admin.deleteBtn}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </section>
+
+        {/* 報告された Wiki */}
+        <section style={sectionStyle}>
+          <h2 style={sectionTitleStyle}>
+            {dict.admin.reportedWikis.replace("{count}", String(reportedWikis.length))}
+          </h2>
+          {reportedWikis.length === 0 ? (
+            <p style={emptyStyle}>{dict.admin.noReportedWikis}</p>
+          ) : (
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>{dict.admin.slugCol}</th>
+                  <th style={thStyle}>{dict.admin.catNameCol}</th>
+                  <th style={thStyle}>{dict.admin.reportCountCol}</th>
+                  <th style={thStyle}>{dict.admin.actionCol}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reportedWikis.map((wiki) => {
+                  const dst = reportedWikiDeleteStatus[wiki.id] ?? "idle";
+                  return (
+                    <tr key={wiki.id} style={trStyle}>
+                      <td style={tdStyle}>
+                        <span style={{ color: "#7a6a60", fontFamily: "monospace" }}>
+                          {wiki.slug}
+                        </span>
+                      </td>
+                      <td style={tdStyle}>{wiki.title}</td>
+                      <td style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
+                        {wiki.reported_count}
+                      </td>
+                      <td style={{ ...tdStyle, display: "flex", gap: 8, alignItems: "center" }}>
+                        <Link
+                          href={`/${locale}/wiki/${wiki.slug}`}
+                          style={linkStyle}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {dict.admin.viewBtn}
+                        </Link>
+                        <button
+                          style={deleteButtonStyle(dst)}
+                          disabled={dst === "loading" || dst === "done"}
+                          onClick={() => deleteReportedWiki(wiki)}
                         >
                           {dst === "loading" ? dict.admin.deleting : dst === "done" ? dict.common.deleted : dst === "error" ? dict.common.retry : dict.admin.deleteBtn}
                         </button>

@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════
+   LOCALE LAYOUT — Bottom Nav & Floating Button
+   ═══════════════════════════════════════════════════════════ */
+
 .bottomNav {
   position: fixed;
   bottom: 0;
@@ -7,21 +11,65 @@
   z-index: 50;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  background: rgba(13, 6, 8, 0.97);
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
+  background: rgba(5, 2, 4, 0.96);
+  border-top: 1px solid rgba(200, 40, 50, 0.2);
+  backdrop-filter: blur(16px);
+}
+
+/* Glow line on top of nav */
+.bottomNav::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(200, 40, 50, 0.4) 20%,
+    rgba(200, 40, 50, 0.6) 50%,
+    rgba(200, 40, 50, 0.4) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
 }
 
 .bottomNavItem {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 84px;
-  border-right: 1px solid rgba(255, 255, 255, 0.18);
+  min-height: 80px;
+  border-right: 1px solid rgba(200, 40, 50, 0.1);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .bottomNavItem:last-child {
   border-right: none;
+}
+
+/* Hover highlight */
+.bottomNavItem:hover {
+  background: rgba(200, 40, 50, 0.06);
+}
+
+/* Active indicator line on hover */
+.bottomNavItem::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: rgba(200, 40, 50, 0.7);
+  transition: width 0.25s ease;
+}
+
+.bottomNavItem:hover::after {
+  width: 60%;
 }
 
 .bottomNavLabel {
@@ -32,24 +80,37 @@
 }
 
 .bottomNavLabelEn {
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  color: rgba(245, 241, 235, 0.88);
-  font-family: "装甲明朝", "Soukou Mincho", "Palatino Linotype", "Palatino", "Book Antiqua", serif;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: rgba(245, 241, 235, 0.8);
+  font-family: "Impact", "Anton", "Arial Black", sans-serif;
   font-weight: 400;
   text-align: center;
   width: 100%;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.bottomNavItem:hover .bottomNavLabelEn {
+  color: rgba(245, 241, 235, 1);
+  text-shadow: 0 0 10px rgba(200, 40, 50, 0.3);
 }
 
 .bottomNavLabelJa {
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  color: rgba(245, 241, 235, 0.45);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: rgba(200, 120, 130, 0.35);
   font-family: "装甲明朝", "Soukou Mincho", serif;
   text-align: center;
   width: 100%;
+  transition: color 0.2s;
 }
 
+.bottomNavItem:hover .bottomNavLabelJa {
+  color: rgba(200, 120, 130, 0.55);
+}
+
+/* ── Floating Post Button ── */
 .floatingPostButton {
   position: fixed;
   right: 24px;
@@ -63,23 +124,44 @@
   background: none;
   border: none;
   text-decoration: none;
-  transition: opacity 0.15s, transform 0.15s;
+  transition: all 0.2s;
 }
 
 .floatingPostButton:hover {
   opacity: 0.85;
-  transform: scale(1.06);
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 12px rgba(200, 40, 50, 0.3));
 }
 
 @media (max-width: 960px) {
   .bottomNavItem {
-    min-height: 72px;
+    min-height: 70px;
+  }
+
+  .bottomNavLabelEn {
+    font-size: 10px;
+    letter-spacing: 0.12em;
   }
 
   .floatingPostButton {
     right: 16px;
-    bottom: 92px;
+    bottom: 90px;
     width: 58px;
     height: 58px;
+  }
+}
+
+@media (max-width: 600px) {
+  .bottomNavItem {
+    min-height: 64px;
+  }
+
+  .bottomNavLabelEn {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+
+  .bottomNavLabelJa {
+    font-size: 7px;
   }
 }

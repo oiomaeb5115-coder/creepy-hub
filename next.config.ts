@@ -5,10 +5,11 @@ const nextConfig: NextConfig = {
     const csp = [
       "default-src 'self'",
       // Next.js のインラインスクリプト（nonce なし構成）に必要
+      // TODO: Next.js の nonce ベース CSP に移行して 'unsafe-inline' を除去する
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
-      // Supabase Storage・外部画像を許可
-      "img-src 'self' data: https:",
+      // Supabase Storage・外部画像を許可（data: は XSS ベクターとなるため除外）
+      "img-src 'self' https:",
       // Supabase API・Google Translate API への接続を許可
       "connect-src 'self' https://*.supabase.co https://translation.googleapis.com",
       // フォント（必要に応じて追加）

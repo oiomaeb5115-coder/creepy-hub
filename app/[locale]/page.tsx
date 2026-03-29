@@ -120,7 +120,7 @@ function WikiSearchBox({
   );
 }
 
-function StoryCard({
+function StoryCardGrid({
   post,
   locale,
   storyLabel,
@@ -144,26 +144,26 @@ function StoryCard({
   const commentCount = (post.post_comments ?? []).length;
 
   return (
-    <Link href={`/${locale}/post/${post.id}`} className={styles.timelineCardLink}>
-      <article className={styles.timelineCard}>
-        <div className={styles.timelineCardImageWrap}>
+    <Link href={`/${locale}/post/${post.id}`} className={styles.gridCardLink}>
+      <article className={styles.gridCard}>
+        <div className={styles.gridCardImageWrap}>
           {post.image_url ? (
             <img
               src={post.image_url}
               alt={safeTitle}
-              className={styles.timelineCardImage}
+              className={styles.gridCardImage}
               loading="lazy"
             />
           ) : (
-            <div className={styles.timelineCardImagePlaceholder}>
+            <div className={styles.gridCardImagePlaceholder}>
               NO IMAGE
             </div>
           )}
         </div>
 
-        <div className={styles.timelineCardBody}>
-          <div className={styles.timelineCardMeta}>
-            <span>{storyLabel}</span>
+        <div className={styles.gridCardBody}>
+          <div className={styles.gridCardMeta}>
+            <span className={styles.gridCardBadge}>{storyLabel}</span>
             <span>
               {safeCreatedAt
                 ? new Date(safeCreatedAt).toLocaleDateString(dateLocale)
@@ -171,13 +171,13 @@ function StoryCard({
             </span>
           </div>
 
-          <h3 className={styles.timelineCardTitle}>{safeTitle}</h3>
+          <h3 className={styles.gridCardTitle}>{safeTitle}</h3>
 
-          <p className={styles.timelineCardExcerpt}>
-            {safeContent.length > 100 ? `${safeContent.slice(0, 100)}...` : safeContent}
+          <p className={styles.gridCardExcerpt}>
+            {safeContent.length > 80 ? `${safeContent.slice(0, 80)}...` : safeContent}
           </p>
 
-          <div className={styles.timelineCardFooter}>
+          <div className={styles.gridCardFooter}>
             <span>▲ {score}</span>
             <span>💬 {commentCount}</span>
             <span>👁 {post.view_count ?? 0}</span>
@@ -330,6 +330,7 @@ export default async function HomePage({ params }: HomePageProps) {
   return (
     <main className={styles.homePage}>
       <div className={styles.pageFrame}>
+        {/* ── HERO ── */}
         <section className={styles.heroSection}>
           <div className={styles.heroTopButtons}>
             <HomeAuthButtons locale={locale} />
@@ -340,12 +341,12 @@ export default async function HomePage({ params }: HomePageProps) {
               <h1 className={styles.siteTitleText}>
                 CREEPY HUB
               </h1>
+              <p className={styles.heroTagline}>{dict.meta.description}</p>
             </div>
 
             <div className={styles.topSearchRow}>
               <div className={styles.searchColumn}>
                 <span className={styles.searchHeadingText}>{dict.home.storySearch}</span>
-                <span className={styles.searchDesc}>{dict.home.storySearchDesc}</span>
                 <StorySearchBox
                   locale={locale}
                   placeholder={dict.home.storySearchPlaceholder}
@@ -355,7 +356,6 @@ export default async function HomePage({ params }: HomePageProps) {
 
               <div className={styles.searchColumn}>
                 <span className={styles.searchHeadingText}>{dict.home.wikiSearch}</span>
-                <span className={styles.searchDesc}>{dict.home.wikiSearchDesc}</span>
                 <WikiSearchBox
                   locale={locale}
                   placeholder={dict.home.wikiSearchPlaceholder}
@@ -366,106 +366,122 @@ export default async function HomePage({ params }: HomePageProps) {
           </div>
         </section>
 
-        <section className={styles.contentSection}>
-          <div className={styles.textSectionTitle}>
-            <span className={styles.textSectionTitleEn}>CREEPY POSTS</span>
-            <span className={styles.textSectionTitleJa}>{dict.home.latestStories}</span>
-          </div>
+        {/* ── TWO-COLUMN LAYOUT ── */}
+        <div className={styles.twoColLayout}>
+          {/* ── MAIN COLUMN ── */}
+          <div className={styles.mainCol}>
+            {/* CREEPY POSTS - Card Grid */}
+            <section className={styles.contentSection}>
+              <div className={styles.sectionHeader}>
+                <div className={styles.textSectionTitle}>
+                  <span className={styles.textSectionTitleEn}>CREEPY POSTS</span>
+                  <span className={styles.textSectionTitleJa}>{dict.home.latestStories}</span>
+                </div>
+                <Link href={`/${locale}/post`} className={styles.seeAllLink}>
+                  {locale === "en" ? "VIEW ALL" : "すべて見る"} →
+                </Link>
+              </div>
 
-          {latestStories.length === 0 ? (
-            <p className={styles.emptyText}>{dict.home.noStories}</p>
-          ) : (
-            <div className={styles.timelineRow}>
-              {latestStories.map((post) => (
-                <StoryCard
-                  key={post.id}
-                  post={post}
-                  locale={locale}
-                  storyLabel={dict.post.label}
-                  unknownDate={dict.post.unknownDate}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className={styles.contentSection}>
-          <div className={styles.textSectionTitle}>
-            <span className={styles.textSectionTitleEn}>OCCULT WIKI</span>
-            <span className={styles.textSectionTitleJa}>{dict.home.latestWiki}</span>
-          </div>
-
-          {latestWiki.length === 0 ? (
-            <p className={styles.emptyText}>{dict.home.noWiki}</p>
-          ) : (
-            <div className={styles.horizontalScrollRow}>
-              {latestWiki.map((item) => (
-                <WikiCard
-                  key={item.id}
-                  item={item}
-                  locale={locale}
-                  pageTypeLabel={
-                    dict.pageType[item.page_type as keyof typeof dict.pageType] ??
-                    item.page_type
-                  }
-                  unknownDate={dict.post.unknownDate}
-                  noSummary={dict.wiki.noSummary}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Category section */}
-        <section className={styles.contentSection}>
-          <div className={styles.textSectionTitle}>
-            <span className={styles.textSectionTitleEn}>CATEGORIES</span>
-            <span className={styles.textSectionTitleJa}>{dict.home.categories}</span>
-          </div>
-
-          <div className={styles.categoryBlock}>
-            <p className={styles.categoryBlockLabel}>CREEPY POSTS</p>
-            <div className={styles.categoryChipRow}>
-              {storyCategories.length === 0 ? (
-                <span className={styles.categoryEmpty}>{dict.home.noCategory}</span>
+              {latestStories.length === 0 ? (
+                <p className={styles.emptyText}>{dict.home.noStories}</p>
               ) : (
-                storyCategories.map((cat) => (
+                <div className={styles.cardGrid}>
+                  {latestStories.map((post) => (
+                    <StoryCardGrid
+                      key={post.id}
+                      post={post}
+                      locale={locale}
+                      storyLabel={dict.post.label}
+                      unknownDate={dict.post.unknownDate}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* OCCULT WIKI - Horizontal Scroll */}
+            <section className={styles.contentSection}>
+              <div className={styles.sectionHeader}>
+                <div className={styles.textSectionTitle}>
+                  <span className={styles.textSectionTitleEn}>OCCULT WIKI</span>
+                  <span className={styles.textSectionTitleJa}>{dict.home.latestWiki}</span>
+                </div>
+                <Link href={`/${locale}/wiki`} className={styles.seeAllLink}>
+                  {locale === "en" ? "VIEW ALL" : "すべて見る"} →
+                </Link>
+              </div>
+
+              {latestWiki.length === 0 ? (
+                <p className={styles.emptyText}>{dict.home.noWiki}</p>
+              ) : (
+                <div className={styles.horizontalScrollRow}>
+                  {latestWiki.map((item) => (
+                    <WikiCard
+                      key={item.id}
+                      item={item}
+                      locale={locale}
+                      pageTypeLabel={
+                        dict.pageType[item.page_type as keyof typeof dict.pageType] ??
+                        item.page_type
+                      }
+                      unknownDate={dict.post.unknownDate}
+                      noSummary={dict.wiki.noSummary}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+
+          {/* ── SIDEBAR ── */}
+          <aside className={styles.sideCol}>
+            {/* Story Categories */}
+            <div className={styles.sidePanel}>
+              <h3 className={styles.sidePanelTitle}>CATEGORIES</h3>
+              <p className={styles.sidePanelSub}>CREEPY POSTS</p>
+              <div className={styles.sideCategoryList}>
+                {storyCategories.length === 0 ? (
+                  <span className={styles.categoryEmpty}>{dict.home.noCategory}</span>
+                ) : (
+                  storyCategories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/${locale}/post/category/${cat.slug}`}
+                      className={styles.sideCategoryItem}
+                    >
+                      {locale === "en" ? (cat.name_en ?? cat.name) : cat.name}
+                    </Link>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Wiki Categories */}
+            <div className={styles.sidePanel}>
+              <p className={styles.sidePanelSub}>OCCULT WIKI</p>
+              <div className={styles.sideCategoryList}>
+                {wikiPageTypeKeys.map((key) => (
+                  <Link
+                    key={key}
+                    href={`/${locale}/wiki/category/${key}`}
+                    className={styles.sideCategoryItem}
+                  >
+                    {dict.pageType[key]}
+                  </Link>
+                ))}
+                {wikiCategories.map((cat) => (
                   <Link
                     key={cat.id}
-                    href={`/${locale}/post/category/${cat.slug}`}
-                    className={styles.categoryChip}
+                    href={`/${locale}/wiki/category/${cat.slug}`}
+                    className={styles.sideCategoryItem}
                   >
-                    {locale === "en" ? (cat.name_en ?? cat.name) : cat.name}
+                    {cat.name}
                   </Link>
-                ))
-              )}
+                ))}
+              </div>
             </div>
-          </div>
-
-          <div className={styles.categoryBlock}>
-            <p className={styles.categoryBlockLabel}>OCCULT WIKI</p>
-            <div className={styles.categoryChipRow}>
-              {wikiPageTypeKeys.map((key) => (
-                <Link
-                  key={key}
-                  href={`/${locale}/wiki/category/${key}`}
-                  className={styles.categoryChip}
-                >
-                  {dict.pageType[key]}
-                </Link>
-              ))}
-              {wikiCategories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/${locale}/wiki/category/${cat.slug}`}
-                  className={styles.categoryChip}
-                >
-                  {cat.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+          </aside>
+        </div>
 
         <AdminPendingSection
           locale={locale}

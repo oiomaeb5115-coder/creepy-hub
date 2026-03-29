@@ -9,6 +9,8 @@ import AuthDrawer from "./AuthDrawer";
 import Link from "next/link";
 import styles from "./layout.module.css";
 import WelcomeVideoModal from "@/components/WelcomeVideoModal";
+import Footer from "@/components/Footer";
+import StorageConsent from "@/components/StorageConsent";
 
 const locales = ["ja", "en"] as const;
 const BASE_URL = "https://creepyhub.com";
@@ -64,7 +66,7 @@ export default async function LocaleLayout({
       {/* Set html lang attribute dynamically for the current locale */}
       <script
         dangerouslySetInnerHTML={{
-          __html: `document.documentElement.lang="${locale}";`,
+          __html: `document.documentElement.lang=${JSON.stringify(locale)};`,
         }}
       />
       <PageTransition>{children}</PageTransition>
@@ -94,9 +96,23 @@ export default async function LocaleLayout({
         <BottomNavProfileLink locale={locale} />
       </nav>
 
+      <Footer
+        locale={locale}
+        privacyLabel={dict.footer.privacy}
+        termsLabel={dict.footer.terms}
+        contactLabel={dict.footer.contact}
+        rightsClaimLabel={dict.footer.rightsClaim}
+      />
+
       <PostDrawer locale={locale} labels={dict.postDrawer} />
       <AuthDrawer locale={locale} labels={dict.authDrawer} />
       <WelcomeVideoModal videoSrc="/welcome.webm/welcome-1.webm" />
+      <StorageConsent
+        locale={locale}
+        message={dict.cookieConsent.message}
+        privacyLinkText={dict.cookieConsent.privacyLink}
+        acceptText={dict.cookieConsent.accept}
+      />
     </>
   );
 }

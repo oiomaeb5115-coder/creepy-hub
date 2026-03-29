@@ -18,6 +18,8 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,11 +105,44 @@ export default function RegisterPage() {
               />
             </div>
 
+            <div className={styles.checkboxGroup}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={ageConfirmed}
+                  onChange={(e) => setAgeConfirmed(e.target.checked)}
+                  className={styles.checkbox}
+                />
+                <span>{dict.auth.ageConfirm}</span>
+              </label>
+            </div>
+
+            <div className={styles.checkboxGroup}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  className={styles.checkbox}
+                />
+                <span>
+                  <a href={`/${locale}/terms-of-service`} target="_blank" rel="noopener noreferrer" className={styles.inlineLink}>
+                    {dict.auth.termsLink}
+                  </a>
+                  {dict.auth.termsAnd}
+                  <a href={`/${locale}/privacy-policy`} target="_blank" rel="noopener noreferrer" className={styles.inlineLink}>
+                    {dict.auth.privacyLink}
+                  </a>
+                  {dict.auth.termsAgree}
+                </span>
+              </label>
+            </div>
+
             <div className={styles.submitRow}>
               <button
                 type="submit"
                 className={styles.primaryButton}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !ageConfirmed || !termsAccepted}
               >
                 {isSubmitting ? dict.auth.registerSubmitting : dict.auth.registerSubmit}
               </button>

@@ -12,7 +12,7 @@
   overflow-x: auto;
   overflow-y: hidden;
   padding-bottom: 10px;
-  border-radius: 12px;
+  border-radius: 0;
 }
 
 .storyDetailImages {
@@ -33,7 +33,7 @@
   flex: 0 0 auto;
   background: rgba(12, 3, 5, 0.92);
   border: 1px solid rgba(161, 102, 108, 0.22);
-  border-radius: 12px;
+  border-radius: 0;
 }
 
 .storyDetailImage {
@@ -41,7 +41,7 @@
   height: auto;
   max-height: 60vh;
   object-fit: contain;
-  border-radius: 10px;
+  border-radius: 0;
   display: block;
   background: #120608;
 }
@@ -79,8 +79,8 @@
   max-height: 100%;
   object-fit: contain;
   display: block;
-  border-radius: 12px;
-  background: #0d0608;
+  border-radius: 0;
+  background: #050204;
 }
 
 .storyLightboxClose {

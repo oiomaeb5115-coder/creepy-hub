@@ -14,6 +14,9 @@ export async function POST(
   const { id } = await params;
 
   const token = req.headers.get("Authorization")?.slice(7) ?? "";
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

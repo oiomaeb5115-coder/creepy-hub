@@ -22,9 +22,10 @@ type Props = {
   type: "story" | "wiki";
   locale: string;
   labels?: Labels;
+  embedded?: boolean;
 };
 
-export default function FavoriteSidebar({ type, locale, labels }: Props) {
+export default function FavoriteSidebar({ type, locale, labels, embedded }: Props) {
   const [favorites, setFavorites] = useState<FavEntry[]>([]);
 
   const t = {
@@ -46,8 +47,10 @@ export default function FavoriteSidebar({ type, locale, labels }: Props) {
     ? `/${locale}/post/category`
     : `/${locale}/wiki/category`;
 
+  const Wrapper = embedded ? "div" : "aside";
+
   return (
-    <aside className={styles.sidebar}>
+    <Wrapper className={embedded ? undefined : styles.sidebar}>
       <p className={styles.title}>
         <span className={styles.titleStar}>★</span>
         {t.title}
@@ -65,6 +68,6 @@ export default function FavoriteSidebar({ type, locale, labels }: Props) {
           ))}
         </ul>
       )}
-    </aside>
+    </Wrapper>
   );
 }

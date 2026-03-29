@@ -1,0 +1,64 @@
+.privacyPage {
+  min-height: 100vh;
+  background: #050204;
+  color: #f5f1eb;
+  padding: 32px 20px 100px;
+}
+
+.privacyShell {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.privacyHeader {
+  padding-bottom: 24px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid rgba(167, 108, 113, 0.16);
+}
+
+.privacyBreadcrumb {
+  margin: 0 0 14px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: #8a7870;
+}
+
+.privacyTitle {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.1;
+  color: #f5f1eb;
+}
+
+.privacyUpdated {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #8a7870;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: #d4c8b8;
+  letter-spacing: 0.04em;
+}
+
+.sectionBody {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #a49080;
+}
+
+.sectionBody ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.sectionBody li {
+  margin-bottom: 4px;
+}

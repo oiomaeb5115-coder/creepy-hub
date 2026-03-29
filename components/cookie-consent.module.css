@@ -1,0 +1,56 @@
+.banner {
+  position: fixed;
+  bottom: 72px;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 14px 20px;
+  background: rgba(17, 17, 17, 0.96);
+  border-top: 1px solid rgba(167, 108, 113, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.text {
+  font-size: 13px;
+  color: #a49080;
+  line-height: 1.5;
+}
+
+.link {
+  color: #d4c8b8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link:hover {
+  color: #f5f1eb;
+}
+
+.acceptButton {
+  flex-shrink: 0;
+  padding: 8px 20px;
+  background: #f5f1eb;
+  color: #050204;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.acceptButton:hover {
+  opacity: 0.85;
+}
+
+@media (max-width: 600px) {
+  .banner {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}

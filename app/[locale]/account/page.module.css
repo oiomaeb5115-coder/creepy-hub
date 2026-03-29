@@ -1,6 +1,6 @@
 .accountPage {
   min-height: 100vh;
-  background: #0d0608;
+  background: #050204;
   color: #f5f1eb;
   padding: 32px 20px 100px;
 }
@@ -61,10 +61,23 @@
 }
 
 .profileCard {
-  background: linear-gradient(to bottom, rgba(18, 5, 8, 0.97), rgba(10, 3, 5, 0.98));
-  border: 1px solid rgba(161, 102, 108, 0.24);
-  border-radius: 14px;
+  background: rgba(8, 3, 5, 0.92);
+  border: 1px solid rgba(161, 102, 108, 0.18);
+  border-radius: 0;
   overflow: hidden;
+  position: relative;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.profileCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(180, 80, 70, 0.6), transparent 60%);
+  z-index: 1;
 }
 
 .banner,

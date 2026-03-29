@@ -62,6 +62,17 @@ export async function PATCH(
   const body = await req.json();
   const { title, content, category_id } = body;
 
+  // サーバーサイド入力バリデーション
+  if (title !== undefined && (typeof title !== "string" || title.length === 0 || title.length > 200)) {
+    return NextResponse.json({ error: "タイトルは1〜200文字で入力してください" }, { status: 400 });
+  }
+  if (content !== undefined && (typeof content !== "string" || content.length === 0 || content.length > 50000)) {
+    return NextResponse.json({ error: "本文は1〜50000文字で入力してください" }, { status: 400 });
+  }
+  if (category_id !== undefined && category_id !== null && typeof category_id !== "number") {
+    return NextResponse.json({ error: "カテゴリIDが不正です" }, { status: 400 });
+  }
+
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!

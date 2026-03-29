@@ -1,6 +1,6 @@
 .profilePage {
   min-height: 100vh;
-  background: #0d0608;
+  background: #050204;
   color: #f5f1eb;
   padding: 40px 20px 100px;
 }
@@ -14,13 +14,13 @@
   width: 100%;
   height: 220px;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: 0;
 }
 
 .bannerPlaceholder {
   height: 220px;
   background: #1a0608;
-  border-radius: 12px;
+  border-radius: 0;
 }
 
 .header {
@@ -34,7 +34,7 @@
   width: 120px;
   height: 120px;
   border-radius: 100%;
-  border: 4px solid #0d0608;
+  border: 4px solid #050204;
 }
 
 .avatarPlaceholder {
@@ -127,7 +127,7 @@
   width: 110px;
   height: 88px;
   overflow: hidden;
-  background: #0d0608;
+  background: #050204;
 }
 
 .thumb {

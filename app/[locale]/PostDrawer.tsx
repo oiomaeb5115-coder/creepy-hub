@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAccessToken } from "@/lib/auth";
 import { getAllStoryTags } from "@/lib/tags";
+import { validateImageFile } from "@/lib/validateImageFile";
 import styles from "./post-drawer.module.css";
 
 type Labels = {
@@ -83,10 +84,14 @@ export default function PostDrawer({ locale, labels }: Props) {
     if (!raw) return;
     try {
       const draft = JSON.parse(raw);
-      if (draft.title) setTitle(draft.title);
-      if (draft.body) setBody(draft.body);
-      if (draft.selectedTagIds) setSelectedTagIds(draft.selectedTagIds);
-      if (draft.categoryId) setCategoryId(draft.categoryId);
+      if (typeof draft.title === "string") setTitle(draft.title);
+      if (typeof draft.body === "string") setBody(draft.body);
+      if (Array.isArray(draft.selectedTagIds) && draft.selectedTagIds.every((v: unknown) => typeof v === "number")) {
+        setSelectedTagIds(draft.selectedTagIds);
+      }
+      if (typeof draft.categoryId === "string" || typeof draft.categoryId === "number") {
+        setCategoryId(String(draft.categoryId));
+      }
       setDraftRestored(true);
     } catch { /* ignore */ }
   }, [userId]);
@@ -156,6 +161,11 @@ export default function PostDrawer({ locale, labels }: Props) {
     }
     if (file.size > MAX_SIZE) {
       throw new Error("ファイルサイズは5MB以内にしてください");
+    }
+    // ファイルの実際の内容（magic bytes）を検証
+    const isValidImage = await validateImageFile(file);
+    if (!isValidImage) {
+      throw new Error("ファイルの内容が画像形式と一致しません");
     }
     const fileExt = file.name.split(".").pop() || "jpg";
     const fileName = `${userId}/${Date.now()}-${suffix}.${fileExt}`;

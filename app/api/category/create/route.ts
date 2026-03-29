@@ -71,6 +71,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // URL バリデーション（https スキームのみ許可）
+  for (const urlValue of [icon_url, header_image_url]) {
+    if (urlValue) {
+      try {
+        const u = new URL(urlValue);
+        if (u.protocol !== "https:") throw new Error();
+      } catch {
+        return NextResponse.json(
+          { error: "画像URLはhttps://で始まる有効なURLを指定してください" },
+          { status: 400 }
+        );
+      }
+    }
+  }
+
   // Google Translate で英語名を自動生成
   let nameEn: string | null = null;
   try {

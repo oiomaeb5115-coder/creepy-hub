@@ -1,7 +1,29 @@
+/* ═══════════════════════════════════════════════════════════
+   HOME PAGE — 2-Column Layout + Card Grid
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes glitchShift {
+  0%, 100% { text-shadow: 0 0 60px rgba(200, 40, 50, 0.25), 0 2px 4px rgba(0, 0, 0, 0.8); }
+  20% { text-shadow: -2px 0 rgba(200, 40, 50, 0.5), 2px 0 rgba(0, 200, 200, 0.2), 0 0 60px rgba(200, 40, 50, 0.3); }
+  40% { text-shadow: 0 0 60px rgba(200, 40, 50, 0.25), 0 2px 4px rgba(0, 0, 0, 0.8); }
+  60% { text-shadow: 3px 0 rgba(200, 40, 50, 0.4), -1px 0 rgba(0, 200, 200, 0.15), 0 0 80px rgba(200, 40, 50, 0.35); }
+  80% { text-shadow: 0 0 60px rgba(200, 40, 50, 0.25), 0 2px 4px rgba(0, 0, 0, 0.8); }
+}
+
+@keyframes heroGlow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .homePage {
   min-height: 100vh;
   color: #f5f1eb;
-  background-color: #0d0608;
+  background-color: #050204;
 }
 
 .pageFrame {
@@ -9,45 +31,73 @@
   margin: 0 auto;
   min-height: 100vh;
   padding-bottom: 84px;
-  border-left: 2px solid rgba(255, 255, 255, 0.9);
-  border-right: 2px solid rgba(255, 255, 255, 0.9);
-  border-bottom: 2px solid rgba(255, 255, 255, 0.9);
+  border-left: 1px solid rgba(200, 40, 50, 0.2);
+  border-right: 1px solid rgba(200, 40, 50, 0.2);
+  border-bottom: 1px solid rgba(200, 40, 50, 0.2);
+  position: relative;
 }
+
+.pageFrame::before,
+.pageFrame::after {
+  content: "";
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-color: rgba(200, 40, 50, 0.4);
+  border-style: solid;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.pageFrame::before {
+  top: 0;
+  left: 0;
+  border-width: 2px 0 0 2px;
+}
+
+.pageFrame::after {
+  top: 0;
+  right: 0;
+  border-width: 2px 2px 0 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HERO SECTION
+   ═══════════════════════════════════════════════════════════ */
 
 .heroSection {
   position: relative;
-  min-height: auto;
-  border-top: 2px solid rgba(255, 255, 255, 0.9);
   overflow: hidden;
   padding-bottom: 36px;
+  border-top: 1px solid rgba(200, 40, 50, 0.25);
 }
 
-/* 左上の大きな赤い円 */
 .heroSection::before {
   content: "";
   position: absolute;
-  top: -220px;
-  left: -200px;
+  top: -250px;
+  left: -220px;
   width: 700px;
   height: 700px;
   border-radius: 50%;
-  background: rgba(115, 13, 19, 0.88);
+  background: radial-gradient(circle, rgba(180, 20, 30, 0.6) 0%, rgba(120, 10, 15, 0.3) 40%, transparent 70%);
   pointer-events: none;
   z-index: 0;
+  animation: heroGlow 8s ease-in-out infinite;
 }
 
-/* 右上の小さな円 */
 .heroSection::after {
   content: "";
   position: absolute;
-  top: -120px;
-  right: -100px;
-  width: 320px;
-  height: 320px;
+  top: -140px;
+  right: -120px;
+  width: 400px;
+  height: 400px;
   border-radius: 50%;
-  background: rgba(115, 13, 19, 0.82);
+  background: radial-gradient(circle, rgba(180, 20, 30, 0.45) 0%, rgba(120, 10, 15, 0.2) 40%, transparent 70%);
   pointer-events: none;
   z-index: 0;
+  animation: heroGlow 6s ease-in-out infinite 2s;
 }
 
 .heroTopButtons {
@@ -60,23 +110,18 @@
   align-items: center;
 }
 
-/* ── User dropdown menu ── */
-.userMenuWrapper {
-  position: relative;
-}
-
-.userMenuButton {
-  white-space: nowrap;
-}
+/* ── User dropdown ── */
+.userMenuWrapper { position: relative; }
+.userMenuButton { white-space: nowrap; }
 
 .userDropdown {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  min-width: 150px;
-  background: rgba(13, 6, 8, 0.97);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(8px);
+  min-width: 160px;
+  background: rgba(5, 2, 4, 0.97);
+  border: 1px solid rgba(200, 40, 50, 0.25);
+  backdrop-filter: blur(12px);
   display: flex;
   flex-direction: column;
   z-index: 60;
@@ -85,11 +130,12 @@
 .userDropdownStatus {
   display: block;
   padding: 10px 14px 8px;
-  font-size: 10px;
-  letter-spacing: 0.05em;
-  color: rgba(245, 241, 235, 0.4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: rgba(200, 120, 130, 0.4);
+  border-bottom: 1px solid rgba(200, 40, 50, 0.12);
   font-family: "装甲明朝", "Soukou Mincho", serif;
+  text-transform: uppercase;
 }
 
 .userDropdownItem {
@@ -98,24 +144,23 @@
   padding: 10px 14px;
   background: none;
   border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  color: rgba(245, 241, 235, 0.82);
+  border-bottom: 1px solid rgba(200, 40, 50, 0.08);
+  color: rgba(245, 241, 235, 0.75);
   font-family: "装甲明朝", "Soukou Mincho", serif;
   font-size: 13px;
   letter-spacing: 0.08em;
   text-align: left;
   text-decoration: none;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all 0.15s;
 }
 
-.userDropdownItem:last-child {
-  border-bottom: none;
-}
+.userDropdownItem:last-child { border-bottom: none; }
 
 .userDropdownItem:hover {
-  background: rgba(80, 20, 25, 0.5);
+  background: rgba(200, 40, 50, 0.12);
   color: #f5f1eb;
+  padding-left: 18px;
 }
 
 .topTextButton {
@@ -123,83 +168,84 @@
   align-items: center;
   justify-content: center;
   padding: 6px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(200, 40, 50, 0.35);
   color: #f5f1eb;
   text-decoration: none;
   font-family: "装甲明朝", "Soukou Mincho", serif;
-  font-size: 0.95rem;
-  letter-spacing: 0.08em;
-  background: rgba(13, 6, 8, 0.6);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  background: rgba(5, 2, 4, 0.7);
+  transition: all 0.2s ease;
+  text-transform: uppercase;
 }
 
 .topTextButton:hover {
-  background: rgba(80, 20, 25, 0.7);
-  border-color: rgba(255, 255, 255, 0.8);
+  background: rgba(200, 40, 50, 0.2);
+  border-color: rgba(200, 40, 50, 0.6);
+  box-shadow: 0 0 20px rgba(200, 40, 50, 0.15);
+  color: #fff;
 }
 
 .heroInner {
   position: relative;
   z-index: 3;
-  padding: 56px 36px 36px;
+  padding: 64px 40px 36px;
+  animation: fadeInUp 0.8s ease-out;
 }
 
 .siteTitleWrap {
   width: 100%;
   max-width: 760px;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 
 .siteTitleText {
   margin: 0;
-  font-size: clamp(44px, 7.5vw, 92px);
-  line-height: 1.0;
-  letter-spacing: 0.08em;
+  font-size: clamp(48px, 8vw, 100px);
+  line-height: 0.95;
+  letter-spacing: 0.1em;
   color: #f5f1eb;
   font-family: "Impact", "Anton", "Arial Black", "Haettenschweiler", "Franklin Gothic Heavy", sans-serif;
-  text-shadow: 0 0 80px rgba(165, 60, 70, 0.35), 0 2px 6px rgba(0, 0, 0, 0.7);
   font-weight: 900;
+  text-transform: uppercase;
+  animation: glitchShift 5s ease-in-out infinite;
 }
 
-.siteTitleDot {
-  color: rgba(200, 80, 95, 0.9);
+.heroTagline {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: rgba(180, 130, 110, 0.45);
+  letter-spacing: 0.06em;
+  line-height: 1.6;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
 }
 
+/* ── Search ── */
 .topSearchRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 48px;
+  gap: 32px;
   align-items: start;
   margin-top: 8px;
 }
 
-.searchColumn {
-  width: 100%;
-}
+.searchColumn { width: 100%; }
 
 .searchHeadingText {
   display: block;
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  color: rgba(245, 241, 235, 0.6);
-  font-family: "装甲明朝", "Soukou Mincho", "Palatino Linotype", "Palatino", serif;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: rgba(200, 120, 130, 0.5);
+  font-family: "装甲明朝", "Soukou Mincho", serif;
   text-transform: uppercase;
-  margin-bottom: 10px;
-  padding-bottom: 7px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.searchDesc {
-  display: block;
-  font-size: 11px;
-  color: rgba(245, 241, 235, 0.45);
-  margin-bottom: 10px;
-  line-height: 1.5;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(200, 40, 50, 0.15);
 }
 
 .searchForm {
   display: flex;
-  gap: 10px;
+  gap: 0;
   align-items: center;
   width: 100%;
 }
@@ -207,28 +253,47 @@
 .searchInput {
   flex: 1;
   min-width: 0;
-  height: 42px;
+  height: 38px;
   padding: 0 14px;
-  border: 1px solid rgba(255, 255, 255, 0.82);
-  background: transparent;
+  border: 1px solid rgba(200, 40, 50, 0.25);
+  border-right: none;
+  background: rgba(5, 2, 4, 0.6);
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.85rem;
   outline: none;
+  transition: all 0.2s;
 }
 
 .searchInput::placeholder {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(200, 150, 140, 0.3);
+  font-size: 0.8rem;
+}
+
+.searchInput:focus {
+  border-color: rgba(200, 40, 50, 0.5);
+  background: rgba(10, 4, 6, 0.8);
 }
 
 .searchButton {
-  height: 42px;
+  height: 38px;
   padding: 0 16px;
-  border: 1px solid rgba(255, 255, 255, 0.86);
-  background: transparent;
-  color: #fff;
+  border: 1px solid rgba(200, 40, 50, 0.25);
+  background: rgba(200, 40, 50, 0.1);
+  color: rgba(200, 120, 130, 0.7);
   cursor: pointer;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: all 0.2s;
 }
 
+.searchButton:hover {
+  background: rgba(200, 40, 50, 0.25);
+  border-color: rgba(200, 40, 50, 0.45);
+  color: #fff;
+}
+
+/* ── Floating post button ── */
 .floatingPostButton {
   position: fixed;
   right: 24px;
@@ -242,63 +307,334 @@
   background: none;
   border: none;
   text-decoration: none;
-  transition: opacity 0.15s, transform 0.15s;
+  transition: all 0.2s;
 }
 
 .floatingPostButton:hover {
   opacity: 0.85;
-  transform: scale(1.06);
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 10px rgba(200, 40, 50, 0.3));
 }
 
+/* ═══════════════════════════════════════════════════════════
+   TWO-COLUMN LAYOUT
+   ═══════════════════════════════════════════════════════════ */
+
+.twoColLayout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 0;
+  align-items: start;
+}
+
+.mainCol {
+  min-width: 0;
+  border-right: 1px solid rgba(200, 40, 50, 0.1);
+}
+
+.sideCol {
+  position: sticky;
+  top: 0;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-height: calc(100vh - 84px);
+  overflow-y: auto;
+}
+
+/* ── Side panel ── */
+.sidePanel {
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(200, 40, 50, 0.1);
+}
+
+.sidePanel:last-child {
+  border-bottom: none;
+}
+
+.sidePanelTitle {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-family: "Impact", "Anton", "Arial Black", sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: rgba(245, 241, 235, 0.8);
+  text-transform: uppercase;
+}
+
+.sidePanelSub {
+  margin: 0 0 10px;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: rgba(200, 120, 130, 0.4);
+  font-family: "Impact", "Anton", "Arial Black", sans-serif;
+  text-transform: uppercase;
+}
+
+.sideCategoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sideCategoryItem {
+  display: block;
+  padding: 9px 12px;
+  font-size: 12px;
+  color: rgba(245, 241, 235, 0.65);
+  text-decoration: none;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  letter-spacing: 0.04em;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+}
+
+.sideCategoryItem:hover {
+  color: #f5f1eb;
+  background: rgba(200, 40, 50, 0.06);
+  border-left-color: rgba(200, 40, 50, 0.5);
+}
+
+.categoryEmpty {
+  font-size: 11px;
+  color: rgba(200, 150, 140, 0.3);
+  padding: 8px 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CONTENT SECTIONS
+   ═══════════════════════════════════════════════════════════ */
+
 .contentSection {
-  padding: 34px 40px 0;
+  padding: 28px 28px 0;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
 }
 
 .textSectionTitle {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 18px;
+  gap: 3px;
   padding-left: 14px;
-  border-left: 3px solid rgba(180, 70, 85, 0.75);
+  border-left: 2px solid rgba(200, 40, 50, 0.6);
+  position: relative;
+}
+
+.textSectionTitle::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: rgba(200, 40, 50, 0.6);
+  box-shadow: 0 0 12px rgba(200, 40, 50, 0.3);
 }
 
 .textSectionTitleEn {
   font-size: clamp(18px, 2.5vw, 26px);
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   color: #f5f1eb;
-  font-family: "装甲明朝", "Soukou Mincho", "Palatino Linotype", "Palatino", "Book Antiqua", serif;
-  line-height: 1.1;
-  font-weight: 400;
+  font-family: "Impact", "Anton", "Arial Black", sans-serif;
+  line-height: 1.0;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .textSectionTitleJa {
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.12em;
-  color: rgba(245, 241, 235, 0.5);
+  color: rgba(200, 120, 130, 0.4);
   font-family: "装甲明朝", "Soukou Mincho", serif;
 }
 
+.seeAllLink {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: rgba(200, 120, 130, 0.45);
+  text-decoration: none;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.seeAllLink:hover {
+  color: rgba(220, 140, 150, 0.8);
+}
+
+.emptyText {
+  margin: 0;
+  color: rgba(200, 150, 140, 0.4);
+  font-size: 13px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CARD GRID (CREEPY POSTS)
+   ═══════════════════════════════════════════════════════════ */
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.gridCardLink {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+}
+
+.gridCard {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(200, 40, 50, 0.12);
+  background: rgba(8, 3, 5, 0.8);
+  overflow: hidden;
+  transition: all 0.25s ease;
+  position: relative;
+  height: 100%;
+}
+
+.gridCard::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(200, 40, 50, 0.7), transparent);
+  transition: width 0.4s ease;
+}
+
+.gridCardLink:hover .gridCard {
+  border-color: rgba(200, 40, 50, 0.3);
+  background: rgba(15, 5, 8, 0.95);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(200, 40, 50, 0.05);
+  transform: translateY(-2px);
+}
+
+.gridCardLink:hover .gridCard::after {
+  width: 100%;
+}
+
+.gridCardImageWrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: rgba(5, 2, 4, 0.5);
+  position: relative;
+}
+
+.gridCardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.gridCardLink:hover .gridCardImage {
+  transform: scale(1.06);
+}
+
+.gridCardImagePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(200, 40, 50, 0.03);
+  color: rgba(200, 120, 130, 0.2);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.gridCardBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+}
+
+.gridCardMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  color: rgba(200, 120, 130, 0.4);
+  letter-spacing: 0.04em;
+}
+
+.gridCardBadge {
+  padding: 2px 8px;
+  border: 1px solid rgba(200, 40, 50, 0.25);
+  font-size: 0.6rem;
+  color: rgba(200, 120, 130, 0.6);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.gridCardTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #f5f1eb;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.gridCardExcerpt {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: rgba(230, 220, 210, 0.5);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.gridCardFooter {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 0.72rem;
+  color: rgba(200, 150, 140, 0.4);
+  letter-spacing: 0.03em;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HORIZONTAL SCROLL ROW (Wiki cards)
+   ═══════════════════════════════════════════════════════════ */
+
 .horizontalScrollRow {
   display: flex;
-  gap: 18px;
+  gap: 14px;
   overflow-x: auto;
   overflow-y: hidden;
   padding-bottom: 8px;
   scroll-snap-type: x proximity;
 }
 
-.horizontalScrollRow::-webkit-scrollbar {
-  height: 8px;
-}
-
-.horizontalScrollRow::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-}
+.horizontalScrollRow::-webkit-scrollbar { height: 4px; }
+.horizontalScrollRow::-webkit-scrollbar-thumb { background: rgba(200, 40, 50, 0.35); }
+.horizontalScrollRow::-webkit-scrollbar-track { background: rgba(200, 40, 50, 0.05); }
 
 .scrollCardLink {
-  flex: 0 0 320px;
-  min-width: 320px;
+  flex: 0 0 280px;
+  min-width: 280px;
   color: inherit;
   text-decoration: none;
   scroll-snap-align: start;
@@ -308,211 +644,189 @@
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(200, 40, 50, 0.12);
+  background: rgba(8, 3, 5, 0.85);
   overflow: hidden;
+  transition: all 0.25s ease;
+  position: relative;
 }
+
+.scrollCard::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: rgba(200, 40, 50, 0.7);
+  transition: width 0.4s ease;
+}
+
+.scrollCardLink:hover .scrollCard {
+  border-color: rgba(200, 40, 50, 0.3);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.scrollCardLink:hover .scrollCard::after { width: 100%; }
 
 .scrollCardImageWrap {
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: transparent;
+  background: rgba(5, 2, 4, 0.5);
 }
 
 .scrollCardImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.4s ease;
 }
+
+.scrollCardLink:hover .scrollCardImage { transform: scale(1.05); }
 
 .scrollCardImagePlaceholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.75);
-  letter-spacing: 0.18em;
-  font-size: 0.95rem;
+  background: rgba(200, 40, 50, 0.04);
+  color: rgba(200, 120, 130, 0.35);
+  letter-spacing: 0.25em;
+  font-size: 0.75rem;
+  text-transform: uppercase;
 }
 
 .scrollCardBody {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 16px;
+  gap: 6px;
+  padding: 12px 14px;
 }
 
 .scrollCardMeta {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.7rem;
+  color: rgba(200, 120, 130, 0.45);
 }
 
 .scrollCardTitle {
   margin: 0;
-  font-size: 1.08rem;
-  line-height: 1.45;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #f5f1eb;
 }
 
 .scrollCardExcerpt {
   margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: rgba(230, 220, 210, 0.5);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 .scrollCardFooter {
   display: flex;
   gap: 14px;
-  flex-wrap: wrap;
   margin-top: auto;
-  font-size: 0.84rem;
-  color: rgba(255, 255, 255, 0.74);
+  font-size: 0.72rem;
+  color: rgba(200, 150, 140, 0.4);
 }
 
-.emptyText {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.72);
-}
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
 
-/* ── Category section ── */
+@media (max-width: 1060px) {
+  .twoColLayout {
+    grid-template-columns: 1fr;
+  }
 
-.categoryBlock {
-  margin-bottom: 18px;
-}
+  .mainCol {
+    border-right: none;
+  }
 
-.categoryBlockLabel {
-  margin: 0 0 10px;
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  color: rgba(245, 241, 235, 0.4);
-  font-family: "装甲明朝", "Soukou Mincho", serif;
-}
+  .sideCol {
+    position: static;
+    max-height: none;
+    padding: 24px 28px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 20px;
+    border-top: 1px solid rgba(200, 40, 50, 0.1);
+  }
 
-.categoryChipRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
+  .sidePanel {
+    flex: 1;
+    min-width: 200px;
+    border-bottom: none;
+    border-right: 1px solid rgba(200, 40, 50, 0.1);
+    padding-right: 20px;
+  }
 
-.categoryChip {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(13, 6, 8, 0.5);
-  color: rgba(245, 241, 235, 0.85);
-  font-family: "装甲明朝", "Soukou Mincho", serif;
-  font-size: 13px;
-  letter-spacing: 0.06em;
-  text-decoration: none;
-  transition: background 0.15s, border-color 0.15s;
-}
+  .sidePanel:last-child {
+    border-right: none;
+  }
 
-.categoryChip:hover {
-  background: rgba(80, 20, 25, 0.65);
-  border-color: rgba(200, 80, 95, 0.5);
-}
+  .sideCategoryList {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
 
-.categoryEmpty {
-  font-size: 13px;
-  color: rgba(245, 241, 235, 0.35);
-}
+  .sideCategoryItem {
+    padding: 5px 12px;
+    border: 1px solid rgba(200, 40, 50, 0.12);
+    border-left: none;
+  }
 
-.bottomNav {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(100%, 1600px);
-  z-index: 50;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  background: rgba(13, 6, 8, 0.97);
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
-}
+  .sideCategoryItem:hover {
+    border-left: none;
+    border-color: rgba(200, 40, 50, 0.35);
+  }
 
-.bottomNavItem {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 84px;
-  border-right: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-.bottomNavItem:last-child {
-  border-right: none;
-}
-
-.bottomNavLabel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.bottomNavLabelEn {
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  color: rgba(245, 241, 235, 0.88);
-  font-family: "装甲明朝", "Soukou Mincho", "Palatino Linotype", "Palatino", "Book Antiqua", serif;
-  font-weight: 400;
-}
-
-.bottomNavLabelJa {
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  color: rgba(245, 241, 235, 0.45);
-  font-family: "装甲明朝", "Soukou Mincho", serif;
 }
 
 @media (max-width: 960px) {
-  .heroSection {
-    min-height: 420px;
-  }
-
   .heroSection::before {
-    width: 480px;
-    height: 480px;
-    top: -160px;
-    left: -140px;
+    width: 500px;
+    height: 500px;
+    top: -180px;
+    left: -160px;
   }
 
   .heroSection::after {
-    width: 220px;
-    height: 220px;
-    top: -80px;
-    right: -70px;
+    width: 250px;
+    height: 250px;
+    top: -100px;
+    right: -80px;
   }
 
   .heroInner {
-    padding: 48px 18px 28px;
+    padding: 48px 20px 28px;
   }
 
   .siteTitleText {
-    font-size: clamp(36px, 9vw, 60px);
+    font-size: clamp(38px, 10vw, 65px);
   }
 
   .topSearchRow {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 16px;
   }
 
   .contentSection {
-    padding: 24px 16px 0;
+    padding: 24px 18px 0;
   }
 
   .scrollCardLink {
-    flex: 0 0 260px;
-    min-width: 260px;
-  }
-
-  .bottomNavItem {
-    min-height: 72px;
+    flex: 0 0 240px;
+    min-width: 240px;
   }
 
   .floatingPostButton {
@@ -523,116 +837,52 @@
   }
 }
 
-/* ── Timeline card layout (CREEPY POSTS section) ── */
-.timelineRow {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.timelineCardLink {
-  color: inherit;
-  text-decoration: none;
-  display: block;
-}
-
-.timelineCard {
-  display: flex;
-  flex-direction: row;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.18);
-  overflow: hidden;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.timelineCardLink:hover .timelineCard {
-  background: rgba(30, 10, 12, 0.45);
-  border-color: rgba(255, 255, 255, 0.28);
-}
-
-.timelineCardImageWrap {
-  flex: 0 0 130px;
-  width: 130px;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  background: transparent;
-}
-
-.timelineCardImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.timelineCardImagePlaceholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.35);
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
-}
-
-.timelineCardBody {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 12px 16px;
-}
-
-.timelineCardMeta {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.timelineCardTitle {
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.4;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.timelineCardExcerpt {
-  margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.72);
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.timelineCardFooter {
-  display: flex;
-  gap: 12px;
-  margin-top: auto;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-@media (max-width: 600px) {
-  .timelineCardImageWrap {
-    flex: 0 0 90px;
-    width: 90px;
+@media (max-width: 640px) {
+  .heroInner {
+    padding: 40px 16px 24px;
   }
 
-  .timelineCardBody {
+  .contentSection {
+    padding: 20px 14px 0;
+  }
+
+  .cardGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* Switch to horizontal layout on mobile */
+  .gridCard {
+    flex-direction: row;
+  }
+
+  .gridCardImageWrap {
+    width: 110px;
+    flex: 0 0 110px;
+    aspect-ratio: 1 / 1;
+  }
+
+  .gridCardBody {
     padding: 10px 12px;
   }
 
-  .timelineCardTitle {
-    font-size: 0.92rem;
+  .gridCardTitle {
+    font-size: 0.88rem;
+  }
+
+  .gridCardExcerpt {
+    -webkit-line-clamp: 1;
+  }
+
+  .sideCol {
+    padding: 20px 14px;
+    flex-direction: column;
+  }
+
+  .sidePanel {
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px solid rgba(200, 40, 50, 0.1);
+    padding-bottom: 16px;
   }
 }

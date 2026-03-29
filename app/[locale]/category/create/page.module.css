@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  background: #0d0608;
+  background: #050204;
   color: #f5f1eb;
   padding: 24px 20px 64px;
 }
@@ -44,7 +44,7 @@
     rgba(10, 3, 5, 0.98)
   );
   border: 1px solid rgba(161, 102, 108, 0.24);
-  border-radius: 14px;
+  border-radius: 0;
   padding: 28px 24px;
 }
 
@@ -70,7 +70,7 @@
   width: 100%;
   padding: 14px 16px;
   box-sizing: border-box;
-  border-radius: 10px;
+  border-radius: 0;
   border: 1px solid rgba(165, 99, 104, 0.28);
   background: rgba(8, 3, 4, 0.96);
   color: #f5f1eb;
@@ -96,7 +96,7 @@
 .submitBtn {
   width: 100%;
   padding: 16px;
-  border-radius: 10px;
+  border-radius: 0;
   border: none;
   background: linear-gradient(135deg, #8b2335, #6b1828);
   color: #f5f1eb;
@@ -118,7 +118,7 @@
     rgba(10, 3, 5, 0.98)
   );
   border: 1px solid rgba(161, 102, 108, 0.24);
-  border-radius: 14px;
+  border-radius: 0;
   padding: 40px 28px;
   text-align: center;
 }

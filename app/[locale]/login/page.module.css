@@ -1,6 +1,6 @@
 .authPage {
   min-height: 100vh;
-  background: #0d0608;
+  background: #050204;
   color: #f5f1eb;
   padding: 32px 20px 100px;
 }
@@ -63,15 +63,22 @@
 .authCard {
   max-width: 620px;
   margin: 0 auto;
-  background: linear-gradient(
-    to bottom,
-    rgba(18, 5, 8, 0.97),
-    rgba(10, 3, 5, 0.98)
-  );
-  border: 1px solid rgba(161, 102, 108, 0.24);
-  border-radius: 14px;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.26);
+  background: rgba(8, 3, 5, 0.92);
+  border: 1px solid rgba(161, 102, 108, 0.18);
+  border-radius: 0;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
   padding: 28px 24px 28px;
+  position: relative;
+}
+
+.authCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 80px;
+  height: 2px;
+  background: rgba(180, 80, 70, 0.6);
 }
 
 .formHeader {
@@ -111,9 +118,9 @@
   min-height: 56px;
   padding: 14px 16px;
   box-sizing: border-box;
-  border-radius: 10px;
-  border: 1px solid rgba(165, 99, 104, 0.28);
-  background: rgba(8, 3, 4, 0.96);
+  border-radius: 0;
+  border: 1px solid rgba(165, 99, 104, 0.2);
+  background: rgba(5, 2, 3, 0.9);
   color: #f5f1eb;
   font-size: 16px;
   outline: none;

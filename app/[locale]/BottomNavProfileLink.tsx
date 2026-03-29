@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getAccessToken } from "@/lib/auth";
-import styles from "./page.module.css";
+import styles from "./layout.module.css";
 
 type Props = { locale: string };
 

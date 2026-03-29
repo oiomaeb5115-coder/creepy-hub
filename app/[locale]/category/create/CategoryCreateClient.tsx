@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { validateImageFile } from "@/lib/validateImageFile";
 import BackButton from "@/components/BackButton";
 import styles from "./page.module.css";
 
@@ -93,6 +94,11 @@ export default function CategoryCreateClient({ locale, dict }: Props) {
     }
     if (file.size > MAX_SIZE) {
       throw new Error("ファイルサイズは5MB以内にしてください");
+    }
+    // ファイルの実際の内容（magic bytes）を検証
+    const isValidImage = await validateImageFile(file);
+    if (!isValidImage) {
+      throw new Error("ファイルの内容が画像形式と一致しません");
     }
     const fileExt = file.name.split(".").pop() || "jpg";
     const fileName = `${type}s/${userId}/${Date.now()}.${fileExt}`;

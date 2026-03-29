@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "./wiki.module.css";
 import BackButton from "@/components/BackButton";
+import CategorySidebar from "@/components/CategorySidebar";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
 
 type WikiIndexPageProps = {
@@ -28,6 +29,7 @@ type CategoryRow = {
   slug: string;
   name: string;
   description: string | null;
+  icon_url: string | null;
 };
 
 export default async function WikiIndexPage({ params, searchParams }: WikiIndexPageProps) {
@@ -58,7 +60,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
 
     supabase
       .from("categories")
-      .select("id, slug, name, description")
+      .select("id, slug, name, description, icon_url")
       .eq("locale", locale)
       .eq("is_active", true)
       .eq("is_user_created", true)
@@ -147,11 +149,34 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
   return (
     <main className={styles.wikiPage}>
       <div className={styles.pageLayout}>
-      <FavoriteSidebar
-        type="wiki"
-        locale={locale}
-        labels={{ title: dict.common.favoriteSidebar, empty: dict.common.favoriteNone }}
-      />
+      <CategorySidebar
+        title="OCCULT WIKI"
+        categories={[
+          ...(Object.keys(dict.pageType) as Array<keyof typeof dict.pageType>)
+            .filter((key) => key !== "general")
+            .map((key) => ({
+              slug: key,
+              name: dict.pageType[key],
+              icon_url: null as string | null,
+              href: `/${locale}/wiki/category/${key}`,
+            })),
+          ...categories.map((cat) => ({
+            slug: cat.slug,
+            name: cat.name,
+            icon_url: cat.icon_url,
+            href: `/${locale}/wiki/category/${cat.slug}`,
+          })),
+        ]}
+      >
+        <div style={{ marginTop: 8 }}>
+          <FavoriteSidebar
+            type="wiki"
+            locale={locale}
+            labels={{ title: dict.common.favoriteSidebar, empty: dict.common.favoriteNone }}
+            embedded
+          />
+        </div>
+      </CategorySidebar>
       <div className={styles.wikiShell}>
         <BackButton />
         <header className={styles.wikiHeader}>

@@ -8,6 +8,7 @@ type Props = {
 
 const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: ["p", "br", "h2", "h3", "a", "img", "strong", "em"],
+  allowedSchemes: ["https"],
   allowedAttributes: {
     a: ["href", "class", "target", "rel"],
     img: ["src", "alt", "style"],
