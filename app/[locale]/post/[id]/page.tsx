@@ -48,8 +48,17 @@ export async function generateMetadata({
       .eq("post_id", id)
       .eq("locale", "en")
       .single();
-    if (tr?.title) title = tr.title;
-    if (tr?.content) description = tr.content.slice(0, 120);
+
+    // 翻訳が存在しない場合は noindex（日本語ページの重複扱い防止）
+    if (!tr) {
+      return {
+        robots: { index: false, follow: true },
+        alternates: { canonical: `${BASE_URL}/ja/post/${id}` },
+      };
+    }
+
+    if (tr.title) title = tr.title;
+    if (tr.content) description = tr.content.slice(0, 120);
   }
 
   const url = `${BASE_URL}/${locale}/post/${id}`;
