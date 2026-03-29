@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { validateImageFile } from "@/lib/validateImageFile";
+import { compressImage } from "@/lib/compressImage";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 
@@ -211,11 +212,12 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
     if (!isValidImage) {
       throw new Error("ファイルの内容が画像形式と一致しません");
     }
-    const fileExt = file.name.split(".").pop() || "jpg";
+    const compressed = await compressImage(file);
+    const fileExt = compressed.name.split(".").pop() || "jpg";
     const fileName = `${uid}/${Date.now()}-${suffix}.${fileExt}`;
     const { error } = await supabase.storage
       .from("wiki-images")
-      .upload(fileName, file, { cacheControl: "3600", upsert: false });
+      .upload(fileName, compressed, { cacheControl: "3600", upsert: false });
     if (error) throw new Error(error.message);
     const { data } = supabase.storage.from("wiki-images").getPublicUrl(fileName);
     return data.publicUrl;
@@ -390,6 +392,15 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
             category_id: cat_id,
           }))
         );
+      }
+
+      // JA公開の場合、バックグラウンドで自動英語翻訳
+      if (isPublished && resolvedLocale === "ja" && data?.slug) {
+        fetch("/api/translate/wiki-auto", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slug: data.slug }),
+        }).catch(() => {}); // fire-and-forget
       }
 
       localStorage.removeItem(`draft_wiki_${uid}`);

@@ -5,6 +5,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import styles from "./page.module.css";
 import HomeAuthButtons from "./HomeAuthButtons";
 import AdminPendingSection from "@/components/AdminPendingSection";
+import InlineVoteButtons from "@/components/InlineVoteButtons";
 
 export const revalidate = 60;
 
@@ -20,15 +21,24 @@ type CommentRow = {
   id: number;
 };
 
+type AuthorProfile = {
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+
 type StoryPost = {
   id: number;
   title: string | null;
   content: string | null;
   created_at: string | null;
   image_url: string | null;
+  image_url_2: string | null;
+  image_url_3: string | null;
   view_count: number | null;
   post_votes?: VoteRow[];
   post_comments?: CommentRow[];
+  author?: AuthorProfile | null;
 };
 
 type WikiPost = {
@@ -143,28 +153,26 @@ function StoryCardGrid({
 
   const commentCount = (post.post_comments ?? []).length;
 
+  const imageUrls = [post.image_url, post.image_url_2, post.image_url_3]
+    .filter((url): url is string => Boolean(url))
+    .slice(0, 4);
+
+  const authorName = post.author?.display_name || post.author?.username || null;
+
   return (
     <Link href={`/${locale}/post/${post.id}`} className={styles.gridCardLink}>
       <article className={styles.gridCard}>
-        <div className={styles.gridCardImageWrap}>
-          {post.image_url ? (
-            <img
-              src={post.image_url}
-              alt={safeTitle}
-              className={styles.gridCardImage}
-              loading="lazy"
-            />
-          ) : (
-            <div className={styles.gridCardImagePlaceholder}>
-              NO IMAGE
-            </div>
-          )}
-        </div>
-
         <div className={styles.gridCardBody}>
-          <div className={styles.gridCardMeta}>
-            <span className={styles.gridCardBadge}>{storyLabel}</span>
-            <span>
+          <div className={styles.gridCardAuthorRow}>
+            {post.author?.avatar_url ? (
+              <img src={post.author.avatar_url} alt="" className={styles.gridCardAvatar} />
+            ) : (
+              <span className={styles.gridCardAvatarPlaceholder} />
+            )}
+            <span className={styles.gridCardAuthorName}>
+              {authorName ? `@${post.author?.username ?? authorName}` : (locale === "en" ? "Anonymous" : "匿名")}
+            </span>
+            <span className={styles.gridCardDate}>
               {safeCreatedAt
                 ? new Date(safeCreatedAt).toLocaleDateString(dateLocale)
                 : unknownDate}
@@ -174,14 +182,28 @@ function StoryCardGrid({
           <h3 className={styles.gridCardTitle}>{safeTitle}</h3>
 
           <p className={styles.gridCardExcerpt}>
-            {safeContent.length > 80 ? `${safeContent.slice(0, 80)}...` : safeContent}
+            {safeContent.length > 400 ? `${safeContent.slice(0, 400)}...` : safeContent}
           </p>
+        </div>
 
-          <div className={styles.gridCardFooter}>
-            <span>▲ {score}</span>
-            <span>💬 {commentCount}</span>
-            <span>👁 {post.view_count ?? 0}</span>
+        {imageUrls.length > 0 && (
+          <div className={`${styles.gridCardImageWrap} ${imageUrls.length >= 2 ? styles.gridCardImageGrid : ""}`}>
+            {imageUrls.map((url, i) => (
+              <img
+                key={i}
+                src={url}
+                alt={`${safeTitle} ${i + 1}`}
+                className={styles.gridCardImage}
+                loading="lazy"
+              />
+            ))}
           </div>
+        )}
+
+        <div className={styles.gridCardFooter}>
+          <InlineVoteButtons postId={post.id} initialScore={score} />
+          <span>💬 {commentCount}</span>
+          <span>👁 {post.view_count ?? 0}</span>
         </div>
       </article>
     </Link>
@@ -262,7 +284,10 @@ export default async function HomePage({ params }: HomePageProps) {
           content,
           created_at,
           image_url,
+          image_url_2,
+          image_url_3,
           view_count,
+          user_id,
           post_votes(vote_type),
           post_comments(id),
           post_translations!inner(title, content)
@@ -279,7 +304,10 @@ export default async function HomePage({ params }: HomePageProps) {
           content,
           created_at,
           image_url,
+          image_url_2,
+          image_url_3,
           view_count,
+          user_id,
           post_votes(vote_type),
           post_comments(id)
         `)
@@ -313,15 +341,37 @@ export default async function HomePage({ params }: HomePageProps) {
       .order("created_at", { ascending: false }),
   ]);
 
-  const latestStories = (latestStoriesResult.data ?? []).map((p: any) => ({
+  const rawStories = (latestStoriesResult.data ?? []).map((p: any) => ({
     id: p.id,
     title: locale === "en" ? (p.post_translations?.[0]?.title ?? p.title) : p.title,
     content: locale === "en" ? (p.post_translations?.[0]?.content ?? p.content) : p.content,
     created_at: p.created_at,
     image_url: p.image_url,
+    image_url_2: p.image_url_2,
+    image_url_3: p.image_url_3,
     view_count: p.view_count,
+    user_id: p.user_id as string | null,
     post_votes: p.post_votes,
     post_comments: p.post_comments,
+    author: null as AuthorProfile | null,
+  }));
+
+  // Batch fetch profiles
+  const userIds = [...new Set(rawStories.map((p) => p.user_id).filter(Boolean))] as string[];
+  let profilesMap: Record<string, AuthorProfile> = {};
+  if (userIds.length > 0) {
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("id, username, display_name, avatar_url")
+      .in("id", userIds);
+    for (const p of profilesData ?? []) {
+      profilesMap[p.id] = { username: p.username, display_name: p.display_name, avatar_url: p.avatar_url };
+    }
+  }
+
+  const latestStories = rawStories.map((p) => ({
+    ...p,
+    author: p.user_id ? (profilesMap[p.user_id] ?? null) : null,
   })) as StoryPost[];
   const latestWiki = (latestWikiResult.data ?? []) as WikiPost[];
   const storyCategories = (storyCategoriesResult.data ?? []) as StoryCategoryRow[];

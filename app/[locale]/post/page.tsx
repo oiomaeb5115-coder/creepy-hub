@@ -6,6 +6,7 @@ import BackButton from "@/components/BackButton";
 import CategorySidebar from "@/components/CategorySidebar";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
 import PostRandomButton from "@/components/PostRandomButton";
+import InlineVoteButtons from "@/components/InlineVoteButtons";
 
 export const dynamic = "force-dynamic";
 
@@ -14,13 +15,27 @@ type Props = {
   searchParams: Promise<{ sort?: string }>;
 };
 
+type AuthorProfile = {
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+
+type VoteRow = {
+  vote_type: number | null;
+};
+
 type StoryPost = {
   id: number;
   title: string | null;
   content: string | null;
   created_at: string | null;
   image_url: string | null;
+  image_url_2: string | null;
+  image_url_3: string | null;
   view_count: number | null;
+  post_votes?: VoteRow[];
+  author?: AuthorProfile | null;
 };
 
 type StoryCategoryRow = {
@@ -39,36 +54,70 @@ export default async function StoryIndex({ params, searchParams }: Props) {
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
   const orderCol = isPopular ? "view_count" : "created_at";
 
-  let posts: StoryPost[] = [];
+  let rawPosts: { id: number; title: string | null; content: string | null; created_at: string | null; image_url: string | null; image_url_2: string | null; image_url_3: string | null; view_count: number | null; user_id: string | null; post_votes?: VoteRow[] }[] = [];
 
   if (locale === "en") {
     // 英語翻訳済みの記事のみ取得（post_translations と inner join）
     const { data } = await supabase
       .from("post")
-      .select("id, title, content, created_at, image_url, view_count, post_translations!inner(title, content)")
+      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, post_votes(vote_type), post_translations!inner(title, content)")
       .eq("is_published", true)
       .eq("post_translations.locale", "en")
       .order(orderCol, { ascending: false })
       .limit(50);
 
-    posts = (data ?? []).map((p: any) => ({
+    rawPosts = (data ?? []).map((p: any) => ({
       id: p.id,
       title: p.post_translations?.[0]?.title ?? p.title,
       content: p.post_translations?.[0]?.content ?? p.content,
       created_at: p.created_at,
       image_url: p.image_url,
+      image_url_2: p.image_url_2,
+      image_url_3: p.image_url_3,
       view_count: p.view_count,
+      user_id: p.user_id as string | null,
+      post_votes: p.post_votes,
     }));
   } else {
     const { data } = await supabase
       .from("post")
-      .select("id, title, content, created_at, image_url, view_count")
+      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, post_votes(vote_type)")
       .eq("is_published", true)
       .order(orderCol, { ascending: false })
       .limit(50);
 
-    posts = (data ?? []) as StoryPost[];
+    rawPosts = (data ?? []).map((p: any) => ({
+      id: p.id,
+      title: p.title,
+      content: p.content,
+      created_at: p.created_at,
+      image_url: p.image_url,
+      image_url_2: p.image_url_2,
+      image_url_3: p.image_url_3,
+      view_count: p.view_count,
+      user_id: p.user_id as string | null,
+      post_votes: p.post_votes,
+    }));
   }
+
+  // Batch fetch profiles
+  const userIds = [...new Set(rawPosts.map((p) => p.user_id).filter(Boolean))] as string[];
+  let profilesMap: Record<string, AuthorProfile> = {};
+  if (userIds.length > 0) {
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("id, username, display_name, avatar_url")
+      .in("id", userIds);
+    for (const p of profilesData ?? []) {
+      profilesMap[p.id] = { username: p.username, display_name: p.display_name, avatar_url: p.avatar_url };
+    }
+  }
+
+  const posts: StoryPost[] = rawPosts.map((p) => ({
+    ...p,
+    post_votes: p.post_votes,
+    author: p.user_id ? (profilesMap[p.user_id] ?? null) : null,
+  }));
 
   const { data: categoriesData } = await supabase
     .from("story_categories")
@@ -175,6 +224,14 @@ export default async function StoryIndex({ params, searchParams }: Props) {
               const dateStr = post.created_at
                 ? new Date(post.created_at).toLocaleDateString(dateLocale)
                 : dict.post.unknownDate;
+              const imageUrls = [post.image_url, post.image_url_2, post.image_url_3]
+                .filter((url): url is string => Boolean(url))
+                .slice(0, 4);
+              const authorName = post.author?.display_name || post.author?.username || null;
+              const score = (post.post_votes ?? []).reduce(
+                (sum: number, v: VoteRow) => sum + (v.vote_type ?? 0),
+                0
+              );
 
               return (
                 <Link
@@ -182,37 +239,41 @@ export default async function StoryIndex({ params, searchParams }: Props) {
                   href={`/${locale}/post/${post.id}`}
                   className={styles.postRow}
                 >
-                  <div className={styles.scoreCol}>
-                    <span className={styles.scoreIcon}>👁</span>
-                    <span className={styles.scoreNum}>{post.view_count ?? 0}</span>
-                  </div>
-
                   <div className={styles.postContent}>
-                    <div className={styles.postMeta}>
-                      <span className={styles.badge}>{dict.post.label}</span>
+                    <div className={styles.postAuthorRow}>
+                      {post.author?.avatar_url ? (
+                        <img src={post.author.avatar_url} alt="" className={styles.postAvatar} />
+                      ) : (
+                        <span className={styles.postAvatarPlaceholder} />
+                      )}
+                      <span className={styles.postAuthorName}>
+                        {authorName ? `@${post.author?.username ?? authorName}` : (locale === "en" ? "Anonymous" : "匿名")}
+                      </span>
                       <span className={styles.postDate}>{dateStr}</span>
                     </div>
                     <h3 className={styles.postTitle}>{safeTitle}</h3>
                     <p className={styles.postExcerpt}>
-                      {safeContent.length > 150
-                        ? `${safeContent.slice(0, 150)}...`
+                      {safeContent.length > 400
+                        ? `${safeContent.slice(0, 400)}...`
                         : safeContent}
                     </p>
+                    {imageUrls.length > 0 && (
+                      <div className={`${styles.postImageWrap} ${imageUrls.length >= 2 ? styles.postImageGrid : ""}`}>
+                        {imageUrls.map((url, i) => (
+                          <img
+                            key={i}
+                            src={url}
+                            alt={`${safeTitle} ${i + 1}`}
+                            className={styles.postImage}
+                            loading="lazy"
+                          />
+                        ))}
+                      </div>
+                    )}
                     <div className={styles.postFooter}>
+                      <InlineVoteButtons postId={post.id} initialScore={score} />
                       <span>👁 {post.view_count ?? 0} {dict.post.views}</span>
                     </div>
-                  </div>
-
-                  <div className={styles.thumbCol}>
-                    {post.image_url ? (
-                      <img
-                        src={post.image_url}
-                        alt={safeTitle}
-                        className={styles.thumb}
-                      />
-                    ) : (
-                      <div className={styles.thumbPlaceholder}>NO IMAGE</div>
-                    )}
                   </div>
                 </Link>
               );

@@ -3,53 +3,48 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
-type Labels = {
-  follow?: string;
-  unfollow?: string;
-  loginRequired?: string;
-};
-
 type Props = {
   targetUserId: string;
-  labels?: Labels;
+  labels?: {
+    block?: string;
+    unblock?: string;
+    blockConfirm?: string;
+    loginRequired?: string;
+  };
 };
 
-export default function FollowButton({ targetUserId, labels }: Props) {
-  const [following, setFollowing] = useState(false);
+export default function BlockButton({ targetUserId, labels }: Props) {
+  const [blocked, setBlocked] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
 
   const t = {
-    follow: labels?.follow ?? "フォロー",
-    unfollow: labels?.unfollow ?? "フォロー中",
+    block: labels?.block ?? "ブロック",
+    unblock: labels?.unblock ?? "ブロック中",
+    blockConfirm: labels?.blockConfirm ?? "このユーザーをブロックしますか？",
     loginRequired: labels?.loginRequired ?? "ログインしてください",
   };
 
   useEffect(() => {
     const init = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setLoading(false);
         return;
       }
-
       setCurrentUserId(user.id);
 
       const { data } = await supabase
-        .from("follows")
+        .from("blocks")
         .select("id")
-        .eq("follower_id", user.id)
-        .eq("following_id", targetUserId)
+        .eq("blocker_id", user.id)
+        .eq("blocked_id", targetUserId)
         .maybeSingle();
 
-      setFollowing(!!data);
+      setBlocked(!!data);
       setLoading(false);
     };
-
     init();
   }, [targetUserId]);
 
@@ -58,29 +53,29 @@ export default function FollowButton({ targetUserId, labels }: Props) {
       alert(t.loginRequired);
       return;
     }
+    if (!blocked && !confirm(t.blockConfirm)) return;
 
     setToggling(true);
     try {
-      if (following) {
+      if (blocked) {
         await supabase
-          .from("follows")
+          .from("blocks")
           .delete()
-          .eq("follower_id", currentUserId)
-          .eq("following_id", targetUserId);
-        setFollowing(false);
+          .eq("blocker_id", currentUserId)
+          .eq("blocked_id", targetUserId);
+        setBlocked(false);
       } else {
-        await supabase.from("follows").insert({
-          follower_id: currentUserId,
-          following_id: targetUserId,
+        await supabase.from("blocks").insert({
+          blocker_id: currentUserId,
+          blocked_id: targetUserId,
         });
-        setFollowing(true);
+        setBlocked(true);
       }
     } finally {
       setToggling(false);
     }
   };
 
-  // 自分自身のプロフィールには表示しない
   if (!loading && currentUserId === targetUserId) return null;
 
   return (
@@ -89,11 +84,11 @@ export default function FollowButton({ targetUserId, labels }: Props) {
       disabled={loading || toggling}
       style={{
         padding: "6px 18px",
-        border: following
-          ? "1px solid rgba(170, 108, 112, 0.5)"
-          : "1px solid rgba(170, 108, 112, 0.8)",
-        background: following ? "rgba(48, 18, 22, 0.6)" : "rgba(80, 28, 32, 0.8)",
-        color: following ? "#a08080" : "#f0d0d2",
+        border: blocked
+          ? "1px solid rgba(200, 60, 60, 0.6)"
+          : "1px solid rgba(120, 100, 100, 0.4)",
+        background: blocked ? "rgba(120, 20, 20, 0.7)" : "rgba(40, 18, 22, 0.5)",
+        color: blocked ? "#ff9090" : "#9a8880",
         fontSize: "13px",
         fontWeight: 600,
         letterSpacing: "0.05em",
@@ -101,7 +96,7 @@ export default function FollowButton({ targetUserId, labels }: Props) {
         transition: "background 0.15s, color 0.15s, border-color 0.15s",
       }}
     >
-      {loading || toggling ? "…" : following ? t.unfollow : t.follow}
+      {loading || toggling ? "…" : blocked ? t.unblock : t.block}
     </button>
   );
 }

@@ -139,7 +139,12 @@
     "googleLogin": "Google でログイン",
     "googleRegister": "Google で登録",
     "discordLogin": "Discord でログイン",
-    "discordRegister": "Discord で登録"
+    "discordRegister": "Discord で登録",
+    "ageConfirm": "18歳以上であることを確認します。",
+    "termsLink": "利用規約",
+    "termsAnd": "および",
+    "privacyLink": "プライバシーポリシー",
+    "termsAgree": "に同意します。"
   },
   "categoryCreate": {
     "breadcrumb": "STORIES / CATEGORY / NEW",

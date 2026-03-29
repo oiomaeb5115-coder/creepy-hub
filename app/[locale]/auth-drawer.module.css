@@ -251,7 +251,7 @@
   transition: all 0.2s;
 }
 
-.googleButton:hover {
+.googleButton:hover:not(:disabled) {
   background: rgba(180, 80, 70, 0.08);
   border-color: rgba(200, 100, 90, 0.3);
   color: #f5f1eb;
@@ -275,8 +275,47 @@
   transition: all 0.2s;
 }
 
-.discordButton:hover {
+.discordButton:hover:not(:disabled) {
   background: rgba(88, 101, 242, 0.08);
   border-color: rgba(88, 101, 242, 0.5);
   color: #f5f1eb;
+}
+
+.googleButton:disabled,
+.discordButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Checkbox */
+.checkboxGroup {
+  margin-bottom: 12px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(200, 170, 155, 0.7);
+  cursor: pointer;
+  line-height: 1.5;
+}
+
+.checkbox {
+  margin-top: 3px;
+  accent-color: rgba(200, 80, 70, 0.8);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.inlineLink {
+  color: rgba(200, 120, 100, 0.8);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+
+.inlineLink:hover {
+  color: rgba(230, 150, 130, 1);
 }

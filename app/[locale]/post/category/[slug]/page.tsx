@@ -228,8 +228,8 @@ export default async function StoryCategoryPage({
                         <h3 className={styles.postCardTitle}>{safeTitle}</h3>
 
                         <p className={styles.postCardExcerpt}>
-                          {safeContent.length > 100
-                            ? `${safeContent.slice(0, 100)}...`
+                          {safeContent.length > 400
+                            ? `${safeContent.slice(0, 400)}...`
                             : safeContent}
                         </p>
 

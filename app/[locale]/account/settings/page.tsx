@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { compressImage } from "@/lib/compressImage";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 import en from "@/locales/en.json";
@@ -114,12 +115,13 @@ export default function AccountSettingsPage() {
     }
 
     const userId = session.user.id;
-    const fileExt = file.name.split(".").pop() || "jpg";
+    const compressed = await compressImage(file);
+    const fileExt = compressed.name.split(".").pop() || "jpg";
     const fileName = `${userId}/${Date.now()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from(bucket)
-      .upload(fileName, file, {
+      .upload(fileName, compressed, {
         cacheControl: "3600",
         upsert: true,
       });

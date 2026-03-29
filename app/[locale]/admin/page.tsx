@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getIsAdmin, getAccessToken } from "@/lib/auth";
+import { compressImage } from "@/lib/compressImage";
 import BackButton from "@/components/BackButton";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
@@ -244,11 +245,12 @@ export default function AdminPage() {
     }
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return null;
-    const fileExt = file.name.split(".").pop() || "jpg";
+    const compressed = await compressImage(file);
+    const fileExt = compressed.name.split(".").pop() || "jpg";
     const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
     const { error: uploadError } = await supabase.storage
       .from(bucket)
-      .upload(fileName, file, { cacheControl: "3600", upsert: true });
+      .upload(fileName, compressed, { cacheControl: "3600", upsert: true });
     if (uploadError) {
       alert(`${dict.account.imageFailed}${uploadError.message}`);
       return null;

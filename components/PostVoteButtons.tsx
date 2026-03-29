@@ -137,6 +137,17 @@ export default function PostVoteButtons({
     }
   };
 
+  // スコアが5以上になったら自動翻訳を発火
+  useEffect(() => {
+    if (score >= 5) {
+      fetch("/api/translate/story-auto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId }),
+      }).catch(() => {});
+    }
+  }, [score, postId]);
+
   const disabled = loading || submitting;
 
   return (

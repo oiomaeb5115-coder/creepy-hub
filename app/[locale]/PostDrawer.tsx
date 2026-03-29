@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { getAccessToken } from "@/lib/auth";
 import { getAllStoryTags } from "@/lib/tags";
 import { validateImageFile } from "@/lib/validateImageFile";
+import { compressImage } from "@/lib/compressImage";
 import styles from "./post-drawer.module.css";
 
 type Labels = {
@@ -167,11 +168,12 @@ export default function PostDrawer({ locale, labels }: Props) {
     if (!isValidImage) {
       throw new Error("ファイルの内容が画像形式と一致しません");
     }
-    const fileExt = file.name.split(".").pop() || "jpg";
+    const compressed = await compressImage(file);
+    const fileExt = compressed.name.split(".").pop() || "jpg";
     const fileName = `${userId}/${Date.now()}-${suffix}.${fileExt}`;
     const { error } = await supabase.storage
       .from("post-images")
-      .upload(fileName, file, { cacheControl: "3600", upsert: false });
+      .upload(fileName, compressed, { cacheControl: "3600", upsert: false });
     if (error) throw new Error(error.message);
     const { data } = supabase.storage.from("post-images").getPublicUrl(fileName);
     return data.publicUrl;

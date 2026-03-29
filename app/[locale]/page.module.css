@@ -480,112 +480,115 @@
    ═══════════════════════════════════════════════════════════ */
 
 .cardGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .gridCardLink {
   color: inherit;
   text-decoration: none;
   display: block;
+  border-bottom: 1px solid rgba(200, 40, 50, 0.1);
+}
+
+.gridCardLink:last-child {
+  border-bottom: none;
 }
 
 .gridCard {
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(200, 40, 50, 0.12);
   background: rgba(8, 3, 5, 0.8);
   overflow: hidden;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
   position: relative;
-  height: 100%;
-}
-
-.gridCard::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, rgba(200, 40, 50, 0.7), transparent);
-  transition: width 0.4s ease;
 }
 
 .gridCardLink:hover .gridCard {
-  border-color: rgba(200, 40, 50, 0.3);
   background: rgba(15, 5, 8, 0.95);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(200, 40, 50, 0.05);
-  transform: translateY(-2px);
+  box-shadow: inset 3px 0 0 rgba(200, 40, 50, 0.4);
 }
 
-.gridCardLink:hover .gridCard::after {
-  width: 100%;
+/* Author row */
+.gridCardAuthorRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
-.gridCardImageWrap {
-  width: 100%;
-  aspect-ratio: 16 / 9;
+.gridCardAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.gridCardAvatarPlaceholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(200, 40, 50, 0.15);
+  flex-shrink: 0;
+}
+
+.gridCardAuthorName {
+  font-size: 0.85rem;
+  color: rgba(200, 120, 130, 0.6);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
   overflow: hidden;
-  background: rgba(5, 2, 4, 0.5);
-  position: relative;
+  text-overflow: ellipsis;
+}
+
+.gridCardDate {
+  font-size: 0.8rem;
+  color: rgba(200, 120, 130, 0.35);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Image area */
+.gridCardImageWrap {
+  overflow: hidden;
+  border: 1px solid rgba(200, 40, 50, 0.1);
+  border-radius: 2px;
+  margin: 0 16px;
+}
+
+.gridCardImageGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
 }
 
 .gridCardImage {
-  width: 100%;
-  height: 100%;
+  max-width: 100%;
+  max-height: 260px;
+  height: auto;
+  width: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.gridCardImageGrid .gridCardImage {
+  aspect-ratio: 16 / 10;
+  max-height: none;
   object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.gridCardLink:hover .gridCardImage {
-  transform: scale(1.06);
-}
-
-.gridCardImagePlaceholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(200, 40, 50, 0.03);
-  color: rgba(200, 120, 130, 0.2);
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
 }
 
 .gridCardBody {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 14px 16px;
-}
-
-.gridCardMeta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.7rem;
-  color: rgba(200, 120, 130, 0.4);
-  letter-spacing: 0.04em;
-}
-
-.gridCardBadge {
-  padding: 2px 8px;
-  border: 1px solid rgba(200, 40, 50, 0.25);
-  font-size: 0.6rem;
-  color: rgba(200, 120, 130, 0.6);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  padding: 14px 16px 8px;
 }
 
 .gridCardTitle {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   line-height: 1.4;
   color: #f5f1eb;
   overflow: hidden;
@@ -596,21 +599,16 @@
 
 .gridCardExcerpt {
   margin: 0;
-  font-size: 0.8rem;
-  line-height: 1.6;
-  color: rgba(230, 220, 210, 0.5);
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  font-size: 0.93rem;
+  line-height: 1.7;
+  color: rgba(230, 220, 210, 0.55);
 }
 
 .gridCardFooter {
   display: flex;
   gap: 12px;
-  margin-top: auto;
-  padding-top: 8px;
-  font-size: 0.72rem;
+  padding: 8px 16px 14px;
+  font-size: 0.82rem;
   color: rgba(200, 150, 140, 0.4);
   letter-spacing: 0.03em;
 }
@@ -846,24 +844,13 @@
     padding: 20px 14px 0;
   }
 
-  .cardGrid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  /* Switch to horizontal layout on mobile */
-  .gridCard {
-    flex-direction: row;
+  .gridCardBody {
+    padding: 10px 12px 6px;
   }
 
   .gridCardImageWrap {
-    width: 110px;
-    flex: 0 0 110px;
-    aspect-ratio: 1 / 1;
-  }
-
-  .gridCardBody {
-    padding: 10px 12px;
+    margin: 0 12px;
+    width: calc(100% - 24px);
   }
 
   .gridCardTitle {
@@ -872,6 +859,10 @@
 
   .gridCardExcerpt {
     -webkit-line-clamp: 1;
+  }
+
+  .gridCardFooter {
+    padding: 6px 12px 10px;
   }
 
   .sideCol {

@@ -16,17 +16,14 @@ async function translateText(text: string): Promise<string> {
   const apiKey = process.env.GOOGLE_TRANSLATE_API_KEY;
   if (!apiKey) throw new Error("GOOGLE_TRANSLATE_API_KEY is not set");
 
-  const res = await fetch(
-    "https://translation.googleapis.com/language/translate/v2",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": apiKey,
-      },
-      body: JSON.stringify({ q: text, source: "ja", target: "en", format: "text" }),
-    }
-  );
+  const url = `https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(apiKey)}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ q: text, source: "ja", target: "en", format: "text" }),
+  });
 
   if (!res.ok) {
     const err = await res.text();

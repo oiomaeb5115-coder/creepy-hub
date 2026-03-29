@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { validateImageFile } from "@/lib/validateImageFile";
+import { compressImage } from "@/lib/compressImage";
 import BackButton from "@/components/BackButton";
 import styles from "./page.module.css";
 
@@ -100,11 +101,12 @@ export default function CategoryCreateClient({ locale, dict }: Props) {
     if (!isValidImage) {
       throw new Error("ファイルの内容が画像形式と一致しません");
     }
-    const fileExt = file.name.split(".").pop() || "jpg";
+    const compressed = await compressImage(file);
+    const fileExt = compressed.name.split(".").pop() || "jpg";
     const fileName = `${type}s/${userId}/${Date.now()}.${fileExt}`;
     const { error: uploadError } = await supabase.storage
       .from("category-images")
-      .upload(fileName, file, { cacheControl: "3600", upsert: false });
+      .upload(fileName, compressed, { cacheControl: "3600", upsert: false });
     if (uploadError) throw new Error(uploadError.message);
     const { data: publicUrlData } = supabase.storage
       .from("category-images")

@@ -153,6 +153,7 @@ export default function RegisterPage() {
           <button
             type="button"
             className={styles.googleButton}
+            disabled={!ageConfirmed || !termsAccepted}
             onClick={async () => {
               await supabase.auth.signInWithOAuth({
                 provider: "google",
@@ -173,6 +174,7 @@ export default function RegisterPage() {
           <button
             type="button"
             className={styles.discordButton}
+            disabled={!ageConfirmed || !termsAccepted}
             onClick={async () => {
               await supabase.auth.signInWithOAuth({
                 provider: "discord",

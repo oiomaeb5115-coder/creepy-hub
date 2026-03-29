@@ -139,7 +139,12 @@
     "googleLogin": "Sign in with Google",
     "googleRegister": "Sign up with Google",
     "discordLogin": "Sign in with Discord",
-    "discordRegister": "Sign up with Discord"
+    "discordRegister": "Sign up with Discord",
+    "ageConfirm": "I confirm that I am 18 years of age or older.",
+    "termsLink": "Terms of Service",
+    "termsAnd": " and ",
+    "privacyLink": "Privacy Policy",
+    "termsAgree": "."
   },
   "categoryCreate": {
     "breadcrumb": "STORIES / CATEGORY / NEW",

@@ -35,6 +35,11 @@ type Labels = {
   googleRegister: string;
   discordLogin: string;
   discordRegister: string;
+  ageConfirm: string;
+  termsLink: string;
+  termsAnd: string;
+  privacyLink: string;
+  termsAgree: string;
 };
 
 function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels }) {
@@ -49,6 +54,8 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   useEffect(() => {
     if (modalParam === "login" || modalParam === "register") {
@@ -251,17 +258,34 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
                   <label htmlFor="reg-password">{labels.passwordLabel}</label>
                   <input id="reg-password" type="password" className={styles.formControl} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
                 </div>
+                <div className={styles.checkboxGroup}>
+                  <label className={styles.checkboxLabel}>
+                    <input type="checkbox" checked={ageConfirmed} onChange={(e) => setAgeConfirmed(e.target.checked)} className={styles.checkbox} />
+                    <span>{labels.ageConfirm}</span>
+                  </label>
+                </div>
+                <div className={styles.checkboxGroup}>
+                  <label className={styles.checkboxLabel}>
+                    <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className={styles.checkbox} />
+                    <span>
+                      <a href={`/${locale}/terms-of-service`} target="_blank" rel="noopener noreferrer" className={styles.inlineLink}>{labels.termsLink}</a>
+                      {labels.termsAnd}
+                      <a href={`/${locale}/privacy-policy`} target="_blank" rel="noopener noreferrer" className={styles.inlineLink}>{labels.privacyLink}</a>
+                      {labels.termsAgree}
+                    </span>
+                  </label>
+                </div>
                 <div className={styles.submitRow}>
-                  <button type="submit" className={styles.primaryButton} disabled={isSubmitting}>
+                  <button type="submit" className={styles.primaryButton} disabled={isSubmitting || !ageConfirmed || !termsAccepted}>
                     {isSubmitting ? labels.registering : labels.registerButton}
                   </button>
                 </div>
               </form>
               <div className={styles.divider}>{labels.orDivider}</div>
-              <button type="button" className={styles.googleButton} onClick={handleGoogleOAuth}>
+              <button type="button" className={styles.googleButton} disabled={!ageConfirmed || !termsAccepted} onClick={handleGoogleOAuth}>
                 {googleIcon}{labels.googleRegister}
               </button>
-              <button type="button" className={styles.discordButton} onClick={handleDiscordOAuth}>
+              <button type="button" className={styles.discordButton} disabled={!ageConfirmed || !termsAccepted} onClick={handleDiscordOAuth}>
                 {discordIcon}{labels.discordRegister}
               </button>
               <div className={styles.authFooter}>

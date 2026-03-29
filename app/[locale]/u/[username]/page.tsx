@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 import FollowButton from "@/components/FollowButton";
+import BlockButton from "@/components/BlockButton";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
 
@@ -151,10 +152,13 @@ export default function UserProfilePage() {
                     letterSpacing: "0.05em",
                   }}
                 >
-                  プロフィールを編集
+                  {locale === "en" ? "Edit Profile" : "プロフィールを編集"}
                 </Link>
               ) : (
-                <FollowButton targetUserId={profile.id} />
+                <>
+                  <FollowButton targetUserId={profile.id} />
+                  <BlockButton targetUserId={profile.id} />
+                </>
               )}
             </div>
 

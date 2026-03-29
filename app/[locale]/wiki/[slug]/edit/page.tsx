@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getIsAdmin, getAccessToken } from "@/lib/auth";
+import { compressImage } from "@/lib/compressImage";
 import BackButton from "@/components/BackButton";
 
 type PageType = "general" | "urban_legend" | "incident" | "work" | "region" | "term" | "person";
@@ -121,11 +122,12 @@ export default function WikiEditPage() {
     setChapters((prev) => prev.map((c, idx) => idx === i ? { ...c, [key]: val } : c));
 
   const uploadImage = async (file: File, uid: string, suffix: string): Promise<string> => {
-    const fileExt = file.name.split(".").pop() || "jpg";
+    const compressed = await compressImage(file);
+    const fileExt = compressed.name.split(".").pop() || "jpg";
     const fileName = `${uid}/${Date.now()}-${suffix}.${fileExt}`;
     const { error } = await supabase.storage
       .from("wiki-images")
-      .upload(fileName, file, { cacheControl: "3600", upsert: false });
+      .upload(fileName, compressed, { cacheControl: "3600", upsert: false });
     if (error) throw new Error(error.message);
     const { data } = supabase.storage.from("wiki-images").getPublicUrl(fileName);
     return data.publicUrl;
@@ -215,6 +217,16 @@ export default function WikiEditPage() {
         alert(`更新失敗: ${json.error ?? res.statusText}`);
         return;
       }
+
+      // JA編集の場合、バックグラウンドで英語版を再翻訳
+      if (locale === "ja") {
+        fetch("/api/translate/wiki-auto", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slug, force: true }),
+        }).catch(() => {}); // fire-and-forget
+      }
+
       router.push(`/${locale}/wiki/${slug}`);
     } finally {
       setIsSubmitting(false);

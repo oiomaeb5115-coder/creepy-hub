@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { compressImage } from "@/lib/compressImage";
 import BackButton from "@/components/BackButton";
 import styles from "./page.module.css";
 import en from "@/locales/en.json";
@@ -95,11 +96,12 @@ export default function WikiCategoryEditPage() {
     userId: string,
     type: "icon" | "header"
   ): Promise<string | null> => {
-    const fileExt = file.name.split(".").pop() || "jpg";
+    const compressed = await compressImage(file);
+    const fileExt = compressed.name.split(".").pop() || "jpg";
     const fileName = `wiki-${type}s/${userId}/${Date.now()}.${fileExt}`;
     const { error: uploadError } = await supabase.storage
       .from("category-images")
-      .upload(fileName, file, { cacheControl: "3600", upsert: false });
+      .upload(fileName, compressed, { cacheControl: "3600", upsert: false });
     if (uploadError) throw new Error(uploadError.message);
     const { data: publicUrlData } = supabase.storage
       .from("category-images")
