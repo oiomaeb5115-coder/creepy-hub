@@ -107,7 +107,6 @@ type PostRow = {
   title: string | null;
   content: string | null;
   created_at: string | null;
-  updated_at: string | null;
   image_url: string | null;
   image_url_2: string | null;
   image_url_3: string | null;
@@ -153,7 +152,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   const { data, error } = await supabase
     .from("post")
     .select(
-      "id, title, content, created_at, updated_at, image_url, image_url_2, image_url_3, is_published, view_count, user_id, slug"
+      "id, title, content, created_at, image_url, image_url_2, image_url_3, is_published, view_count, user_id, slug"
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -253,7 +252,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
     headline: displayTitle,
     description: displayContent.replace(/\n+/g, " ").trim().slice(0, 200) || undefined,
     datePublished: post.created_at ?? undefined,
-    dateModified: post.updated_at ?? post.created_at ?? undefined,
+    dateModified: post.created_at ?? undefined,
     author: author?.username
       ? { "@type": "Person", name: author.display_name ?? author.username }
       : { "@type": "Organization", name: "creepy hub" },
