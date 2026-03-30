@@ -1,3 +1,4 @@
+import "@/app/globals.css";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
@@ -62,13 +63,8 @@ export default async function LocaleLayout({
   const dict = await getDictionary(locale);
 
   return (
-    <>
-      {/* Set html lang attribute dynamically for the current locale */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `document.documentElement.lang=${JSON.stringify(locale)};`,
-        }}
-      />
+    <html lang={locale} suppressHydrationWarning>
+      <body>
       <PageTransition>{children}</PageTransition>
 
       <nav className={styles.bottomNav}>
@@ -113,6 +109,7 @@ export default async function LocaleLayout({
         privacyLinkText={dict.cookieConsent.privacyLink}
         acceptText={dict.cookieConsent.accept}
       />
-    </>
+      </body>
+    </html>
   );
 }

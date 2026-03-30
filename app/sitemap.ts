@@ -43,11 +43,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // 動的コンテンツ（Stories・Wiki）
-  const [storiesResult, jaWikiResult, enWikiResult] = await Promise.all([
+  const [jaStoriesResult, enStoriesResult, jaWikiResult, enWikiResult] = await Promise.all([
     supabase
       .from('post')
       .select('id, slug, updated_at, created_at')
       .eq('is_published', true),
+    // EN は翻訳済み投稿のみ（noindex ページをサイトマップに含めない）
+    supabase
+      .from('post_translations')
+      .select('post_id, post:post!inner(id, slug, updated_at, created_at)')
+      .eq('locale', 'en')
+      .eq('post.is_published', true),
     supabase
       .from('wiki_pages')
       .select('slug, updated_at')
@@ -60,16 +66,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .eq('is_published', true),
   ])
 
-  // Stories（両ロケールで同じURL）
-  for (const locale of locales) {
-    for (const post of storiesResult.data ?? []) {
-      entries.push({
-        url: `${BASE_URL}${postUrl(locale, post.id, post.slug)}`,
-        lastModified: new Date(post.updated_at ?? post.created_at),
-        changeFrequency: 'weekly',
-        priority: 0.7,
-      })
-    }
+  // Stories JA（全公開投稿）
+  for (const post of jaStoriesResult.data ?? []) {
+    entries.push({
+      url: `${BASE_URL}${postUrl('ja', post.id, post.slug)}`,
+      lastModified: new Date(post.updated_at ?? post.created_at),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    })
+  }
+
+  // Stories EN（翻訳済み投稿のみ）
+  for (const row of enStoriesResult.data ?? []) {
+    const post = (row.post as unknown) as { id: number; slug: string | null; updated_at: string | null; created_at: string }
+    entries.push({
+      url: `${BASE_URL}${postUrl('en', post.id, post.slug)}`,
+      lastModified: new Date(post.updated_at ?? post.created_at),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    })
   }
 
   // Wiki JA

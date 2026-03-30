@@ -1,8 +1,8 @@
-import "./globals.css";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://creepyhub.com"),
   title: {
     default: "creepy hub | イナクロ怪集部",
     template: "%s | creepy hub",
@@ -46,9 +46,5 @@ export default function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  return (
-    <html lang="ja" suppressHydrationWarning>
-      <body>{children}</body>
-    </html>
-  );
+  return <>{children}</>;
 }

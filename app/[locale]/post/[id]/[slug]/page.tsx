@@ -37,7 +37,7 @@ export async function generateMetadata({
 
   let title = post.title ?? undefined;
   let description: string | undefined = post.content
-    ? post.content.slice(0, 120)
+    ? post.content.replace(/\n+/g, " ").trim().slice(0, 160)
     : undefined;
 
   // EN の場合は翻訳タイトル・本文を優先
@@ -60,7 +60,19 @@ export async function generateMetadata({
     }
 
     if (tr.title) title = tr.title;
-    if (tr.content) description = tr.content.slice(0, 120);
+    if (tr.content) description = tr.content.replace(/\n+/g, " ").trim().slice(0, 160);
+  }
+
+  // JA の場合：英語翻訳が存在するかチェックして hreflang を条件付きで設定
+  let hasEnTranslation = false;
+  if (locale !== "en") {
+    const { data: trCheck } = await supabase
+      .from("post_translations")
+      .select("post_id")
+      .eq("post_id", id)
+      .eq("locale", "en")
+      .single();
+    hasEnTranslation = !!trCheck;
   }
 
   const url = `${BASE_URL}${postUrl(locale, id, post.slug)}`;
@@ -70,10 +82,14 @@ export async function generateMetadata({
     description,
     alternates: {
       canonical: url,
-      languages: {
-        ja: `${BASE_URL}${postUrl("ja", id, post.slug)}`,
-        en: `${BASE_URL}${postUrl("en", id, post.slug)}`,
-      },
+      languages: hasEnTranslation || locale === "en"
+        ? {
+            ja: `${BASE_URL}${postUrl("ja", id, post.slug)}`,
+            en: `${BASE_URL}${postUrl("en", id, post.slug)}`,
+          }
+        : {
+            ja: `${BASE_URL}${postUrl("ja", id, post.slug)}`,
+          },
     },
     openGraph: {
       title: title ?? undefined,
@@ -91,6 +107,7 @@ type PostRow = {
   title: string | null;
   content: string | null;
   created_at: string | null;
+  updated_at: string | null;
   image_url: string | null;
   image_url_2: string | null;
   image_url_3: string | null;
@@ -136,7 +153,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   const { data, error } = await supabase
     .from("post")
     .select(
-      "id, title, content, created_at, image_url, image_url_2, image_url_3, is_published, view_count, user_id, slug"
+      "id, title, content, created_at, updated_at, image_url, image_url_2, image_url_3, is_published, view_count, user_id, slug"
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -230,8 +247,32 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
 
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: displayTitle,
+    description: displayContent.replace(/\n+/g, " ").trim().slice(0, 200) || undefined,
+    datePublished: post.created_at ?? undefined,
+    dateModified: post.updated_at ?? post.created_at ?? undefined,
+    author: author?.username
+      ? { "@type": "Person", name: author.display_name ?? author.username }
+      : { "@type": "Organization", name: "creepy hub" },
+    publisher: {
+      "@type": "Organization",
+      name: "creepy hub",
+      url: "https://creepyhub.com",
+    },
+    ...(post.image_url ? { image: post.image_url } : {}),
+    url: `${BASE_URL}${postUrl(locale, post.id, post.slug)}`,
+    inLanguage: locale === "en" ? "en" : "ja",
+  };
+
   return (
     <main className={styles.archivePage}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <PostReadTracker id={String(post.id)} />
       <div className={styles.archiveShell}>
         <BackButton />

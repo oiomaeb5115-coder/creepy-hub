@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
       // Next.js App Router はインラインスクリプトを生成するので nonce なしでは除去不可。
       // 対策: middleware.ts で nonce を生成し、script-src 'nonce-xxx' に移行すること。
       // 参考: https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy
-      "script-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net",
       // Tailwind CSS / Next.js がインラインスタイルを使用するため必要
       "style-src 'self' 'unsafe-inline'",
       // Supabase Storage・外部画像を許可（data: は XSS ベクターとなるため除外）
@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
       // フォント（必要に応じて追加）
       "font-src 'self'",
       // iframe 埋め込みを全面禁止（X-Frame-Options: DENY と同等）
+      "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
       "frame-ancestors 'none'",
       // object タグを禁止
       "object-src 'none'",
