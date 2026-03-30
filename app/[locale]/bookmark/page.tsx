@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import { postUrl } from "@/lib/postUrl";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
 
@@ -17,6 +18,7 @@ type BookmarkedPost = {
     image_url: string | null;
     view_count: number | null;
     content: string | null;
+    slug: string | null;
   } | null;
 };
 
@@ -42,7 +44,7 @@ export default function BookmarkPage() {
 
       const { data } = await supabase
         .from("user_bookmarks")
-        .select("post_id, post:post(id, title, image_url, view_count, content)")
+        .select("post_id, post:post(id, title, image_url, view_count, content, slug)")
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false });
 
@@ -119,7 +121,7 @@ export default function BookmarkPage() {
                   style={{ display: "flex", alignItems: "stretch", marginBottom: 1 }}
                 >
                   <Link
-                    href={`/${locale}/post/${bm.post.id}`}
+                    href={postUrl(locale, bm.post.id, bm.post.slug)}
                     className={styles.card}
                     style={{ flex: 1 }}
                   >

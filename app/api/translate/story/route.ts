@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { translateStoryToEnglish } from "@/lib/googleTranslate";
+import { translateStoryToEnglish } from "@/lib/cfTranslate";
 import { requireAdmin } from "@/lib/apiAuth";
 
 export async function POST(req: NextRequest) {

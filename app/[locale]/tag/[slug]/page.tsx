@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import { getStoryTagBySlug } from "@/lib/tags";
 import BackButton from "@/components/BackButton";
+import { postUrl } from "@/lib/postUrl";
 
 type TagPageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -23,6 +24,7 @@ type PostRow = {
   image_url: string | null;
   view_count: number | null;
   created_at: string | null;
+  slug: string | null;
 };
 
 export default async function StoryTagPage({ params }: TagPageProps) {
@@ -47,7 +49,7 @@ export default async function StoryTagPage({ params }: TagPageProps) {
     if (locale === "en") {
       const { data } = await supabase
         .from("post")
-        .select("id, title, content, image_url, view_count, created_at, post_translations!inner(title, content)")
+        .select("id, title, content, image_url, view_count, created_at, slug, post_translations!inner(title, content)")
         .eq("is_published", true)
         .eq("post_translations.locale", "en")
         .in("id", postIds);
@@ -59,11 +61,12 @@ export default async function StoryTagPage({ params }: TagPageProps) {
         image_url: p.image_url,
         view_count: p.view_count,
         created_at: p.created_at,
+        slug: p.slug,
       }));
     } else {
       const { data } = await supabase
         .from("post")
-        .select("id, title, content, image_url, view_count, created_at")
+        .select("id, title, content, image_url, view_count, created_at, slug")
         .eq("is_published", true)
         .in("id", postIds);
       posts = (data ?? []) as PostRow[];
@@ -91,7 +94,7 @@ export default async function StoryTagPage({ params }: TagPageProps) {
             posts.map((post) => (
               <Link
                 key={post.id}
-                href={`/${locale}/post/${post.id}`}
+                href={postUrl(locale, post.id, post.slug)}
                 style={{
                   display: "block",
                   padding: "16px",

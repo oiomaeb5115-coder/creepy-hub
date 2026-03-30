@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { postUrl } from "@/lib/postUrl";
 
 type PostRandomPageProps = {
   params: Promise<{ locale: string }>;
@@ -7,6 +8,7 @@ type PostRandomPageProps = {
 
 type PostRandomRow = {
   id: number;
+  slug: string | null;
 };
 
 export default async function PostRandomPage({ params }: PostRandomPageProps) {
@@ -14,7 +16,7 @@ export default async function PostRandomPage({ params }: PostRandomPageProps) {
 
   const { data, error } = await supabase
     .from("post")
-    .select("id")
+    .select("id, slug")
     .eq("is_published", true)
     .limit(100);
 
@@ -24,11 +26,11 @@ export default async function PostRandomPage({ params }: PostRandomPageProps) {
 
   const items = data as PostRandomRow[];
   const randomIndex = Math.floor(Math.random() * items.length);
-  const randomId = items[randomIndex]?.id;
+  const randomPost = items[randomIndex];
 
-  if (!randomId) {
+  if (!randomPost?.id) {
     redirect(`/${locale}/post`);
   }
 
-  redirect(`/${locale}/post/${randomId}`);
+  redirect(postUrl(locale, randomPost.id, randomPost.slug));
 }

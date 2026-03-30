@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { translateWikiToEnglish } from "@/lib/googleTranslate";
+import { translateWikiToEnglish } from "@/lib/cfTranslate";
 
 /**
  * Wiki公開時に自動で英語翻訳を生成するエンドポイント。

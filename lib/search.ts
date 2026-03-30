@@ -24,7 +24,7 @@ export async function searchAll(query: string, locale: string) {
   const [storiesResult, wikiResult] = await Promise.all([
     supabase
       .from("post")
-      .select("id, title, content, created_at, image_url, view_count")
+      .select("id, title, content, created_at, image_url, view_count, slug")
       .eq("is_published", true)
       .or(`title.ilike.${keyword},content.ilike.${keyword}`)
       .order("created_at", { ascending: false })

@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "../../page.module.css";
 import BackButton from "@/components/BackButton";
+import { postUrl } from "@/lib/postUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ type StoryPost = {
   created_at: string | null;
   image_url: string | null;
   view_count: number | null;
+  slug: string | null;
   post_votes?: VoteRow[];
   post_comments?: CommentRow[];
 };
@@ -46,6 +48,7 @@ export default async function HotPage({ params }: Props) {
         created_at,
         image_url,
         view_count,
+        slug,
         post_votes(vote_type),
         post_comments(id),
         post_translations!inner(title, content)
@@ -64,6 +67,7 @@ export default async function HotPage({ params }: Props) {
         created_at,
         image_url,
         view_count,
+        slug,
         post_votes(vote_type),
         post_comments(id)
       `)
@@ -125,7 +129,7 @@ export default async function HotPage({ params }: Props) {
 
             return (
               <Link
-                href={`/${locale}/post/${post.id}`}
+                href={postUrl(locale, post.id, post.slug)}
                 key={post.id}
                 className={styles.postCardLink}
               >

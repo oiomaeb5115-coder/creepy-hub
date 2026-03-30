@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { translateStoryToEnglish } from "@/lib/googleTranslate";
+import { translateStoryToEnglish } from "@/lib/cfTranslate";
 
 /**
  * 投稿公開時に自動で英語翻訳を生成するエンドポイント。

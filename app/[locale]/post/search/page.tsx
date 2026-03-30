@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "../page.module.css";
 import BackButton from "@/components/BackButton";
+import { postUrl } from "@/lib/postUrl";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -17,6 +18,7 @@ type StoryPost = {
   created_at: string | null;
   image_url: string | null;
   view_count: number | null;
+  slug: string | null;
 };
 
 export default async function StorySearchPage({ params, searchParams }: Props) {
@@ -46,7 +48,7 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
       // EN: search in post_translations
       const { data } = await supabase
         .from("post")
-        .select("id, title, content, created_at, image_url, view_count, post_translations!inner(title, content)")
+        .select("id, title, content, created_at, image_url, view_count, slug, post_translations!inner(title, content)")
         .eq("is_published", true)
         .eq("post_translations.locale", "en")
         .or(`post_translations.title.ilike.${keyword},post_translations.content.ilike.${keyword}`)
@@ -60,11 +62,12 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
         created_at: p.created_at,
         image_url: p.image_url,
         view_count: p.view_count,
+        slug: p.slug,
       }));
     } else {
       const { data } = await supabase
         .from("post")
-        .select("id,title,content,created_at,image_url,view_count")
+        .select("id,title,content,created_at,image_url,view_count,slug")
         .eq("is_published", true)
         .or(`title.ilike.${keyword},content.ilike.${keyword}`)
         .order("view_count", { ascending: false })
@@ -122,7 +125,7 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
               return (
                 <Link
                   key={post.id}
-                  href={`/${locale}/post/${post.id}`}
+                  href={postUrl(locale, post.id, post.slug)}
                   className={styles.postRow}
                 >
                   <div className={styles.scoreCol}>

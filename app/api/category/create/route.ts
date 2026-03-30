@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { translateCategoryName } from "@/lib/googleTranslate";
+import { translateCategoryName } from "@/lib/cfTranslate";
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("Authorization");

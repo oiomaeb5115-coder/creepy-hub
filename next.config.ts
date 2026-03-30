@@ -13,8 +13,8 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline'",
       // Supabase Storage・外部画像を許可（data: は XSS ベクターとなるため除外）
       "img-src 'self' https:",
-      // Supabase API・Google Translate API への接続を許可
-      "connect-src 'self' https://*.supabase.co https://translation.googleapis.com",
+      // Supabase API・Cloudflare Workers AI への接続を許可
+      "connect-src 'self' https://*.supabase.co https://api.cloudflare.com",
       // フォント（必要に応じて追加）
       "font-src 'self'",
       // iframe 埋め込みを全面禁止（X-Frame-Options: DENY と同等）

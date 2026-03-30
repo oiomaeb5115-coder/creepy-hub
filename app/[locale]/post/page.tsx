@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
+import { postUrl } from "@/lib/postUrl";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 import CategorySidebar from "@/components/CategorySidebar";
@@ -34,6 +35,7 @@ type StoryPost = {
   image_url_2: string | null;
   image_url_3: string | null;
   view_count: number | null;
+  slug: string | null;
   post_votes?: VoteRow[];
   author?: AuthorProfile | null;
 };
@@ -54,13 +56,13 @@ export default async function StoryIndex({ params, searchParams }: Props) {
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
   const orderCol = isPopular ? "view_count" : "created_at";
 
-  let rawPosts: { id: number; title: string | null; content: string | null; created_at: string | null; image_url: string | null; image_url_2: string | null; image_url_3: string | null; view_count: number | null; user_id: string | null; post_votes?: VoteRow[] }[] = [];
+  let rawPosts: { id: number; title: string | null; content: string | null; created_at: string | null; image_url: string | null; image_url_2: string | null; image_url_3: string | null; view_count: number | null; slug: string | null; user_id: string | null; post_votes?: VoteRow[] }[] = [];
 
   if (locale === "en") {
     // 英語翻訳済みの記事のみ取得（post_translations と inner join）
     const { data } = await supabase
       .from("post")
-      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, post_votes(vote_type), post_translations!inner(title, content)")
+      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, slug, post_votes(vote_type), post_translations!inner(title, content)")
       .eq("is_published", true)
       .eq("post_translations.locale", "en")
       .order(orderCol, { ascending: false })
@@ -75,13 +77,14 @@ export default async function StoryIndex({ params, searchParams }: Props) {
       image_url_2: p.image_url_2,
       image_url_3: p.image_url_3,
       view_count: p.view_count,
+      slug: p.slug as string | null,
       user_id: p.user_id as string | null,
       post_votes: p.post_votes,
     }));
   } else {
     const { data } = await supabase
       .from("post")
-      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, post_votes(vote_type)")
+      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, slug, post_votes(vote_type)")
       .eq("is_published", true)
       .order(orderCol, { ascending: false })
       .limit(50);
@@ -95,6 +98,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
       image_url_2: p.image_url_2,
       image_url_3: p.image_url_3,
       view_count: p.view_count,
+      slug: p.slug as string | null,
       user_id: p.user_id as string | null,
       post_votes: p.post_votes,
     }));
@@ -236,7 +240,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
               return (
                 <Link
                   key={post.id}
-                  href={`/${locale}/post/${post.id}`}
+                  href={postUrl(locale, post.id, post.slug)}
                   className={styles.postRow}
                 >
                   <div className={styles.postContent}>

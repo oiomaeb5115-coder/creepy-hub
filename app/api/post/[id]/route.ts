@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
+import { generateSlug } from "@/lib/slug";
 
 async function getAuthorizedUser(req: NextRequest) {
   const authHeader = req.headers.get("Authorization");
@@ -78,9 +79,14 @@ export async function PATCH(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  // タイトル変更時はslugも再生成
+  const slug = title ? generateSlug(title) : undefined;
+  const updateData: Record<string, unknown> = { title, content, category_id: category_id ?? null };
+  if (slug !== undefined) updateData.slug = slug;
+
   const { error } = await adminSupabase
     .from("post")
-    .update({ title, content, category_id: category_id ?? null })
+    .update(updateData)
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });

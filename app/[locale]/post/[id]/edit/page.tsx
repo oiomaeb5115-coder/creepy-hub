@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { getIsAdmin, getAccessToken } from "@/lib/auth";
 import { genres } from "@/lib/genres";
 import BackButton from "@/components/BackButton";
+import { postUrl } from "@/lib/postUrl";
 
 type Chapter = { id: number; title: string; body: string };
 
@@ -33,6 +34,7 @@ export default function StoryEditPage() {
   const [categoryId, setCategoryId] = useState("");
   const [title, setTitle] = useState("");
   const [chapters, setChapters] = useState<Chapter[]>([{ id: 1, title: "", body: "" }]);
+  const [postSlug, setPostSlug] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function StoryEditPage() {
 
       const { data: post, error } = await supabase
         .from("post")
-        .select("id, title, content, category_id, user_id")
+        .select("id, title, content, category_id, user_id, slug")
         .eq("id", postId)
         .single();
 
@@ -50,9 +52,10 @@ export default function StoryEditPage() {
 
       const isAuthor = post.user_id === session.user.id;
       const isAdmin = await getIsAdmin();
-      if (!isAuthor && !isAdmin) { router.replace(`/${locale}/post/${postId}`); return; }
+      if (!isAuthor && !isAdmin) { router.replace(postUrl(locale, postId!, post.slug)); return; }
 
       setAuthorized(true);
+      setPostSlug(post.slug ?? null);
       setTitle(post.title ?? "");
       setCategoryId(post.category_id ? String(post.category_id) : "");
       setChapters(parseChapters(post.content ?? ""));
@@ -110,7 +113,7 @@ export default function StoryEditPage() {
         alert(`更新失敗: ${json.error ?? res.statusText}`);
         return;
       }
-      router.push(`/${locale}/post/${postId}`);
+      router.push(postUrl(locale, postId!, postSlug));
     } finally {
       setIsSubmitting(false);
     }
@@ -135,7 +138,7 @@ export default function StoryEditPage() {
             <p style={breadcrumbStyle}>ARCHIVE / STORY / EDIT</p>
             <h1 style={titleStyle}>記事を編集</h1>
           </div>
-          <Link href={`/${locale}/post/${postId}`} style={linkStyle}>キャンセル</Link>
+          <Link href={postUrl(locale, postId!, postSlug)} style={linkStyle}>キャンセル</Link>
         </header>
 
         <section style={cardStyle}>

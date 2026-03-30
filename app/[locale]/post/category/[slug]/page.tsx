@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import { postUrl } from "@/lib/postUrl";
 import CategoryReportButton from "@/components/CategoryReportButton";
 import CategoryEditButton from "@/components/CategoryEditButton";
 import CategoryDeleteButton from "@/components/CategoryDeleteButton";
@@ -34,6 +35,7 @@ type PostRow = {
   image_url: string | null;
   view_count: number | null;
   category_id: number | null;
+  slug: string | null;
 };
 
 export default async function StoryCategoryPage({
@@ -63,7 +65,7 @@ export default async function StoryCategoryPage({
   if (locale === "en") {
     const { data } = await supabase
       .from("post")
-      .select("id, title, content, created_at, image_url, view_count, category_id, post_translations!inner(title, content)")
+      .select("id, title, content, created_at, image_url, view_count, category_id, slug, post_translations!inner(title, content)")
       .eq("is_published", true)
       .eq("category_id", category.id)
       .eq("post_translations.locale", "en")
@@ -77,11 +79,12 @@ export default async function StoryCategoryPage({
       image_url: p.image_url,
       view_count: p.view_count,
       category_id: p.category_id,
+      slug: p.slug,
     }));
   } else {
     const { data, error: postsError } = await supabase
       .from("post")
-      .select("id, title, content, created_at, image_url, view_count, category_id")
+      .select("id, title, content, created_at, image_url, view_count, category_id, slug")
       .eq("is_published", true)
       .eq("category_id", category.id)
       .order("created_at", { ascending: false });
@@ -194,7 +197,7 @@ export default async function StoryCategoryPage({
 
                 return (
                   <Link
-                    href={`/${locale}/post/${post.id}`}
+                    href={postUrl(locale, post.id, post.slug)}
                     key={post.id}
                     className={styles.postCardLink}
                   >

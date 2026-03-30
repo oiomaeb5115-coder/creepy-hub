@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { searchAll } from "@/lib/search";
 import { getDictionary } from "@/lib/getDictionary";
+import { postUrl } from "@/lib/postUrl";
 import SearchBox from "@/components/SearchBox";
 import BackButton from "@/components/BackButton";
 
@@ -14,6 +15,7 @@ type StoryRow = {
   title: string | null;
   content: string | null;
   view_count: number | null;
+  slug: string | null;
 };
 
 type WikiRow = {
@@ -88,7 +90,7 @@ export default async function SearchPage({
               {(stories as StoryRow[]).map((post) => (
                 <Link
                   key={post.id}
-                  href={`/${locale}/post/${post.id}`}
+                  href={postUrl(locale, post.id, post.slug)}
                   style={{
                     display: "block",
                     padding: "16px",

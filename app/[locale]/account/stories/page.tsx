@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import { postUrl } from "@/lib/postUrl";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
 
@@ -17,6 +18,7 @@ type StoryRow = {
   content: string | null;
   is_published: boolean | null;
   created_at: string | null;
+  slug: string | null;
 };
 
 export default function AccountStoriesPage() {
@@ -40,7 +42,7 @@ export default function AccountStoriesPage() {
 
       const { data } = await supabase
         .from("post")
-        .select("id, title, image_url, view_count, content, is_published, created_at")
+        .select("id, title, image_url, view_count, content, is_published, created_at, slug")
         .eq("user_id", session.user.id)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
@@ -95,7 +97,7 @@ export default function AccountStoriesPage() {
               return (
                 <div key={story.id} className={styles.row}>
                   <Link
-                    href={`/${locale}/post/${story.id}`}
+                    href={postUrl(locale, story.id, story.slug)}
                     className={styles.card}
                   >
                     {story.image_url ? (

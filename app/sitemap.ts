@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { supabase } from '@/lib/supabase'
+import { postUrl } from '@/lib/postUrl'
 
 const BASE_URL = 'https://creepyhub.com'
 const locales = ['ja', 'en']
@@ -45,7 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [storiesResult, jaWikiResult, enWikiResult] = await Promise.all([
     supabase
       .from('post')
-      .select('id, updated_at, created_at')
+      .select('id, slug, updated_at, created_at')
       .eq('is_published', true),
     supabase
       .from('wiki_pages')
@@ -63,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const locale of locales) {
     for (const post of storiesResult.data ?? []) {
       entries.push({
-        url: `${BASE_URL}/${locale}/post/${post.id}`,
+        url: `${BASE_URL}${postUrl(locale, post.id, post.slug)}`,
         lastModified: new Date(post.updated_at ?? post.created_at),
         changeFrequency: 'weekly',
         priority: 0.7,

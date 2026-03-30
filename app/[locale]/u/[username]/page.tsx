@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import { postUrl } from "@/lib/postUrl";
 import FollowButton from "@/components/FollowButton";
 import BlockButton from "@/components/BlockButton";
 import en from "@/locales/en.json";
@@ -28,6 +29,7 @@ type PostRow = {
   image_url: string | null;
   view_count: number | null;
   created_at: string | null;
+  slug: string | null;
 };
 
 export default function UserProfilePage() {
@@ -72,7 +74,7 @@ export default function UserProfilePage() {
       const [{ data: postData }, { count: fcCount }, { count: fgCount }] = await Promise.all([
         supabase
           .from("post")
-          .select("id, title, content, image_url, view_count, created_at")
+          .select("id, title, content, image_url, view_count, created_at, slug")
           .eq("user_id", p.id)
           .eq("is_published", true)
           .order("created_at", { ascending: false })
@@ -211,7 +213,7 @@ export default function UserProfilePage() {
               return (
                 <Link
                   key={post.id}
-                  href={`/${locale}/post/${post.id}`}
+                  href={postUrl(locale, post.id, post.slug)}
                   className={styles.postRow}
                 >
                   <div className={styles.thumbCol}>

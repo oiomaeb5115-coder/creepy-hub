@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getIsAdmin, getAccessToken } from "@/lib/auth";
+import { postUrl } from "@/lib/postUrl";
 
 type Props = {
   type: "story" | "wiki";
@@ -41,7 +42,7 @@ export default function TranslateButton({
   // 英語版が存在する場合は言語切り替えリンクを表示（全ユーザー向け）
   if (locale === "ja" && hasTranslation) {
     const href =
-      type === "story" ? `/en/post/${id}` : `/en/wiki/${slug}`;
+      type === "story" ? postUrl("en", id!, slug) : `/en/wiki/${slug}`;
     return (
       <a href={href} style={linkStyle}>
         {labels.viewInEnglish}
@@ -51,7 +52,7 @@ export default function TranslateButton({
 
   if (locale === "en") {
     const href =
-      type === "story" ? `/ja/post/${id}` : `/ja/wiki/${slug}`;
+      type === "story" ? postUrl("ja", id!, slug) : `/ja/wiki/${slug}`;
     return (
       <a href={href} style={linkStyle}>
         {labels.viewInJapanese}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
+import { postUrl } from "@/lib/postUrl";
 import styles from "./page.module.css";
 import HomeAuthButtons from "./HomeAuthButtons";
 import AdminPendingSection from "@/components/AdminPendingSection";
@@ -36,6 +37,7 @@ type StoryPost = {
   image_url_2: string | null;
   image_url_3: string | null;
   view_count: number | null;
+  slug: string | null;
   post_votes?: VoteRow[];
   post_comments?: CommentRow[];
   author?: AuthorProfile | null;
@@ -160,7 +162,7 @@ function StoryCardGrid({
   const authorName = post.author?.display_name || post.author?.username || null;
 
   return (
-    <Link href={`/${locale}/post/${post.id}`} className={styles.gridCardLink}>
+    <Link href={postUrl(locale, post.id, post.slug)} className={styles.gridCardLink}>
       <article className={styles.gridCard}>
         <div className={styles.gridCardBody}>
           <div className={styles.gridCardAuthorRow}>
@@ -288,6 +290,7 @@ export default async function HomePage({ params }: HomePageProps) {
           image_url_3,
           view_count,
           user_id,
+          slug,
           post_votes(vote_type),
           post_comments(id),
           post_translations!inner(title, content)
@@ -308,6 +311,7 @@ export default async function HomePage({ params }: HomePageProps) {
           image_url_3,
           view_count,
           user_id,
+          slug,
           post_votes(vote_type),
           post_comments(id)
         `)
@@ -350,6 +354,7 @@ export default async function HomePage({ params }: HomePageProps) {
     image_url_2: p.image_url_2,
     image_url_3: p.image_url_3,
     view_count: p.view_count,
+    slug: p.slug as string | null,
     user_id: p.user_id as string | null,
     post_votes: p.post_votes,
     post_comments: p.post_comments,

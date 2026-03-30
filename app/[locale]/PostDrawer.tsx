@@ -9,6 +9,8 @@ import { getAccessToken } from "@/lib/auth";
 import { getAllStoryTags } from "@/lib/tags";
 import { validateImageFile } from "@/lib/validateImageFile";
 import { compressImage } from "@/lib/compressImage";
+import { generateSlug } from "@/lib/slug";
+import { postUrl } from "@/lib/postUrl";
 import styles from "./post-drawer.module.css";
 
 type Labels = {
@@ -199,6 +201,8 @@ export default function PostDrawer({ locale, labels }: Props) {
         throw err;
       });
 
+      const slug = generateSlug(title.trim());
+
       const { data, error } = await supabase
         .from("post")
         .insert([{
@@ -211,6 +215,7 @@ export default function PostDrawer({ locale, labels }: Props) {
           image_url: imageUrl1,
           image_url_2: imageUrl2,
           image_url_3: imageUrl3,
+          slug,
         }])
         .select()
         .single();
@@ -240,7 +245,7 @@ export default function PostDrawer({ locale, labels }: Props) {
       setMainImage1(null); setMainImage2(null); setMainImage3(null);
       setDraftRestored(false);
       setIsOpen(false);
-      window.location.href = `/${locale}/post/${data.id}`;
+      window.location.href = postUrl(locale, data.id, data.slug);
     } catch {
       // already alerted
     } finally {
