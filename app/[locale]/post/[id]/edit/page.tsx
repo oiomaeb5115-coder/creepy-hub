@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getIsAdmin, getAccessToken } from "@/lib/auth";
-import { genres } from "@/lib/genres";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
 
@@ -35,6 +34,7 @@ export default function StoryEditPage() {
   const [title, setTitle] = useState("");
   const [chapters, setChapters] = useState<Chapter[]>([{ id: 1, title: "", body: "" }]);
   const [postSlug, setPostSlug] = useState<string | null>(null);
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -54,6 +54,14 @@ export default function StoryEditPage() {
       const isAdmin = await getIsAdmin();
       if (!isAuthor && !isAdmin) { router.replace(postUrl(locale, postId!, post.slug)); return; }
 
+      const { data: cats } = await supabase
+        .from("story_categories")
+        .select("id, name")
+        .eq("is_active", true)
+        .or("is_user_created.eq.false,approved.eq.true")
+        .order("sort_order", { ascending: true });
+
+      setCategories(cats ?? []);
       setAuthorized(true);
       setPostSlug(post.slug ?? null);
       setTitle(post.title ?? "");
@@ -147,7 +155,7 @@ export default function StoryEditPage() {
               <label style={labelStyle}>カテゴリー</label>
               <select style={controlStyle} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
                 <option value="">選択してください</option>
-                {genres.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
 
