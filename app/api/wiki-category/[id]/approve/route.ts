@@ -12,6 +12,10 @@ export async function POST(
   }
 
   const { id } = await params;
+  const categoryId = parseInt(id, 10);
+  if (isNaN(categoryId)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
 
   // サービスロールでRLSをバイパスして確実に更新
   const supabaseAdmin = createClient(
@@ -22,7 +26,7 @@ export async function POST(
   const { error } = await supabaseAdmin
     .from("categories")
     .update({ is_active: true })
-    .eq("id", id)
+    .eq("id", categoryId)
     .eq("is_user_created", true);
 
   if (error) {

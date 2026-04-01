@@ -13,13 +13,17 @@ export async function DELETE(
   }
 
   const { id } = await params;
+  const postId = parseInt(id, 10);
+  if (isNaN(postId)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const { error } = await supabase.from("post").delete().eq("id", id);
+  const { error } = await supabase.from("post").delete().eq("id", postId);
   if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
 
   revalidatePath("/ja");

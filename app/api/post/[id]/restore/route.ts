@@ -13,6 +13,10 @@ export async function POST(
   }
 
   const { id } = await params;
+  const postId = parseInt(id, 10);
+  if (isNaN(postId)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,7 +26,7 @@ export async function POST(
   const { error } = await supabase
     .from("post")
     .update({ is_published: true, deleted_at: null })
-    .eq("id", id);
+    .eq("id", postId);
 
   if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
 

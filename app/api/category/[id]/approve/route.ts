@@ -12,6 +12,10 @@ export async function POST(
   }
 
   const { id } = await params;
+  const categoryId = parseInt(id, 10);
+  if (isNaN(categoryId)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
 
   const token = req.headers.get("Authorization")?.slice(7) ?? "";
   if (!token) {
@@ -26,7 +30,7 @@ export async function POST(
   const { error } = await supabase
     .from("story_categories")
     .update({ approved: true, is_active: true })
-    .eq("id", id)
+    .eq("id", categoryId)
     .eq("is_user_created", true);
 
   if (error) {

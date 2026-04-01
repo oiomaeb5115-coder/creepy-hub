@@ -24,12 +24,16 @@ export async function PATCH(
   const userId = userData.user.id;
 
   const { id } = await params;
+  const categoryId = parseInt(id, 10);
+  if (isNaN(categoryId)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
 
   // カテゴリを取得してcreated_byを確認
   const { data: category, error: catError } = await supabase
     .from("story_categories")
     .select("id, created_by")
-    .eq("id", id)
+    .eq("id", categoryId)
     .single();
 
   if (catError || !category) {
@@ -84,7 +88,7 @@ export async function PATCH(
   const { error: updateError } = await supabase
     .from("story_categories")
     .update(updateData)
-    .eq("id", id);
+    .eq("id", categoryId);
 
   if (updateError) {
     return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });

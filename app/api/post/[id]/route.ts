@@ -29,6 +29,10 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const postId = parseInt(id, 10);
+  if (isNaN(postId)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
 
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
@@ -48,7 +52,7 @@ export async function PATCH(
   const { data: post } = await supabase
     .from("post")
     .select("user_id")
-    .eq("id", id)
+    .eq("id", postId)
     .single();
 
   if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -87,12 +91,12 @@ export async function PATCH(
   const { error } = await adminSupabase
     .from("post")
     .update(updateData)
-    .eq("id", id);
+    .eq("id", postId);
 
   if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
 
-  revalidatePath(`/ja/post/${id}`);
-  revalidatePath(`/en/post/${id}`);
+  revalidatePath(`/ja/post/${postId}`);
+  revalidatePath(`/en/post/${postId}`);
   revalidatePath("/ja");
   revalidatePath("/en");
 
@@ -104,6 +108,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const postId = parseInt(id, 10);
+  if (isNaN(postId)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
 
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
@@ -125,7 +133,7 @@ export async function DELETE(
   const { data: post } = await supabase
     .from("post")
     .select("user_id")
-    .eq("id", id)
+    .eq("id", postId)
     .single();
 
   if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -146,7 +154,7 @@ export async function DELETE(
   const { error } = await adminSupabase
     .from("post")
     .update({ is_published: false, deleted_at: new Date().toISOString() })
-    .eq("id", id);
+    .eq("id", postId);
   if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
 
   revalidatePath("/ja");
