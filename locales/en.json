@@ -289,12 +289,14 @@
     "bookmarkSubtitle": "Saved stories ({count})"
   },
   "profile": {
-    "stories": "Stories",
+    "stories": "Posts",
+    "bookmarks": "Saved",
     "followers": "Followers",
     "following": "Following",
     "follow": "Follow",
     "unfollow": "Unfollow",
     "noStories": "No stories yet.",
+    "noBookmarks": "No saved posts yet.",
     "notFound": "Profile not found.",
     "backToHome": "← Back to Home"
   },
@@ -514,7 +516,7 @@
     "changesTitle": "Article 11 (Policy Changes)",
     "changesBody": "<p>The Company may change this Policy as necessary due to changes in laws, changes in Service content, or other needs.</p><p>When changing this Policy, the Company shall notify users of the revised content and its effective date by posting on the Service or other methods the Company deems appropriate.</p><p>Users who continue to use the Service after the effective date of the revised Policy shall be deemed to have consented to the changes.</p>",
     "contactTitle": "Article 12 (Inquiries)",
-    "contactBody": "<p>Inquiries regarding this Policy, complaints about the handling of personal information, consultations, requests for disclosure, and all other communications shall be accepted at the following contact:</p><p><strong>Operator</strong>: IMC<br/><strong>Email</strong>: your-email@creepyhub.com</p><p>For more details, please visit our <a href=\"/en/contact\">Contact page</a>.</p>"
+    "contactBody": "<p>Inquiries regarding this Policy, complaints about the handling of personal information, consultations, requests for disclosure, and all other communications shall be accepted at the following contact:</p><p><strong>Operator</strong>: IMC<br/><strong>Email</strong>: inakurokaisyuubu@gmail.com</p><p>For more details, please visit our <a href=\"/en/contact\">Contact page</a>.</p>"
   },
   "terms": {
     "metaTitle": "Terms of Service",
@@ -527,13 +529,13 @@
     "metaTitle": "Contact",
     "metaDescription": "Contact creepy.hub",
     "title": "Contact",
-    "body": "<p>For inquiries about creepy.hub (operated by IMC), please contact us at the email address below.</p><p><strong>Email</strong>: <a href=\"mailto:your-email@creepyhub.com\">your-email@creepyhub.com</a></p><h3>Types of Inquiries</h3><ul><li>Questions and consultations regarding the Privacy Policy</li><li>Requests for disclosure, correction, or deletion of personal information</li><li>Questions regarding the Terms of Service</li><li>Rights infringement claims (you may also use our <a href=\"/en/rights-claim\">Rights Claim page</a>)</li><li>Other inquiries regarding the Service</li></ul><p>We may request additional information for identity verification purposes. Thank you for your understanding.</p>"
+    "body": "<p>For inquiries about creepy.hub (operated by IMC), please contact us at the email address below.</p><p><strong>Email</strong>: <a href=\"mailto:inakurokaisyuubu@gmail.com\">inakurokaisyuubu@gmail.com</a></p><h3>Types of Inquiries</h3><ul><li>Questions and consultations regarding the Privacy Policy</li><li>Requests for disclosure, correction, or deletion of personal information</li><li>Questions regarding the Terms of Service</li><li>Rights infringement claims (you may also use our <a href=\"/en/rights-claim\">Rights Claim page</a>)</li><li>Other inquiries regarding the Service</li></ul><p>We may request additional information for identity verification purposes. Thank you for your understanding.</p>"
   },
   "rightsClaim": {
     "metaTitle": "Rights Infringement Claim",
     "metaDescription": "File a rights infringement claim on creepy.hub",
     "title": "Rights Infringement Claim",
-    "body": "<p>If you believe that Posted Content on this Service infringes your copyright or other rights, please contact us with the following information.</p><h3>Required Information</h3><p>In accordance with Article 12 of our Terms of Service, claims must include:</p><ol><li><strong>Your name or organization name</strong> and contact information (email, phone number, etc.)</li><li><strong>Specific description</strong> of the content and rights you hold</li><li><strong>Identification of the infringing content</strong> (URL of the relevant page, etc.)</li><li><strong>Declaration</strong> that your claim is based on legitimate rights</li></ol><h3>Contact</h3><p><strong>Email</strong>: <a href=\"mailto:your-email@creepyhub.com\">your-email@creepyhub.com</a></p><h3>Process</h3><ol><li>We will review your claim.</li><li>If necessary, we will notify the poster and provide an opportunity for rebuttal within 7 days.</li><li>Based on the claim and any rebuttal, we will take appropriate measures such as deletion or hiding at our discretion.</li></ol><p>Filing false or fraudulent claims may result in account suspension or other measures.</p><p><strong>Operator</strong>: IMC</p>"
+    "body": "<p>If you believe that Posted Content on this Service infringes your copyright or other rights, please contact us with the following information.</p><h3>Required Information</h3><p>In accordance with Article 12 of our Terms of Service, claims must include:</p><ol><li><strong>Your name or organization name</strong> and contact information (email, phone number, etc.)</li><li><strong>Specific description</strong> of the content and rights you hold</li><li><strong>Identification of the infringing content</strong> (URL of the relevant page, etc.)</li><li><strong>Declaration</strong> that your claim is based on legitimate rights</li></ol><h3>Contact</h3><p><strong>Email</strong>: <a href=\"mailto:inakurokaisyuubu@gmail.com\">inakurokaisyuubu@gmail.com</a></p><h3>Process</h3><ol><li>We will review your claim.</li><li>If necessary, we will notify the poster and provide an opportunity for rebuttal within 7 days.</li><li>Based on the claim and any rebuttal, we will take appropriate measures such as deletion or hiding at our discretion.</li></ol><p>Filing false or fraudulent claims may result in account suspension or other measures.</p><p><strong>Operator</strong>: IMC</p>"
   },
   "cookieConsent": {
     "message": "This site uses local storage for features such as saving drafts.",

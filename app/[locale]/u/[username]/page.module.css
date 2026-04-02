@@ -118,8 +118,45 @@
   line-height: 1.7;
 }
 
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-top: 32px;
+  border-bottom: 1px solid rgba(161, 102, 108, 0.25);
+}
+
+.tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  color: #8a7870;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.15s;
+}
+
+.tab:hover {
+  color: #c8b8b0;
+}
+
+.tabActive {
+  color: #f5f1eb;
+}
+
+.tabActive::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #c49090;
+}
+
 .section {
-  margin-top: 40px;
+  margin-top: 16px;
 }
 
 .feed {

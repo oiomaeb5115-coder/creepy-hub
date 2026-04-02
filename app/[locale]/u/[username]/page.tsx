@@ -32,6 +32,11 @@ type PostRow = {
   slug: string | null;
 };
 
+type BookmarkRow = {
+  post_id: number;
+  post: PostRow;
+};
+
 export default function UserProfilePage() {
   const params = useParams<{ locale: string; username: string }>();
   const locale = params?.locale ?? "ja";
@@ -42,9 +47,11 @@ export default function UserProfilePage() {
   const [notFound, setNotFound] = useState(false);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [posts, setPosts] = useState<PostRow[]>([]);
+  const [bookmarks, setBookmarks] = useState<PostRow[]>([]);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"posts" | "bookmarks">("posts");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -98,6 +105,30 @@ export default function UserProfilePage() {
     load();
   }, [username]);
 
+  // ブックマーク取得（本人のプロフィール閲覧時のみ）
+  useEffect(() => {
+    if (!profile || !currentUserId) return;
+    if (currentUserId !== profile.id) return;
+
+    const loadBookmarks = async () => {
+      const { data } = await supabase
+        .from("user_bookmarks")
+        .select("post_id, post:post_id(id, title, content, image_url, view_count, created_at, slug)")
+        .eq("user_id", profile.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (data) {
+        const rows = data as unknown as BookmarkRow[];
+        setBookmarks(rows.map((r) => r.post).filter(Boolean));
+      }
+    };
+
+    loadBookmarks();
+  }, [profile, currentUserId]);
+
+  const isOwnProfile = currentUserId === profile?.id;
+
   if (loading) {
     return (
       <main className={styles.profilePage}>
@@ -118,6 +149,9 @@ export default function UserProfilePage() {
       </main>
     );
   }
+
+  const displayPosts = activeTab === "posts" ? posts : bookmarks;
+  const emptyMessage = activeTab === "posts" ? dict.profile.noStories : dict.profile.noBookmarks;
 
   return (
     <main className={styles.profilePage}>
@@ -193,17 +227,33 @@ export default function UserProfilePage() {
           </div>
         </div>
 
-        <section className={styles.section}>
-          <h2>{dict.profile.stories}</h2>
+        {/* タブ */}
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${activeTab === "posts" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("posts")}
+          >
+            {dict.profile.stories}
+          </button>
+          {isOwnProfile && (
+            <button
+              className={`${styles.tab} ${activeTab === "bookmarks" ? styles.tabActive : ""}`}
+              onClick={() => setActiveTab("bookmarks")}
+            >
+              {dict.profile.bookmarks}
+            </button>
+          )}
+        </div>
 
-          {posts.length === 0 && (
+        <section className={styles.section}>
+          {displayPosts.length === 0 && (
             <p className={styles.empty}>
-              {dict.profile.noStories}
+              {emptyMessage}
             </p>
           )}
 
           <div className={styles.feed}>
-            {posts.map((post) => {
+            {displayPosts.map((post) => {
               const safeTitle = post.title ?? dict.post.untitled;
               const safeContent = post.content ?? "";
               const excerpt = safeContent.length > 20

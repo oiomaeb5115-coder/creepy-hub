@@ -7,6 +7,8 @@ import { supabase } from "@/lib/supabase";
 import { getIsAdmin, getAccessToken } from "@/lib/auth";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
+import { validateImageFile } from "@/lib/validateImageFile";
+import { compressImage } from "@/lib/compressImage";
 
 type Chapter = { id: number; title: string; body: string };
 
@@ -37,6 +39,14 @@ export default function StoryEditPage() {
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 画像関連 state
+  const [imageUrl1, setImageUrl1] = useState<string | null>(null);
+  const [imageUrl2, setImageUrl2] = useState<string | null>(null);
+  const [imageUrl3, setImageUrl3] = useState<string | null>(null);
+  const [newImage1, setNewImage1] = useState<File | null>(null);
+  const [newImage2, setNewImage2] = useState<File | null>(null);
+  const [newImage3, setNewImage3] = useState<File | null>(null);
+
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -44,7 +54,7 @@ export default function StoryEditPage() {
 
       const { data: post, error } = await supabase
         .from("post")
-        .select("id, title, content, category_id, user_id, slug")
+        .select("id, title, content, category_id, user_id, slug, image_url, image_url_2, image_url_3")
         .eq("id", postId)
         .single();
 
@@ -67,6 +77,9 @@ export default function StoryEditPage() {
       setTitle(post.title ?? "");
       setCategoryId(post.category_id ? String(post.category_id) : "");
       setChapters(parseChapters(post.content ?? ""));
+      setImageUrl1(post.image_url ?? null);
+      setImageUrl2(post.image_url_2 ?? null);
+      setImageUrl3(post.image_url_3 ?? null);
       setLoading(false);
     };
     init();
@@ -93,11 +106,59 @@ export default function StoryEditPage() {
   const updateChapter = (i: number, key: "title" | "body", val: string) =>
     setChapters((prev) => prev.map((c, idx) => idx === i ? { ...c, [key]: val } : c));
 
+  const uploadImage = async (
+    file: File | null,
+    userId: string,
+    suffix: string
+  ): Promise<string | null> => {
+    if (!file) return null;
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      throw new Error("画像ファイル（JPEG / PNG / WebP / GIF）のみアップロード可能です");
+    }
+    if (file.size > MAX_SIZE) {
+      throw new Error("ファイルサイズは5MB以内にしてください");
+    }
+    const isValidImage = await validateImageFile(file);
+    if (!isValidImage) {
+      throw new Error("ファイルの内容が画像形式と一致しません");
+    }
+    const compressed = await compressImage(file);
+    const fileExt = compressed.name.split(".").pop() || "jpg";
+    const fileName = `${userId}/${Date.now()}-${suffix}.${fileExt}`;
+    const { error } = await supabase.storage
+      .from("post-images")
+      .upload(fileName, compressed, { cacheControl: "3600", upsert: false });
+    if (error) throw new Error(error.message);
+    const { data } = supabase.storage.from("post-images").getPublicUrl(fileName);
+    return data.publicUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) { alert("タイトルを入力してください。"); return; }
     setIsSubmitting(true);
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData.session?.user;
+      if (!user) { alert("セッションが切れました。再ログインしてください。"); return; }
+
+      // 新しい画像をアップロード
+      const [uploaded1, uploaded2, uploaded3] = await Promise.all([
+        uploadImage(newImage1, user.id, "1"),
+        uploadImage(newImage2, user.id, "2"),
+        uploadImage(newImage3, user.id, "3"),
+      ]).catch((err) => {
+        alert(`画像アップロードに失敗しました: ${err.message}`);
+        throw err;
+      });
+
+      // 新しい画像がアップロードされた場合はそのURL、そうでなければ現在のURL
+      const finalImageUrl1 = uploaded1 ?? imageUrl1;
+      const finalImageUrl2 = uploaded2 ?? imageUrl2;
+      const finalImageUrl3 = uploaded3 ?? imageUrl3;
+
       const mergedContent = chapters
         .map((ch, i) => `## ${ch.title.trim() || `章${i + 1}`}\n\n${ch.body.trim()}`)
         .join("\n\n");
@@ -113,6 +174,9 @@ export default function StoryEditPage() {
           title: title.trim(),
           content: mergedContent,
           category_id: categoryId ? Number(categoryId) : null,
+          image_url: finalImageUrl1,
+          image_url_2: finalImageUrl2,
+          image_url_3: finalImageUrl3,
         }),
       });
 
@@ -136,6 +200,12 @@ export default function StoryEditPage() {
       </main>
     );
   }
+
+  const imageSlots = [
+    { label: "画像 1", url: imageUrl1, newFile: newImage1, setUrl: setImageUrl1, setFile: setNewImage1 },
+    { label: "画像 2", url: imageUrl2, newFile: newImage2, setUrl: setImageUrl2, setFile: setNewImage2 },
+    { label: "画像 3", url: imageUrl3, newFile: newImage3, setUrl: setImageUrl3, setFile: setNewImage3 },
+  ];
 
   return (
     <main style={pageStyle}>
@@ -162,6 +232,48 @@ export default function StoryEditPage() {
             <div style={groupStyle}>
               <label style={labelStyle}>記事タイトル</label>
               <input style={controlStyle} type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
+            </div>
+
+            {/* 画像アップロード */}
+            <div style={groupStyle}>
+              <label style={labelStyle}>画像（最大3枚）</label>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                {imageSlots.map((slot, idx) => (
+                  <div key={idx} style={imageSlotStyle}>
+                    {(slot.newFile || slot.url) ? (
+                      <div style={{ position: "relative" }}>
+                        <img
+                          src={slot.newFile ? URL.createObjectURL(slot.newFile) : slot.url!}
+                          alt={slot.label}
+                          style={imagePreviewStyle}
+                        />
+                        <button
+                          type="button"
+                          style={imageRemoveBtn}
+                          onClick={() => { slot.setUrl(null); slot.setFile(null); }}
+                          title="画像を削除"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ) : (
+                      <label style={imageAddLabel}>
+                        <span style={{ fontSize: 24, lineHeight: 1 }}>+</span>
+                        <span style={{ fontSize: 11 }}>{slot.label}</span>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          style={{ display: "none" }}
+                          onChange={(e) => {
+                            const f = e.target.files?.[0] ?? null;
+                            if (f) slot.setFile(f);
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div style={{ ...groupStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -218,3 +330,9 @@ const chapterCard: React.CSSProperties = { background: "rgba(20,5,10,0.5)", bord
 const primaryBtn: React.CSSProperties = { padding: "10px 24px", background: "#6b1a22", border: "1px solid #8b3a42", color: "#f0e0e0", borderRadius: 4, cursor: "pointer", fontSize: 14 };
 const secondaryBtn: React.CSSProperties = { padding: "6px 14px", background: "rgba(40,10,15,0.8)", border: "1px solid rgba(180,100,110,0.35)", color: "#c8a8b0", borderRadius: 4, cursor: "pointer", fontSize: 12 };
 const miniBtn: React.CSSProperties = { padding: "3px 8px", background: "rgba(40,10,15,0.6)", border: "1px solid rgba(180,100,110,0.25)", color: "#a09080", borderRadius: 3, cursor: "pointer", fontSize: 11 };
+
+// 画像スロット用スタイル
+const imageSlotStyle: React.CSSProperties = { width: 100, height: 100, borderRadius: 6, overflow: "hidden", flexShrink: 0 };
+const imagePreviewStyle: React.CSSProperties = { width: 100, height: 100, objectFit: "cover", display: "block", borderRadius: 6 };
+const imageRemoveBtn: React.CSSProperties = { position: "absolute", top: 2, right: 2, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.7)", color: "#fff", border: "none", cursor: "pointer", fontSize: 14, lineHeight: "20px", textAlign: "center", padding: 0 };
+const imageAddLabel: React.CSSProperties = { width: 100, height: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "rgba(20,8,10,0.8)", border: "1px dashed rgba(180,100,110,0.4)", borderRadius: 6, color: "#a09080", cursor: "pointer" };

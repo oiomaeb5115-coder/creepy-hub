@@ -65,7 +65,7 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { title, content, category_id } = body;
+  const { title, content, category_id, image_url, image_url_2, image_url_3 } = body;
 
   // サーバーサイド入力バリデーション
   if (title !== undefined && (typeof title !== "string" || title.length === 0 || title.length > 200)) {
@@ -77,6 +77,12 @@ export async function PATCH(
   if (category_id !== undefined && category_id !== null && typeof category_id !== "number") {
     return NextResponse.json({ error: "カテゴリIDが不正です" }, { status: 400 });
   }
+  for (const key of ["image_url", "image_url_2", "image_url_3"] as const) {
+    const val = body[key];
+    if (val !== undefined && val !== null && typeof val !== "string") {
+      return NextResponse.json({ error: "画像URLが不正です" }, { status: 400 });
+    }
+  }
 
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -87,6 +93,9 @@ export async function PATCH(
   const slug = title ? generateSlug(title) : undefined;
   const updateData: Record<string, unknown> = { title, content, category_id: category_id ?? null };
   if (slug !== undefined) updateData.slug = slug;
+  if (image_url !== undefined) updateData.image_url = image_url;
+  if (image_url_2 !== undefined) updateData.image_url_2 = image_url_2;
+  if (image_url_3 !== undefined) updateData.image_url_3 = image_url_3;
 
   const { error } = await adminSupabase
     .from("post")

@@ -36,6 +36,11 @@ function CallbackInner() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    const isNewAccount = (createdAt: string | undefined): boolean => {
+      if (!createdAt) return false;
+      return Date.now() - new Date(createdAt).getTime() < 2 * 60 * 1000;
+    };
+
     const handleCallback = async () => {
       // Implicit flow: tokens in URL fragment (#access_token=...)
       const hash = window.location.hash;
@@ -49,7 +54,8 @@ function CallbackInner() {
           if (data.session?.user?.id) {
             await ensureSafeUsername(data.session.user.id);
           }
-          window.location.href = `/${locale}`;
+          const registered = isNewAccount(data.session?.user?.created_at);
+          window.location.href = registered ? `/${locale}?registered=true` : `/${locale}`;
           return;
         }
       }
@@ -62,7 +68,8 @@ function CallbackInner() {
         if (data.session?.user?.id) {
           await ensureSafeUsername(data.session.user.id);
         }
-        window.location.href = `/${locale}`;
+        const registered = isNewAccount(data.session?.user?.created_at);
+        window.location.href = registered ? `/${locale}?registered=true` : `/${locale}`;
         return;
       }
 

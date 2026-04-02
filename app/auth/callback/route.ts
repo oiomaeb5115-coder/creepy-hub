@@ -52,6 +52,8 @@ export async function GET(request: Request) {
     );
   }
 
+  let isNewUser = type === "register";
+
   if (code) {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -61,10 +63,19 @@ export async function GET(request: Request) {
     const { data } = await supabase.auth.exchangeCodeForSession(code);
     if (data.session?.user?.id) {
       await ensureSafeUsername(data.session.user.id);
+
+      // OAuth 新規登録判定: アカウント作成が2分以内なら新規とみなす
+      if (!isNewUser && data.session.user.created_at) {
+        const createdAt = new Date(data.session.user.created_at).getTime();
+        const now = Date.now();
+        if (now - createdAt < 2 * 60 * 1000) {
+          isNewUser = true;
+        }
+      }
     }
   }
 
-  const destination = type === "register"
+  const destination = isNewUser
     ? `/${locale}?registered=true`
     : `/${locale}`;
 
