@@ -43,48 +43,25 @@ export default async function HotPage({ params }: Props) {
   const dict = await getDictionary(locale);
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
-  let rawData: any[] = [];
+  const { data: rawData } = await supabase
+    .from("post")
+    .select(`
+      id,
+      title,
+      content,
+      created_at,
+      image_url,
+      view_count,
+      slug,
+      post_votes(vote_type),
+      post_comments(id),
+      post_translations(title, content, locale)
+    `)
+    .eq("is_published", true)
+    .limit(30);
 
-  if (locale === "en") {
-    const { data } = await supabase
-      .from("post")
-      .select(`
-        id,
-        title,
-        content,
-        created_at,
-        image_url,
-        view_count,
-        slug,
-        post_votes(vote_type),
-        post_comments(id),
-        post_translations!inner(title, content)
-      `)
-      .eq("is_published", true)
-      .eq("post_translations.locale", "en")
-      .limit(30);
-    rawData = data ?? [];
-  } else {
-    const { data } = await supabase
-      .from("post")
-      .select(`
-        id,
-        title,
-        content,
-        created_at,
-        image_url,
-        view_count,
-        slug,
-        post_votes(vote_type),
-        post_comments(id)
-      `)
-      .eq("is_published", true)
-      .limit(30);
-    rawData = data ?? [];
-  }
-
-  const posts = rawData
-    .map((post) => {
+  const posts = (rawData ?? [])
+    .map((post: any) => {
       const score = (post.post_votes ?? []).reduce(
         (sum: number, v: VoteRow) => sum + (v.vote_type ?? 0),
         0
@@ -100,14 +77,11 @@ export default async function HotPage({ params }: Props) {
 
       const hotScore = score / Math.pow(hours + 2, 1.5);
 
-      const title =
-        locale === "en"
-          ? (post.post_translations?.[0]?.title ?? post.title)
-          : post.title;
-      const content =
-        locale === "en"
-          ? (post.post_translations?.[0]?.content ?? post.content)
-          : post.content;
+      const tr = locale === "en"
+        ? (post.post_translations ?? []).find((t: any) => t.locale === "en")
+        : null;
+      const title = tr?.title ?? post.title;
+      const content = tr?.content ?? post.content;
 
       return {
         ...post,

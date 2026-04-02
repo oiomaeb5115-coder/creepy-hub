@@ -46,31 +46,26 @@ export default async function StoryTagPage({ params }: TagPageProps) {
   let posts: PostRow[] = [];
 
   if (postIds.length > 0) {
-    if (locale === "en") {
-      const { data } = await supabase
-        .from("post")
-        .select("id, title, content, image_url, view_count, created_at, slug, post_translations!inner(title, content)")
-        .eq("is_published", true)
-        .eq("post_translations.locale", "en")
-        .in("id", postIds);
+    const { data } = await supabase
+      .from("post")
+      .select("id, title, content, image_url, view_count, created_at, slug, post_translations(title, content, locale)")
+      .eq("is_published", true)
+      .in("id", postIds);
 
-      posts = (data ?? []).map((p: any) => ({
+    posts = (data ?? []).map((p: any) => {
+      const tr = locale === "en"
+        ? (p.post_translations ?? []).find((t: any) => t.locale === "en")
+        : null;
+      return {
         id: p.id,
-        title: p.post_translations?.[0]?.title ?? p.title,
-        content: p.post_translations?.[0]?.content ?? p.content,
+        title: tr?.title ?? p.title,
+        content: tr?.content ?? p.content,
         image_url: p.image_url,
         view_count: p.view_count,
         created_at: p.created_at,
         slug: p.slug,
-      }));
-    } else {
-      const { data } = await supabase
-        .from("post")
-        .select("id, title, content, image_url, view_count, created_at, slug")
-        .eq("is_published", true)
-        .in("id", postIds);
-      posts = (data ?? []) as PostRow[];
-    }
+      };
+    });
   }
 
   return (

@@ -223,7 +223,7 @@ export default function PostDrawer({ locale, labels }: Props) {
       if (error) { alert(`${labels.alertPostFailed}${error.message}`); return; }
 
       // EN locale で投稿した場合、post_translations に EN 翻訳行を作成
-      // → EN版ストーリー一覧（post_translations!inner 結合）に表示されるようになる
+      // → EN版で閲覧時に翻訳テキストとして使用される
       if (locale === "en" && data) {
         await supabase.from("post_translations").insert([{
           post_id: data.id,

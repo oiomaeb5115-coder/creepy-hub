@@ -51,37 +51,29 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
   let posts: StoryPost[] = [];
 
   if (q) {
-    if (locale === "en") {
-      // EN: search in post_translations
-      const { data } = await supabase
-        .from("post")
-        .select("id, title, content, created_at, image_url, view_count, slug, post_translations!inner(title, content)")
-        .eq("is_published", true)
-        .eq("post_translations.locale", "en")
-        .or(`post_translations.title.ilike.${keyword},post_translations.content.ilike.${keyword}`)
-        .order("view_count", { ascending: false })
-        .limit(30);
+    // 原文（title/content）と翻訳（post_translations）の両方を検索
+    const { data } = await supabase
+      .from("post")
+      .select("id, title, content, created_at, image_url, view_count, slug, post_translations(title, content, locale)")
+      .eq("is_published", true)
+      .or(`title.ilike.${keyword},content.ilike.${keyword}`)
+      .order("view_count", { ascending: false })
+      .limit(30);
 
-      posts = (data ?? []).map((p: any) => ({
+    posts = (data ?? []).map((p: any) => {
+      const tr = locale === "en"
+        ? (p.post_translations ?? []).find((t: any) => t.locale === "en")
+        : null;
+      return {
         id: p.id,
-        title: p.post_translations?.[0]?.title ?? p.title,
-        content: p.post_translations?.[0]?.content ?? p.content,
+        title: tr?.title ?? p.title,
+        content: tr?.content ?? p.content,
         created_at: p.created_at,
         image_url: p.image_url,
         view_count: p.view_count,
         slug: p.slug,
-      }));
-    } else {
-      const { data } = await supabase
-        .from("post")
-        .select("id,title,content,created_at,image_url,view_count,slug")
-        .eq("is_published", true)
-        .or(`title.ilike.${keyword},content.ilike.${keyword}`)
-        .order("view_count", { ascending: false })
-        .limit(30);
-
-      posts = (data ?? []) as StoryPost[];
-    }
+      };
+    });
   }
 
   return (

@@ -76,41 +76,28 @@ export default async function StoryCategoryPage({
 
   const categoryName = locale === "en" ? (category.name_en ?? category.name) : category.name;
 
-  let posts: PostRow[] = [];
+  const { data: postsData } = await supabase
+    .from("post")
+    .select("id, title, content, created_at, image_url, view_count, category_id, slug, post_translations(title, content, locale)")
+    .eq("is_published", true)
+    .eq("category_id", category.id)
+    .order("created_at", { ascending: false });
 
-  if (locale === "en") {
-    const { data } = await supabase
-      .from("post")
-      .select("id, title, content, created_at, image_url, view_count, category_id, slug, post_translations!inner(title, content)")
-      .eq("is_published", true)
-      .eq("category_id", category.id)
-      .eq("post_translations.locale", "en")
-      .order("created_at", { ascending: false });
-
-    posts = (data ?? []).map((p: any) => ({
+  const posts: PostRow[] = (postsData ?? []).map((p: any) => {
+    const tr = locale === "en"
+      ? (p.post_translations ?? []).find((t: any) => t.locale === "en")
+      : null;
+    return {
       id: p.id,
-      title: p.post_translations?.[0]?.title ?? p.title,
-      content: p.post_translations?.[0]?.content ?? p.content,
+      title: tr?.title ?? p.title,
+      content: tr?.content ?? p.content,
       created_at: p.created_at,
       image_url: p.image_url,
       view_count: p.view_count,
       category_id: p.category_id,
       slug: p.slug,
-    }));
-  } else {
-    const { data, error: postsError } = await supabase
-      .from("post")
-      .select("id, title, content, created_at, image_url, view_count, category_id, slug")
-      .eq("is_published", true)
-      .eq("category_id", category.id)
-      .order("created_at", { ascending: false });
-
-    if (postsError) {
-      posts = [];
-    } else {
-      posts = (data ?? []) as PostRow[];
-    }
-  }
+    };
+  });
 
   return (
     <main className={styles.categoryPage}>

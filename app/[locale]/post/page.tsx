@@ -68,50 +68,32 @@ export default async function StoryIndex({ params, searchParams }: Props) {
 
   let rawPosts: { id: number; title: string | null; content: string | null; created_at: string | null; image_url: string | null; image_url_2: string | null; image_url_3: string | null; view_count: number | null; slug: string | null; user_id: string | null; post_votes?: VoteRow[] }[] = [];
 
-  if (locale === "en") {
-    // 英語翻訳済みの記事のみ取得（post_translations と inner join）
+  {
     const { data } = await supabase
       .from("post")
-      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, slug, post_votes(vote_type), post_translations!inner(title, content)")
-      .eq("is_published", true)
-      .eq("post_translations.locale", "en")
-      .order(orderCol, { ascending: false })
-      .limit(50);
-
-    rawPosts = (data ?? []).map((p: any) => ({
-      id: p.id,
-      title: p.post_translations?.[0]?.title ?? p.title,
-      content: p.post_translations?.[0]?.content ?? p.content,
-      created_at: p.created_at,
-      image_url: p.image_url,
-      image_url_2: p.image_url_2,
-      image_url_3: p.image_url_3,
-      view_count: p.view_count,
-      slug: p.slug as string | null,
-      user_id: p.user_id as string | null,
-      post_votes: p.post_votes,
-    }));
-  } else {
-    const { data } = await supabase
-      .from("post")
-      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, slug, post_votes(vote_type)")
+      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, slug, post_votes(vote_type), post_translations(title, content, locale)")
       .eq("is_published", true)
       .order(orderCol, { ascending: false })
       .limit(50);
 
-    rawPosts = (data ?? []).map((p: any) => ({
-      id: p.id,
-      title: p.title,
-      content: p.content,
-      created_at: p.created_at,
-      image_url: p.image_url,
-      image_url_2: p.image_url_2,
-      image_url_3: p.image_url_3,
-      view_count: p.view_count,
-      slug: p.slug as string | null,
-      user_id: p.user_id as string | null,
-      post_votes: p.post_votes,
-    }));
+    rawPosts = (data ?? []).map((p: any) => {
+      const tr = locale === "en"
+        ? (p.post_translations ?? []).find((t: any) => t.locale === "en")
+        : null;
+      return {
+        id: p.id,
+        title: tr?.title ?? p.title,
+        content: tr?.content ?? p.content,
+        created_at: p.created_at,
+        image_url: p.image_url,
+        image_url_2: p.image_url_2,
+        image_url_3: p.image_url_3,
+        view_count: p.view_count,
+        slug: p.slug as string | null,
+        user_id: p.user_id as string | null,
+        post_votes: p.post_votes,
+      };
+    });
   }
 
   // Batch fetch profiles

@@ -264,47 +264,26 @@ export default async function HomePage({ params }: HomePageProps) {
   const { locale } = await params;
   const dict = await getDictionary(locale);
 
-  const storiesQuery = locale === "en"
-    ? supabase
-        .from("post")
-        .select(`
-          id,
-          title,
-          content,
-          created_at,
-          image_url,
-          image_url_2,
-          image_url_3,
-          view_count,
-          user_id,
-          slug,
-          post_votes(vote_type),
-          post_comments(id),
-          post_translations!inner(title, content)
-        `)
-        .eq("is_published", true)
-        .eq("post_translations.locale", "en")
-        .order("created_at", { ascending: false })
-        .limit(12)
-    : supabase
-        .from("post")
-        .select(`
-          id,
-          title,
-          content,
-          created_at,
-          image_url,
-          image_url_2,
-          image_url_3,
-          view_count,
-          user_id,
-          slug,
-          post_votes(vote_type),
-          post_comments(id)
-        `)
-        .eq("is_published", true)
-        .order("created_at", { ascending: false })
-        .limit(12);
+  const storiesQuery = supabase
+    .from("post")
+    .select(`
+      id,
+      title,
+      content,
+      created_at,
+      image_url,
+      image_url_2,
+      image_url_3,
+      view_count,
+      user_id,
+      slug,
+      post_votes(vote_type),
+      post_comments(id),
+      post_translations(title, content, locale)
+    `)
+    .eq("is_published", true)
+    .order("created_at", { ascending: false })
+    .limit(12);
 
   const [latestStoriesResult, latestWikiResult, storyCategoriesResult, wikiCategoriesResult] = await Promise.all([
     storiesQuery,
@@ -332,10 +311,14 @@ export default async function HomePage({ params }: HomePageProps) {
       .order("created_at", { ascending: false }),
   ]);
 
-  const rawStories = (latestStoriesResult.data ?? []).map((p: any) => ({
+  const rawStories = (latestStoriesResult.data ?? []).map((p: any) => {
+    const tr = locale === "en"
+      ? (p.post_translations ?? []).find((t: any) => t.locale === "en")
+      : null;
+    return {
     id: p.id,
-    title: locale === "en" ? (p.post_translations?.[0]?.title ?? p.title) : p.title,
-    content: locale === "en" ? (p.post_translations?.[0]?.content ?? p.content) : p.content,
+    title: tr?.title ?? p.title,
+    content: tr?.content ?? p.content,
     created_at: p.created_at,
     image_url: p.image_url,
     image_url_2: p.image_url_2,
@@ -346,7 +329,8 @@ export default async function HomePage({ params }: HomePageProps) {
     post_votes: p.post_votes,
     post_comments: p.post_comments,
     author: null as AuthorProfile | null,
-  }));
+  };
+  });
 
   // Batch fetch profiles
   const userIds = [...new Set(rawStories.map((p) => p.user_id).filter(Boolean))] as string[];
