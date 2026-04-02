@@ -6,9 +6,9 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getIsAdmin, getAccessToken } from "@/lib/auth";
 import { compressImage } from "@/lib/compressImage";
+import { validateImageFile } from "@/lib/validateImageFile";
 import BackButton from "@/components/BackButton";
 
-type PageType = "general" | "urban_legend" | "incident" | "work" | "region" | "term" | "person";
 type Chapter = { id: number; title: string; body: string; imageFile: File | null; imagePreview: string; existingImageUrl: string };
 type Category = { id: number; slug: string; name: string };
 
@@ -42,7 +42,6 @@ export default function WikiEditPage() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [summary, setSummary] = useState("");
-  const [pageType, setPageType] = useState<PageType>("general");
   const [chapters, setChapters] = useState<Chapter[]>([{ id: 1, title: "", body: "", imageFile: null, imagePreview: "", existingImageUrl: "" }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [allCategories, setAllCategories] = useState<Category[]>([]);
@@ -59,7 +58,7 @@ export default function WikiEditPage() {
 
       const { data: page, error } = await supabase
         .from("wiki_pages")
-        .select("id, title, subtitle, summary, content, page_type, author_id, image_url")
+        .select("id, title, subtitle, summary, content, author_id, image_url")
         .eq("slug", slug)
         .eq("locale", "ja")
         .single();
@@ -68,23 +67,12 @@ export default function WikiEditPage() {
 
       const isAuthor = page.author_id === session.user.id;
       const isAdmin = await getIsAdmin();
-      let hasEnoughPosts = false;
-      if (!isAuthor && !isAdmin) {
-        const { count } = await supabase
-          .from("post")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", session.user.id)
-          .eq("is_published", true)
-          .is("deleted_at", null);
-        hasEnoughPosts = (count ?? 0) >= 5;
-      }
-      if (!isAuthor && !isAdmin && !hasEnoughPosts) { router.replace(`/${locale}/wiki/${slug}`); return; }
+      if (!isAuthor && !isAdmin) { router.replace(`/${locale}/wiki/${slug}`); return; }
 
       setAuthorized(true);
       setTitle(page.title ?? "");
       setSubtitle(page.subtitle ?? "");
       setSummary(page.summary ?? "");
-      setPageType((page.page_type as PageType) ?? "general");
       setChapters(parseChapters(page.content ?? ""));
       setExistingThumbnailUrl(page.image_url ?? "");
 
@@ -122,6 +110,18 @@ export default function WikiEditPage() {
     setChapters((prev) => prev.map((c, idx) => idx === i ? { ...c, [key]: val } : c));
 
   const uploadImage = async (file: File, uid: string, suffix: string): Promise<string> => {
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      throw new Error("画像ファイル（JPEG / PNG / WebP / GIF）のみアップロード可能です");
+    }
+    if (file.size > MAX_SIZE) {
+      throw new Error("ファイルサイズは5MB以内にしてください");
+    }
+    const isValidImage = await validateImageFile(file);
+    if (!isValidImage) {
+      throw new Error("ファイルの内容が画像形式と一致しません");
+    }
     const compressed = await compressImage(file);
     const fileExt = compressed.name.split(".").pop() || "jpg";
     const fileName = `${uid}/${Date.now()}-${suffix}.${fileExt}`;
@@ -206,7 +206,6 @@ export default function WikiEditPage() {
           subtitle: subtitle.trim() || null,
           summary: summary.trim(),
           content,
-          page_type: pageType,
           category_ids: selectedCategoryIds,
           image_url: imageUrl,
         }),
@@ -274,19 +273,6 @@ export default function WikiEditPage() {
             </div>
 
             <div style={groupStyle}>
-              <label style={labelStyle}>ページ種別</label>
-              <select style={controlStyle} value={pageType} onChange={(e) => setPageType(e.target.value as PageType)}>
-                <option value="general">一般</option>
-                <option value="urban_legend">都市伝説</option>
-                <option value="incident">怪事件</option>
-                <option value="work">作品</option>
-                <option value="region">地域</option>
-                <option value="term">用語</option>
-                <option value="person">人物</option>
-              </select>
-            </div>
-
-            <div style={groupStyle}>
               <label style={labelStyle}>カテゴリー</label>
               {allCategories.length === 0 ? (
                 <p style={{ margin: "6px 0 0", fontSize: 13, color: "#a49080" }}>カテゴリーがまだありません。</p>
@@ -337,7 +323,6 @@ export default function WikiEditPage() {
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h3 style={{ margin: 0, fontSize: 14, color: "#c8b8b0" }}>章構成</h3>
-              <button type="button" style={secondaryBtn} onClick={addChapter}>章を追加</button>
             </div>
 
             {chapters.map((ch, i) => (
@@ -385,6 +370,8 @@ export default function WikiEditPage() {
                 </div>
               </div>
             ))}
+
+            <button type="button" style={{ ...secondaryBtn, marginTop: 12 }} onClick={addChapter}>章を追加</button>
 
             <div style={{ textAlign: "right", marginTop: 8 }}>
               <button type="submit" style={primaryBtn} disabled={isSubmitting}>

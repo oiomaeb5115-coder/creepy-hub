@@ -10,15 +10,6 @@ import { compressImage } from "@/lib/compressImage";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 
-type PageType =
-  | "general"
-  | "urban_legend"
-  | "incident"
-  | "work"
-  | "region"
-  | "term"
-  | "person";
-
 type Category = { id: number; slug: string; name: string };
 
 type Chapter = {
@@ -44,7 +35,6 @@ type WikiSubmitLabels = {
   title: string;
   subtitle: string;
   summary: string;
-  pageType: string;
   thumbnailLabel: string;
   chapterTitle: string;
   chapterBody: string;
@@ -84,15 +74,6 @@ type WikiSubmitLabels = {
   categoryLabel: string;
   categoryNone: string;
   categoryCreate: string;
-  pageTypes: {
-    general: string;
-    urban_legend: string;
-    incident: string;
-    work: string;
-    region: string;
-    term: string;
-    person: string;
-  };
 };
 
 type Props = {
@@ -111,7 +92,6 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [summary, setSummary] = useState("");
-  const [pageType, setPageType] = useState<PageType>("general");
   const [isPublished, setIsPublished] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -157,10 +137,6 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
       if (typeof draft.title === "string") setTitle(draft.title);
       if (typeof draft.subtitle === "string") setSubtitle(draft.subtitle);
       if (typeof draft.summary === "string") setSummary(draft.summary);
-      const validPageTypes: PageType[] = ["general", "urban_legend", "incident", "work", "region", "term", "person"];
-      if (typeof draft.pageType === "string" && validPageTypes.includes(draft.pageType as PageType)) {
-        setPageType(draft.pageType as PageType);
-      }
       if (Array.isArray(draft.selectedCategoryIds) && draft.selectedCategoryIds.every((v: unknown) => typeof v === "number")) {
         setSelectedCategoryIds(draft.selectedCategoryIds);
       }
@@ -193,21 +169,29 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       const savableChapters = chapters.map(({ id, title, body }) => ({ id, title, body }));
-      localStorage.setItem(`draft_wiki_${userId}`, JSON.stringify({ title, subtitle, summary, pageType, selectedCategoryIds, chapters: savableChapters }));
+      localStorage.setItem(`draft_wiki_${userId}`, JSON.stringify({ title, subtitle, summary, selectedCategoryIds, chapters: savableChapters }));
     }, 500);
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [userId, title, subtitle, summary, pageType, selectedCategoryIds, chapters]);
+  }, [userId, title, subtitle, summary, selectedCategoryIds, chapters]);
 
   const deleteDraftFn = () => {
     if (!userId) return;
     localStorage.removeItem(`draft_wiki_${userId}`);
     setDraftRestored(false);
-    setTitle(""); setSubtitle(""); setSummary(""); setPageType("general");
+    setTitle(""); setSubtitle(""); setSummary("");
     setSelectedCategoryIds([]);
     setChapters([{ id: 1, title: "", body: "", imageFile: null, imagePreview: "" }]);
   };
 
   const uploadImage = async (file: File, uid: string, suffix: string): Promise<string> => {
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      throw new Error("画像ファイル（JPEG / PNG / WebP / GIF）のみアップロード可能です");
+    }
+    if (file.size > MAX_SIZE) {
+      throw new Error("ファイルサイズは5MB以内にしてください");
+    }
     // ファイルの実際の内容（magic bytes）を検証
     const isValidImage = await validateImageFile(file);
     if (!isValidImage) {
@@ -364,7 +348,7 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
         subtitle: subtitle.trim() || null,
         summary: summary.trim(),
         content,
-        page_type: pageType,
+        page_type: "general",
         locale: resolvedLocale,
         original_page_id: null,
         author_id: uid,
@@ -505,24 +489,6 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="pageType">{labels.pageType}</label>
-              <select
-                id="pageType"
-                className={styles.formControl}
-                value={pageType}
-                onChange={(e) => setPageType(e.target.value as PageType)}
-              >
-                <option value="general">{labels.pageTypes.general}</option>
-                <option value="urban_legend">{labels.pageTypes.urban_legend}</option>
-                <option value="incident">{labels.pageTypes.incident}</option>
-                <option value="work">{labels.pageTypes.work}</option>
-                <option value="region">{labels.pageTypes.region}</option>
-                <option value="term">{labels.pageTypes.term}</option>
-                <option value="person">{labels.pageTypes.person}</option>
-              </select>
-            </div>
-
-            <div className={styles.formGroup}>
               <label>{labels.categoryLabel}</label>
               {categories.length === 0 ? (
                 <p className={styles.helpText}>{labels.categoryNone}</p>
@@ -565,9 +531,6 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
             <div className={styles.divider} />
             <div className={styles.sectionToolbar}>
               <h3>{labels.chapterSection}</h3>
-              <button type="button" className={styles.secondaryButton} onClick={addChapter}>
-                {labels.addChapter}
-              </button>
             </div>
 
             <div className={styles.chapterList}>
@@ -628,6 +591,10 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
                 </div>
               ))}
             </div>
+
+            <button type="button" className={styles.secondaryButton} onClick={addChapter} style={{ marginTop: 12 }}>
+              {labels.addChapter}
+            </button>
 
             <div className={styles.publishRow}>
               <label className={styles.checkboxLabel}>

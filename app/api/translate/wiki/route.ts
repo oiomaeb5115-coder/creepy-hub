@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { translateWikiToEnglish } from "@/lib/cfTranslate";
 import { requireAdmin } from "@/lib/apiAuth";
 
@@ -16,9 +16,9 @@ export async function POST(req: NextRequest) {
   }
 
   // 原文取得（ja）
-  const { data: page, error } = await supabase
+  const { data: page, error } = await supabaseAdmin
     .from("wiki_pages")
-    .select("id, slug, title, subtitle, summary, content, page_type, image_url")
+    .select("id, slug, title, subtitle, summary, content, image_url")
     .eq("slug", slug)
     .eq("locale", "ja")
     .eq("is_published", true)
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 英語版がすでに存在するかチェック
-  const { data: existing } = await supabase
+  const { data: existing } = await supabaseAdmin
     .from("wiki_pages")
     .select("id")
     .eq("slug", slug)
@@ -55,14 +55,14 @@ export async function POST(req: NextRequest) {
   }
 
   // 英語版レコードを作成
-  const { error: insertError } = await supabase.from("wiki_pages").insert({
+  const { error: insertError } = await supabaseAdmin.from("wiki_pages").insert({
     slug: page.slug,
     locale: "en",
     title: translated.title,
     subtitle: translated.subtitle || null,
     summary: translated.summary || null,
     content: translated.content || null,
-    page_type: page.page_type,
+    page_type: "general",
     image_url: page.image_url,
     is_published: true,
   });

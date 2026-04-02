@@ -34,7 +34,6 @@ type WikiRow = {
   slug: string;
   title: string;
   summary: string | null;
-  page_type: string;
   image_url: string | null;
   view_count: number | null;
 };
@@ -73,7 +72,7 @@ export default async function WikiCategoryPage({
   } else if (wikiIds.length > 0) {
     const { data: wikiItems, error: wikiError } = await supabase
       .from("wiki_pages")
-      .select("id, slug, title, summary, page_type, image_url, view_count")
+      .select("id, slug, title, summary, image_url, view_count")
       .eq("locale", locale)
       .eq("is_published", true)
       .in("id", wikiIds)
@@ -206,9 +205,6 @@ export default async function WikiCategoryPage({
 
                     <div className={styles.postCardBody}>
                       <div className={styles.postCardMetaRow}>
-                        <span className={styles.postCardType}>
-                          {item.page_type}
-                        </span>
                         <span className={styles.postCardViews}>
                           👁 {item.view_count ?? 0}
                         </span>

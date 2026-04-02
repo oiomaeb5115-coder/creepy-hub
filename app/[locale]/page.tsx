@@ -48,7 +48,6 @@ type WikiPost = {
   slug: string;
   title: string;
   summary: string | null;
-  page_type: string;
   updated_at: string | null;
   view_count: number | null;
   image_url: string | null;
@@ -66,15 +65,6 @@ type WikiCategoryRow = {
   slug: string;
   name: string;
 };
-
-const wikiPageTypeKeys = [
-  "urban_legend",
-  "incident",
-  "work",
-  "term",
-  "person",
-  "region",
-] as const;
 
 function StorySearchBox({
   locale,
@@ -215,13 +205,11 @@ function StoryCardGrid({
 function WikiCard({
   item,
   locale,
-  pageTypeLabel,
   unknownDate,
   noSummary,
 }: {
   item: WikiPost;
   locale: string;
-  pageTypeLabel: string;
   unknownDate: string;
   noSummary: string;
 }) {
@@ -250,7 +238,6 @@ function WikiCard({
 
         <div className={styles.scrollCardBody}>
           <div className={styles.scrollCardMeta}>
-            <span>{pageTypeLabel}</span>
             <span>
               {safeUpdatedAt
                 ? new Date(safeUpdatedAt).toLocaleDateString(dateLocale)
@@ -324,7 +311,7 @@ export default async function HomePage({ params }: HomePageProps) {
 
     supabase
       .from("wiki_pages")
-      .select("id, slug, title, summary, page_type, updated_at, view_count, image_url")
+      .select("id, slug, title, summary, updated_at, view_count, image_url")
       .eq("locale", locale)
       .eq("is_published", true)
       .order("updated_at", { ascending: false })
@@ -475,10 +462,6 @@ export default async function HomePage({ params }: HomePageProps) {
                       key={item.id}
                       item={item}
                       locale={locale}
-                      pageTypeLabel={
-                        dict.pageType[item.page_type as keyof typeof dict.pageType] ??
-                        item.page_type
-                      }
                       unknownDate={dict.post.unknownDate}
                       noSummary={dict.wiki.noSummary}
                     />
@@ -515,15 +498,6 @@ export default async function HomePage({ params }: HomePageProps) {
             <div className={styles.sidePanel}>
               <p className={styles.sidePanelSub}>OCCULT WIKI</p>
               <div className={styles.sideCategoryList}>
-                {wikiPageTypeKeys.map((key) => (
-                  <Link
-                    key={key}
-                    href={`/${locale}/wiki/category/${key}`}
-                    className={styles.sideCategoryItem}
-                  >
-                    {dict.pageType[key]}
-                  </Link>
-                ))}
                 {wikiCategories.map((cat) => (
                   <Link
                     key={cat.id}

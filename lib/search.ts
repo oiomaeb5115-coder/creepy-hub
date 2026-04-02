@@ -32,7 +32,7 @@ export async function searchAll(query: string, locale: string) {
 
     supabase
       .from("wiki_pages")
-      .select("id, slug, title, summary, page_type, updated_at, view_count")
+      .select("id, slug, title, summary, updated_at, view_count")
       .eq("locale", locale)
       .eq("is_published", true)
       .or(`title.ilike.${keyword},summary.ilike.${keyword},content.ilike.${keyword}`)

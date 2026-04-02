@@ -20,14 +20,7 @@ async function getAuthorizedUser(req: NextRequest) {
     .eq("id", userData.user.id)
     .single();
 
-  const { count: postCount } = await supabase
-    .from("post")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userData.user.id)
-    .eq("is_published", true)
-    .is("deleted_at", null);
-
-  return { id: userData.user.id, role: profile?.role ?? "user", postCount: postCount ?? 0, token };
+  return { id: userData.user.id, role: profile?.role ?? "user", token };
 }
 
 export async function PATCH(
@@ -60,7 +53,7 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { title, subtitle, summary, content, page_type, category_ids, image_url } = body;
+  const { title, subtitle, summary, content, category_ids, image_url } = body;
 
   // 文字数制限バリデーション
   if (typeof title === "string" && title.length > 200) {
@@ -100,7 +93,6 @@ export async function PATCH(
     subtitle: subtitle || null,
     summary,
     content,
-    page_type,
     updated_at: new Date().toISOString(),
   };
   if (image_url !== undefined) updatePayload.image_url = image_url;

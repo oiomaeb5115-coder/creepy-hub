@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   const { data: page, error } = await supabaseAdmin
     .from("wiki_pages")
     .select(
-      "id, slug, title, subtitle, summary, content, page_type, image_url"
+      "id, slug, title, subtitle, summary, content, image_url"
     )
     .eq("slug", slug)
     .eq("locale", "ja")
@@ -78,7 +78,6 @@ export async function POST(req: NextRequest) {
           subtitle: translated.subtitle || null,
           summary: translated.summary || null,
           content: translated.content || null,
-          page_type: page.page_type,
           image_url: page.image_url,
         })
         .eq("id", existing.id);
@@ -99,7 +98,7 @@ export async function POST(req: NextRequest) {
         subtitle: translated.subtitle || null,
         summary: translated.summary || null,
         content: translated.content || null,
-        page_type: page.page_type,
+        page_type: "general",
         image_url: page.image_url,
         is_published: true,
       });

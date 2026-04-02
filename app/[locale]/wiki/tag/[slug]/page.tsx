@@ -25,7 +25,6 @@ type WikiRow = {
   slug: string;
   title: string;
   summary: string | null;
-  page_type: string;
 };
 
 export default async function WikiTagPage({ params }: WikiTagPageProps) {
@@ -59,7 +58,7 @@ export default async function WikiTagPage({ params }: WikiTagPageProps) {
   } else if (wikiIds.length > 0) {
     const { data: wikiItems, error: wikiError } = await supabase
       .from("wiki_pages")
-      .select("id, slug, title, summary, page_type")
+      .select("id, slug, title, summary")
       .eq("locale", locale)
       .eq("is_published", true)
       .in("id", wikiIds);
@@ -112,7 +111,6 @@ export default async function WikiTagPage({ params }: WikiTagPageProps) {
                   className={styles.listLink}
                 >
                   <article className={styles.listItem}>
-                    <p className={styles.smallMeta}>{item.page_type}</p>
                     <h3 className={styles.itemTitle}>{item.title}</h3>
                     <p className={styles.itemText}>
                       {item.summary ?? "概要はまだ設定されていません。"}

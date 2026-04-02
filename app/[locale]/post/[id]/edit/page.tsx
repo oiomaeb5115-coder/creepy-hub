@@ -166,7 +166,6 @@ export default function StoryEditPage() {
 
             <div style={{ ...groupStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h3 style={{ margin: 0, fontSize: 14, color: "#c8b8b0" }}>章構成</h3>
-              <button type="button" style={secondaryBtn} onClick={addChapter}>章を追加</button>
             </div>
 
             {chapters.map((ch, i) => (
@@ -189,6 +188,8 @@ export default function StoryEditPage() {
                 </div>
               </div>
             ))}
+
+            <button type="button" style={{ ...secondaryBtn, marginTop: 12 }} onClick={addChapter}>章を追加</button>
 
             <div style={{ textAlign: "right", marginTop: 16 }}>
               <button type="submit" style={primaryBtn} disabled={isSubmitting}>

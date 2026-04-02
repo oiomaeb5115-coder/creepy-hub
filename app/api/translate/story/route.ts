@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { translateStoryToEnglish } from "@/lib/cfTranslate";
 import { requireAdmin } from "@/lib/apiAuth";
 
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 原文取得
-  const { data: post, error } = await supabase
+  const { data: post, error } = await supabaseAdmin
     .from("post")
     .select("id, title, content")
     .eq("id", postId)
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 翻訳済みかチェック
-  const { data: existing } = await supabase
+  const { data: existing } = await supabaseAdmin
     .from("post_translations")
     .select("id")
     .eq("post_id", postId)
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   }
 
   // DB に保存
-  const { error: insertError } = await supabase.from("post_translations").insert({
+  const { error: insertError } = await supabaseAdmin.from("post_translations").insert({
     post_id: postId,
     locale: "en",
     title: translated.title,

@@ -15,7 +15,6 @@ type WikiPage = {
   slug: string;
   title: string;
   summary: string | null;
-  page_type: string;
   updated_at: string | null;
   view_count: number | null;
 };
@@ -43,7 +42,7 @@ export default async function WikiSearchPage({ params, searchParams }: Props) {
   const { data } = q
     ? await supabase
         .from("wiki_pages")
-        .select("id,slug,title,summary,page_type,updated_at,view_count")
+        .select("id,slug,title,summary,updated_at,view_count")
         .eq("locale", locale)
         .eq("is_published", true)
         .or(`title.ilike.${keyword},summary.ilike.${keyword},content.ilike.${keyword}`)
@@ -103,12 +102,6 @@ export default async function WikiSearchPage({ params, searchParams }: Props) {
                     href={`/${locale}/wiki/${page.slug}`}
                     className={styles.feedRow}
                   >
-                    <div className={styles.feedLeft}>
-                      <span className={styles.typeBadge}>
-                        {dict.pageType[page.page_type as keyof typeof dict.pageType] ?? page.page_type}
-                      </span>
-                    </div>
-
                     <div className={styles.feedContent}>
                       <h3 className={styles.feedTitle}>{page.title}</h3>
                       {page.summary && (

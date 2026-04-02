@@ -56,7 +56,7 @@
     "home": "ホーム",
     "history": "履歴",
     "related": "関連ページ",
-    "relatedDesc": "同じ page_type の記事を簡易的に表示しています。",
+    "relatedDesc": "最新の関連記事を表示しています。",
     "noRelated": "関連ページはまだありません。",
     "noSummary": "概要はまだ設定されていません。",
     "noContent": "本文はまだありません。",
@@ -169,15 +169,6 @@
     "errorRequired": "カテゴリ名と slug は必須です。",
     "errorIconUpload": "アイコン画像のアップロードに失敗しました。",
     "errorHeaderUpload": "ヘッダー画像のアップロードに失敗しました。"
-  },
-  "pageType": {
-    "general": "一般",
-    "urban_legend": "都市伝説",
-    "incident": "怪事件",
-    "work": "作品",
-    "term": "用語",
-    "person": "人物",
-    "region": "地域"
   },
   "meta": {
     "title": "creepy hub | イナクロ怪集部",
@@ -396,7 +387,6 @@
     "slugLabel": "Slug *",
     "slugHint": "（URLに使用。半角英小文字・数字・ハイフンのみ）",
     "slugPlaceholder": "例: slender-man",
-    "pageTypeLabel": "ページタイプ *",
     "summaryLabel": "概要",
     "summaryPlaceholder": "この記事の概要を入力",
     "contentLabel": "本文 *",

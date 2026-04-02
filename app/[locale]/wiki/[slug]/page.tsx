@@ -66,7 +66,6 @@ type WikiPageRow = {
   subtitle: string | null;
   summary: string | null;
   content: string | null;
-  page_type: string;
   locale: string;
   view_count: number | null;
   updated_at: string | null;
@@ -97,7 +96,7 @@ export default async function WikiDetailPage({
   const { data: page, error } = await supabase
     .from("wiki_pages")
     .select(
-      "id, slug, title, subtitle, summary, content, page_type, locale, view_count, updated_at, is_published, image_url, author_id"
+      "id, slug, title, subtitle, summary, content, locale, view_count, updated_at, is_published, image_url, author_id"
     )
     .eq("locale", locale)
     .eq("slug", slug)
@@ -116,9 +115,9 @@ export default async function WikiDetailPage({
     .from("wiki_pages")
     .select("id, slug, title, summary, image_url")
     .eq("locale", locale)
-    .eq("page_type", safePage.page_type)
     .eq("is_published", true)
     .neq("id", safePage.id)
+    .order("updated_at", { ascending: false })
     .limit(6);
 
   const { data: wikiItemsData } = await supabase
@@ -153,9 +152,6 @@ export default async function WikiDetailPage({
   );
 
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
-  const pageTypeLabel =
-    dict.pageType[safePage.page_type as keyof typeof dict.pageType] ??
-    safePage.page_type;
 
   return (
     <main className={styles.wikiPage}>
@@ -164,7 +160,7 @@ export default async function WikiDetailPage({
         <header className={styles.wikiHeader}>
           <div className={styles.wikiHeaderTop}>
             <p className={styles.wikiBreadcrumb}>
-              ARCHIVE / WIKI / {safePage.page_type.toUpperCase()}
+              ARCHIVE / WIKI
             </p>
             <div className={styles.headerActions}>
             <Link href={`/${locale}/wiki`} className={styles.topLink}>
@@ -225,7 +221,6 @@ export default async function WikiDetailPage({
 
         <section className={styles.card}>
           <div className={styles.metaRow}>
-            <span className={styles.badge}>{pageTypeLabel}</span>
             <span className={styles.badge}>{dict.post.views}: {displayedViewCount}</span>
             <span className={styles.badge}>
               {safePage.updated_at
@@ -255,11 +250,8 @@ export default async function WikiDetailPage({
           </div>
 
           <div className={styles.inlineLinks}>
-            <Link
-              href={`/${locale}/wiki/category/${safePage.page_type}`}
-              className={styles.inlineLink}
-            >
-              {dict.wiki.viewRelatedCategory}
+            <Link href={`/${locale}/wiki`} className={styles.inlineLink}>
+              {dict.wiki.listTitle}
             </Link>
             <Link href={`/${locale}/wiki/random`} className={styles.inlineLink}>
               {dict.wiki.randomArticle}

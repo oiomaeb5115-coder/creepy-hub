@@ -13,7 +13,6 @@ export default async function WikiSubmitPage({ params }: Props) {
     title: dict.wikiSubmit.titleLabel,
     subtitle: locale === "en" ? "Subtitle" : "サブタイトル",
     summary: dict.wikiSubmit.summaryLabel,
-    pageType: dict.wikiSubmit.pageTypeLabel,
     thumbnailLabel: locale === "en" ? "Thumbnail Image" : "サムネイル画像",
     chapterTitle: locale === "en" ? "Chapter Title" : "章タイトル",
     chapterBody: dict.wikiSubmit.contentLabel,
@@ -53,15 +52,6 @@ export default async function WikiSubmitPage({ params }: Props) {
     categoryLabel: locale === "en" ? "Categories" : "カテゴリー",
     categoryNone: locale === "en" ? "No categories yet." : "カテゴリーがまだありません。",
     categoryCreate: locale === "en" ? "+ Create new category" : "+ カテゴリーを作成",
-    pageTypes: {
-      general: dict.pageType.general,
-      urban_legend: dict.pageType.urban_legend,
-      incident: dict.pageType.incident,
-      work: dict.pageType.work,
-      region: dict.pageType.region,
-      term: dict.pageType.term,
-      person: dict.pageType.person,
-    },
   };
 
   return <WikiSubmitClient locale={locale} labels={labels} />;

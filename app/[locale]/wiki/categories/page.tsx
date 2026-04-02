@@ -24,15 +24,10 @@ export default async function WikiCategoriesPage({ params }: WikiCategoriesPageP
     .select("id, slug, name, description")
     .eq("locale", locale)
     .eq("is_active", true)
-    .eq("is_user_created", true)
     .order("created_at", { ascending: true })
     .limit(100);
 
-  const userCategories = (categoriesData ?? []) as CategoryRow[];
-
-  const builtinTypes = (
-    Object.keys(dict.pageType) as Array<keyof typeof dict.pageType>
-  ).filter((key) => key !== "general");
+  const categories = (categoriesData ?? []) as CategoryRow[];
 
   return (
     <main className={styles.wikiPage}>
@@ -49,36 +44,16 @@ export default async function WikiCategoriesPage({ params }: WikiCategoriesPageP
           </div>
         </header>
 
-        {/* Built-in page types */}
         <section className={styles.card}>
           <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>
-              {locale === "ja" ? "組み込みカテゴリ" : "Built-in Types"}
-            </h2>
+            <h2 className={styles.sectionTitle}>{dict.wiki.categories}</h2>
+            <span className={styles.sectionDescription}>{dict.wiki.browseByCategory}</span>
           </div>
-          <div className={styles.categoryGrid}>
-            {builtinTypes.map((key) => (
-              <Link
-                key={key}
-                href={`/${locale}/wiki/category/${key}`}
-                className={styles.categoryLink}
-              >
-                <p className={styles.categoryName}>{dict.pageType[key]}</p>
-                <p className={styles.categoryDesc}>{dict.wiki.categoryDefaultDesc}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* User-created categories */}
-        {userCategories.length > 0 && (
-          <section className={styles.card}>
-            <div className={styles.sectionHead}>
-              <h2 className={styles.sectionTitle}>{dict.wiki.categories}</h2>
-              <span className={styles.sectionDescription}>{dict.wiki.browseByCategory}</span>
-            </div>
+          {categories.length === 0 ? (
+            <p className={styles.emptyText}>{dict.wiki.noCategoryDesc}</p>
+          ) : (
             <div className={styles.categoryGrid}>
-              {userCategories.map((category) => (
+              {categories.map((category) => (
                 <Link
                   key={category.id}
                   href={`/${locale}/wiki/category/${category.slug}`}
@@ -91,8 +66,8 @@ export default async function WikiCategoriesPage({ params }: WikiCategoriesPageP
                 </Link>
               ))}
             </div>
-          </section>
-        )}
+          )}
+        </section>
 
         <div style={{ marginTop: "16px" }}>
           <Link href={`/${locale}/wiki/category/create`} className={styles.categoryChipNew}>
