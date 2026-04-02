@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "../../page.module.css";
@@ -10,6 +11,12 @@ export const dynamic = "force-dynamic";
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const dict = await getDictionary(locale);
+  return { title: dict.meta.popularTitle };
+}
 
 type VoteRow = {
   vote_type: number | null;

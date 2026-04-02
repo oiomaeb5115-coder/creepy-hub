@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
@@ -13,6 +14,21 @@ import FavoriteCategoryButton from "@/components/FavoriteCategoryButton";
 type StoryCategoryPageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };
+
+export async function generateMetadata({ params }: StoryCategoryPageProps): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const { data: cat } = await supabase
+    .from("story_categories")
+    .select("name, name_en, description")
+    .eq("slug", slug)
+    .single();
+  if (!cat) return {};
+  const name = locale === "en" && cat.name_en ? cat.name_en : cat.name;
+  return {
+    title: name,
+    description: cat.description ?? undefined,
+  };
+}
 
 type StoryCategoryRow = {
   id: number;

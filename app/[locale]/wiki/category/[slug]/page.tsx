@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
@@ -12,6 +13,21 @@ import FavoriteCategoryButton from "@/components/FavoriteCategoryButton";
 type WikiCategoryPageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };
+
+export async function generateMetadata({ params }: WikiCategoryPageProps): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const { data: cat } = await supabase
+    .from("categories")
+    .select("name, description")
+    .eq("locale", locale)
+    .eq("slug", slug)
+    .single();
+  if (!cat) return {};
+  return {
+    title: cat.name,
+    description: cat.description ?? undefined,
+  };
+}
 
 type CategoryRow = {
   id: number;

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import styles from "../../wiki.module.css";
@@ -7,6 +8,18 @@ import BackButton from "@/components/BackButton";
 type WikiTagPageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };
+
+export async function generateMetadata({ params }: WikiTagPageProps): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const { data: tag } = await supabase
+    .from("wiki_tags")
+    .select("name")
+    .eq("locale", locale)
+    .eq("slug", slug)
+    .single();
+  if (!tag) return {};
+  return { title: tag.name };
+}
 
 type TagRow = {
   id: number;

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
@@ -9,6 +10,12 @@ type Props = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ q?: string }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const dict = await getDictionary(locale);
+  return { title: dict.meta.wikiSearchTitle };
+}
 
 type WikiPage = {
   id: number;

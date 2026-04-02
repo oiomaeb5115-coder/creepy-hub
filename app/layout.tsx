@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 export const metadata: Metadata = {
   metadataBase: new URL("https://creepyhub.com"),
   title: {
-    default: "creepy hub | イナクロ怪集部",
+    default: "creepyhub | あらゆるオカルトを集めたいSNS | イナクロ怪集部",
     template: "%s | creepy hub",
   },
   description:
@@ -28,15 +28,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ja_JP",
     siteName: "creepy hub",
-    title: "creepy hub | イナクロ怪集部",
+    title: "creepyhub | あらゆるオカルトを集めたいSNS | イナクロ怪集部",
     description:
-      "イナクロ怪集部が運営する怪談・都市伝説・オカルト情報サイト。",
+      "イナクロ怪集部が運営する怪談・都市伝説・オカルト情報サイト。怖い話の投稿・閲覧や、オカルトWikiが楽しめます。",
   },
   twitter: {
     card: "summary_large_image",
-    title: "creepy hub | イナクロ怪集部",
+    title: "creepyhub | あらゆるオカルトを集めたいSNS | イナクロ怪集部",
     description:
-      "イナクロ怪集部が運営する怪談・都市伝説・オカルト情報サイト。",
+      "イナクロ怪集部が運営する怪談・都市伝説・オカルト情報サイト。怖い話の投稿・閲覧や、オカルトWikiが楽しめます。",
     creator: "@inakuro_kaishuu",
   },
 };

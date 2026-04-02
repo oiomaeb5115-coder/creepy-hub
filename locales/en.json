@@ -171,13 +171,18 @@
     "errorHeaderUpload": "Failed to upload header image."
   },
   "meta": {
-    "title": "creepy hub | Horror & Occult Archive",
+    "title": "creepyhub | Occult & Horror SNS",
     "description": "A site for horror stories, urban legends, and occult information. Browse creepy stories and an occult wiki.",
-    "postTitle": "Stories | creepy hub",
+    "postTitle": "creepyhub SNS",
     "postDescription": "Browse horror stories, creepypasta, and occult tales on creepy hub.",
-    "wikiTitle": "Occult Wiki | creepy hub",
+    "wikiTitle": "creepyhub wiki",
     "wikiDescription": "An archive for occult, urban legends, strange incidents, works, persons, and terms.",
-    "searchTitle": "Search | creepy hub"
+    "searchTitle": "Search",
+    "wikiSearchTitle": "Wiki Search",
+    "postSearchTitle": "Post Search",
+    "wikiCategoriesTitle": "Wiki Categories",
+    "popularTitle": "Popular Posts",
+    "hotTitle": "Trending Posts"
   },
   "common": {
     "home": "Home",

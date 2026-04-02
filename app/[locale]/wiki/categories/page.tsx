@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "../wiki.module.css";
@@ -7,6 +8,12 @@ import BackButton from "@/components/BackButton";
 type WikiCategoriesPageProps = {
   params: Promise<{ locale: string }>;
 };
+
+export async function generateMetadata({ params }: WikiCategoriesPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const dict = await getDictionary(locale);
+  return { title: dict.meta.wikiCategoriesTitle };
+}
 
 type CategoryRow = {
   id: number;

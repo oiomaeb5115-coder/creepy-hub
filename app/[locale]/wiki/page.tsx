@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "./wiki.module.css";
@@ -10,6 +11,15 @@ type WikiIndexPageProps = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ sort?: string }>;
 };
+
+export async function generateMetadata({ params }: WikiIndexPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const dict = await getDictionary(locale);
+  return {
+    title: { absolute: dict.meta.wikiTitle },
+    description: dict.meta.wikiDescription,
+  };
+}
 
 type WikiPageRow = {
   id: number;

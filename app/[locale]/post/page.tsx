@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import { postUrl } from "@/lib/postUrl";
@@ -15,6 +16,15 @@ type Props = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ sort?: string }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const dict = await getDictionary(locale);
+  return {
+    title: { absolute: dict.meta.postTitle },
+    description: dict.meta.postDescription,
+  };
+}
 
 type AuthorProfile = {
   username: string | null;

@@ -171,13 +171,18 @@
     "errorHeaderUpload": "ヘッダー画像のアップロードに失敗しました。"
   },
   "meta": {
-    "title": "creepy hub | イナクロ怪集部",
+    "title": "creepyhub | あらゆるオカルトを集めたいSNS | イナクロ怪集部",
     "description": "イナクロ怪集部が運営する怪談・都市伝説・オカルト情報サイト。怖い話の投稿・閲覧や、オカルトWikiが楽しめます。",
-    "postTitle": "怪談一覧 | creepy hub",
+    "postTitle": "creepyhub SNS",
     "postDescription": "怖い話・オカルト・洒落怖・Creepypasta の怪談アーカイブ。",
-    "wikiTitle": "オカルト辞典 | creepy hub",
+    "wikiTitle": "creepyhub wiki",
     "wikiDescription": "オカルト・都市伝説・怪事件・作品・人物・用語を整理する情報アーカイブ。",
-    "searchTitle": "検索 | creepy hub"
+    "searchTitle": "検索",
+    "wikiSearchTitle": "wiki 検索",
+    "postSearchTitle": "投稿検索",
+    "wikiCategoriesTitle": "wikiカテゴリー一覧",
+    "popularTitle": "人気の投稿",
+    "hotTitle": "注目の投稿"
   },
   "common": {
     "home": "ホーム",
