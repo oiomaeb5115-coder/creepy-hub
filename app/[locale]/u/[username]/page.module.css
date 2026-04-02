@@ -102,6 +102,25 @@
   color: #e8c8c8;
 }
 
+.followStatBtn {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+}
+
+.followStatBtn:hover .followCount {
+  color: #e8c8c8;
+}
+
+.followStatBtn:hover .followLabel {
+  color: #b0a090;
+}
+
 .followCount {
   font-size: 18px;
   font-weight: 700;
@@ -273,6 +292,69 @@
 }
 
 .empty {
+  color: #8a7870;
+}
+
+/* ユーザーリスト（フォロー/フォロワー） */
+.userList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 16px;
+  border: 1px solid rgba(161, 102, 108, 0.18);
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: rgba(14, 5, 7, 0.92);
+  border-bottom: 1px solid rgba(161, 102, 108, 0.12);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s;
+}
+
+.userRow:last-child {
+  border-bottom: none;
+}
+
+.userRow:hover {
+  background: rgba(28, 9, 12, 0.98);
+}
+
+.userAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.userAvatarPlaceholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #150608;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5a4848;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.userDisplayName {
+  margin: 0;
+  font-weight: 600;
+  font-size: 15px;
+  color: #f0e8e0;
+}
+
+.userUsername {
+  margin: 4px 0 0;
+  font-size: 12px;
   color: #8a7870;
 }
 

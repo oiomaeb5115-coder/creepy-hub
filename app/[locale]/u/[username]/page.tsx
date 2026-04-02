@@ -37,6 +37,18 @@ type BookmarkRow = {
   post: PostRow;
 };
 
+type UserRow = {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+
+type FollowerRow = { follower_id: string; profile: UserRow | null };
+type FollowingRow = { following_id: string; profile: UserRow | null };
+
+type TabKey = "posts" | "bookmarks" | "following" | "followers";
+
 export default function UserProfilePage() {
   const params = useParams<{ locale: string; username: string }>();
   const locale = params?.locale ?? "ja";
@@ -51,7 +63,13 @@ export default function UserProfilePage() {
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"posts" | "bookmarks">("posts");
+  const [activeTab, setActiveTab] = useState<TabKey>("posts");
+
+  // フォロー/フォロワーリスト
+  const [followers, setFollowers] = useState<UserRow[]>([]);
+  const [followingUsers, setFollowingUsers] = useState<UserRow[]>([]);
+  const [followersLoaded, setFollowersLoaded] = useState(false);
+  const [followingLoaded, setFollowingLoaded] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -127,6 +145,48 @@ export default function UserProfilePage() {
     loadBookmarks();
   }, [profile, currentUserId]);
 
+  // フォロワー取得（タブ選択時に遅延読み込み）
+  useEffect(() => {
+    if (activeTab !== "followers" || followersLoaded || !profile) return;
+
+    const loadFollowers = async () => {
+      const { data } = await supabase
+        .from("follows")
+        .select("follower_id, profile:profiles!follower_id(id, username, display_name, avatar_url)")
+        .eq("following_id", profile.id)
+        .order("created_at", { ascending: false });
+
+      if (data) {
+        const rows = data as unknown as FollowerRow[];
+        setFollowers(rows.map((r) => r.profile).filter(Boolean) as UserRow[]);
+      }
+      setFollowersLoaded(true);
+    };
+
+    loadFollowers();
+  }, [activeTab, followersLoaded, profile]);
+
+  // フォロー中取得（タブ選択時に遅延読み込み）
+  useEffect(() => {
+    if (activeTab !== "following" || followingLoaded || !profile) return;
+
+    const loadFollowing = async () => {
+      const { data } = await supabase
+        .from("follows")
+        .select("following_id, profile:profiles!following_id(id, username, display_name, avatar_url)")
+        .eq("follower_id", profile.id)
+        .order("created_at", { ascending: false });
+
+      if (data) {
+        const rows = data as unknown as FollowingRow[];
+        setFollowingUsers(rows.map((r) => r.profile).filter(Boolean) as UserRow[]);
+      }
+      setFollowingLoaded(true);
+    };
+
+    loadFollowing();
+  }, [activeTab, followingLoaded, profile]);
+
   const isOwnProfile = currentUserId === profile?.id;
 
   if (loading) {
@@ -150,8 +210,77 @@ export default function UserProfilePage() {
     );
   }
 
-  const displayPosts = activeTab === "posts" ? posts : bookmarks;
-  const emptyMessage = activeTab === "posts" ? dict.profile.noStories : dict.profile.noBookmarks;
+  const renderPostList = (postList: PostRow[], emptyMsg: string) => (
+    <>
+      {postList.length === 0 && (
+        <p className={styles.empty}>{emptyMsg}</p>
+      )}
+      <div className={styles.feed}>
+        {postList.map((post) => {
+          const safeTitle = post.title ?? dict.post.untitled;
+          const safeContent = post.content ?? "";
+          const excerpt = safeContent.length > 20
+            ? `${safeContent.slice(0, 20)}…`
+            : safeContent;
+
+          return (
+            <Link
+              key={post.id}
+              href={postUrl(locale, post.id, post.slug)}
+              className={styles.postRow}
+            >
+              <div className={styles.thumbCol}>
+                {post.image_url ? (
+                  <img src={post.image_url} alt={safeTitle} className={styles.thumb} />
+                ) : (
+                  <div className={styles.thumbPlaceholder}>NO IMAGE</div>
+                )}
+              </div>
+              <div className={styles.postContent}>
+                <div className={styles.tagRow}>
+                  <span className={styles.badge}>{dict.post.label}</span>
+                </div>
+                <h3 className={styles.postTitle}>{safeTitle}</h3>
+                {excerpt && <p className={styles.postExcerpt}>{excerpt}</p>}
+                <p className={styles.postViews}>👁 {post.view_count ?? 0}</p>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </>
+  );
+
+  const renderUserList = (users: UserRow[], emptyMsg: string) => (
+    <>
+      {users.length === 0 && (
+        <p className={styles.empty}>{emptyMsg}</p>
+      )}
+      <div className={styles.userList}>
+        {users.map((u) => (
+          <Link
+            key={u.id}
+            href={`/${locale}/u/${u.username}`}
+            className={styles.userRow}
+          >
+            {u.avatar_url ? (
+              <img src={u.avatar_url} alt={u.display_name ?? ""} className={styles.userAvatar} />
+            ) : (
+              <div className={styles.userAvatarPlaceholder}>?</div>
+            )}
+            <div>
+              <p className={styles.userDisplayName}>
+                {u.display_name ?? u.username ?? (locale === "en" ? "Unknown" : "不明なユーザー")}
+              </p>
+              {u.username && (
+                <p className={styles.userUsername}>@{u.username}</p>
+              )}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </>
+  );
 
   return (
     <main className={styles.profilePage}>
@@ -209,14 +338,20 @@ export default function UserProfilePage() {
             )}
 
             <div className={styles.followStats}>
-              <div className={styles.followStat}>
+              <button
+                className={styles.followStatBtn}
+                onClick={() => setActiveTab("following")}
+              >
                 <span className={styles.followCount}>{followingCount}</span>
                 <span className={styles.followLabel}>{dict.profile.following}</span>
-              </div>
-              <div className={styles.followStat}>
+              </button>
+              <button
+                className={styles.followStatBtn}
+                onClick={() => setActiveTab("followers")}
+              >
                 <span className={styles.followCount}>{followerCount}</span>
                 <span className={styles.followLabel}>{dict.profile.followers}</span>
-              </div>
+              </button>
             </div>
 
             {profile.bio && (
@@ -243,55 +378,31 @@ export default function UserProfilePage() {
               {dict.profile.bookmarks}
             </button>
           )}
+          <button
+            className={`${styles.tab} ${activeTab === "following" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("following")}
+          >
+            {dict.profile.following}
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === "followers" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("followers")}
+          >
+            {dict.profile.followers}
+          </button>
         </div>
 
         <section className={styles.section}>
-          {displayPosts.length === 0 && (
-            <p className={styles.empty}>
-              {emptyMessage}
-            </p>
+          {activeTab === "posts" && renderPostList(posts, dict.profile.noStories)}
+          {activeTab === "bookmarks" && renderPostList(bookmarks, dict.profile.noBookmarks)}
+          {activeTab === "following" && renderUserList(
+            followingUsers,
+            locale === "en" ? "Not following anyone yet." : "まだ誰もフォローしていません。"
           )}
-
-          <div className={styles.feed}>
-            {displayPosts.map((post) => {
-              const safeTitle = post.title ?? dict.post.untitled;
-              const safeContent = post.content ?? "";
-              const excerpt = safeContent.length > 20
-                ? `${safeContent.slice(0, 20)}…`
-                : safeContent;
-
-              return (
-                <Link
-                  key={post.id}
-                  href={postUrl(locale, post.id, post.slug)}
-                  className={styles.postRow}
-                >
-                  <div className={styles.thumbCol}>
-                    {post.image_url ? (
-                      <img
-                        src={post.image_url}
-                        alt={safeTitle}
-                        className={styles.thumb}
-                      />
-                    ) : (
-                      <div className={styles.thumbPlaceholder}>NO IMAGE</div>
-                    )}
-                  </div>
-
-                  <div className={styles.postContent}>
-                    <div className={styles.tagRow}>
-                      <span className={styles.badge}>{dict.post.label}</span>
-                    </div>
-                    <h3 className={styles.postTitle}>{safeTitle}</h3>
-                    {excerpt && (
-                      <p className={styles.postExcerpt}>{excerpt}</p>
-                    )}
-                    <p className={styles.postViews}>👁 {post.view_count ?? 0}</p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+          {activeTab === "followers" && renderUserList(
+            followers,
+            locale === "en" ? "No followers yet." : "まだフォロワーがいません。"
+          )}
         </section>
 
         <div className={styles.back}>

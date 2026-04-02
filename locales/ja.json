@@ -49,7 +49,10 @@
     "empty": "まだ怪談記事がありません。",
     "untitled": "無題",
     "createCategory": "＋ カテゴリを作成",
-    "random": "ランダム"
+    "random": "ランダム",
+    "following": "フォロー中",
+    "followingEmpty": "フォロー中のユーザーの投稿はまだありません。",
+    "loginToSeeFollowing": "ログインするとフォロー中のユーザーの投稿を見れます。"
   },
   "wiki": {
     "listTitle": "Wiki 一覧",

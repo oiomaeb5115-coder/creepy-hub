@@ -192,25 +192,26 @@ export default async function StoryIndex({ params, searchParams }: Props) {
         </form>
 
         {/* Category filter */}
-        {categories.length > 0 && (
-          <div className={styles.categoryBar}>
-            <Link href={`/${locale}/post`} className={styles.categoryChip}>
-              {dict.post.all}
+        <div className={styles.categoryBar}>
+          <Link href={`/${locale}/post`} className={styles.categoryChip}>
+            {dict.post.all}
+          </Link>
+          <Link href={`/${locale}/post/following`} className={styles.categoryChip}>
+            {dict.post.following}
+          </Link>
+          {categories.map((cat) => (
+            <Link
+              key={cat.id}
+              href={`/${locale}/post/category/${cat.slug}`}
+              className={styles.categoryChip}
+            >
+              {locale === "en" ? (cat.name_en ?? cat.name) : cat.name}
             </Link>
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/${locale}/post/category/${cat.slug}`}
-                className={styles.categoryChip}
-              >
-                {locale === "en" ? (cat.name_en ?? cat.name) : cat.name}
-              </Link>
-            ))}
-            <Link href={`/${locale}/category/create`} className={styles.categoryChipNew}>
-              {dict.post.createCategory}
-            </Link>
-          </div>
-        )}
+          ))}
+          <Link href={`/${locale}/category/create`} className={styles.categoryChipNew}>
+            {dict.post.createCategory}
+          </Link>
+        </div>
 
         {/* Sort tabs */}
         <div className={styles.sortTabs}>

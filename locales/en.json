@@ -49,7 +49,10 @@
     "empty": "No horror stories yet.",
     "untitled": "Untitled",
     "createCategory": "+ Create Category",
-    "random": "Random"
+    "random": "Random",
+    "following": "Following",
+    "followingEmpty": "No posts from users you follow yet.",
+    "loginToSeeFollowing": "Log in to see posts from users you follow."
   },
   "wiki": {
     "listTitle": "Wiki List",
