@@ -163,11 +163,26 @@
   margin-bottom: 20px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(161, 102, 108, 0.4) transparent;
+  padding-bottom: 6px;
 }
 
 .categoryBar::-webkit-scrollbar {
-  display: none;
+  height: 4px;
+}
+
+.categoryBar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.categoryBar::-webkit-scrollbar-thumb {
+  background: rgba(161, 102, 108, 0.4);
+  border-radius: 2px;
+}
+
+.categoryBar::-webkit-scrollbar-thumb:hover {
+  background: rgba(161, 102, 108, 0.6);
 }
 
 .categoryChip {
