@@ -169,8 +169,7 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
       });
       const json = await res.json();
       if (!res.ok) { alert(`${labels.alertRegisterFailed}${json.error}`); return; }
-      alert(labels.alertVerifyEmail);
-      window.location.href = `/${locale}/login`;
+      window.location.href = `/${locale}/register/email-sent`;
     } finally {
       setIsSubmitting(false);
     }
