@@ -118,6 +118,17 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
           </div>
         </header>
 
+        {/* Search */}
+        <form action={`/${locale}/wiki/search`} method="get" className={styles.searchBar}>
+          <input
+            type="text"
+            name="q"
+            placeholder={dict.wiki.searchPlaceholder}
+            className={styles.searchInput}
+          />
+          <button type="submit" className={styles.searchBtn}>{dict.home.searchButton}</button>
+        </form>
+
         {/* Category filter */}
         <div className={styles.categoryBar}>
           <Link href={`/${locale}/wiki`} className={styles.categoryChip}>
@@ -139,17 +150,6 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
             {dict.wiki.createCategory}
           </Link>
         </div>
-
-        {/* Search */}
-        <form action={`/${locale}/wiki/search`} method="get" className={styles.searchBar}>
-          <input
-            type="text"
-            name="q"
-            placeholder={dict.wiki.searchPlaceholder}
-            className={styles.searchInput}
-          />
-          <button type="submit" className={styles.searchBtn}>{dict.home.searchButton}</button>
-        </form>
 
         {/* Sort toggle */}
         <div className={styles.sortTabs}>

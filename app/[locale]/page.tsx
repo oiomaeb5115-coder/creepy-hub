@@ -66,61 +66,6 @@ type WikiCategoryRow = {
   name: string;
 };
 
-function StorySearchBox({
-  locale,
-  placeholder,
-  buttonLabel,
-}: {
-  locale: string;
-  placeholder: string;
-  buttonLabel: string;
-}) {
-  return (
-    <form
-      action={`/${locale}/post/search`}
-      method="get"
-      className={styles.searchForm}
-    >
-      <input
-        type="text"
-        name="q"
-        placeholder={placeholder}
-        className={styles.searchInput}
-      />
-      <button type="submit" className={styles.searchButton}>
-        {buttonLabel}
-      </button>
-    </form>
-  );
-}
-
-function WikiSearchBox({
-  locale,
-  placeholder,
-  buttonLabel,
-}: {
-  locale: string;
-  placeholder: string;
-  buttonLabel: string;
-}) {
-  return (
-    <form
-      action={`/${locale}/wiki/search`}
-      method="get"
-      className={styles.searchForm}
-    >
-      <input
-        type="text"
-        name="q"
-        placeholder={placeholder}
-        className={styles.searchInput}
-      />
-      <button type="submit" className={styles.searchButton}>
-        {buttonLabel}
-      </button>
-    </form>
-  );
-}
 
 function StoryCardGrid({
   post,
@@ -380,25 +325,6 @@ export default async function HomePage({ params }: HomePageProps) {
               <p className={styles.heroTagline}>{dict.meta.description}</p>
             </div>
 
-            <div className={styles.topSearchRow}>
-              <div className={styles.searchColumn}>
-                <span className={styles.searchHeadingText}>{dict.home.storySearch}</span>
-                <StorySearchBox
-                  locale={locale}
-                  placeholder={dict.home.storySearchPlaceholder}
-                  buttonLabel={dict.home.searchButton}
-                />
-              </div>
-
-              <div className={styles.searchColumn}>
-                <span className={styles.searchHeadingText}>{dict.home.wikiSearch}</span>
-                <WikiSearchBox
-                  locale={locale}
-                  placeholder={dict.home.wikiSearchPlaceholder}
-                  buttonLabel={dict.home.searchButton}
-                />
-              </div>
-            </div>
           </div>
         </section>
 
