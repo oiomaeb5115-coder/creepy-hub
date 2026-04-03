@@ -60,37 +60,25 @@ export async function POST(req: NextRequest) {
   }));
   const existingUser = (lookupJson?.users as { id: string; email_confirmed_at: string | null; deleted_at: string | null }[] | undefined)?.[0];
 
-  // 確認済みユーザーが見つかった場合、getUserById で本当にアクティブか二重チェック
-  // （ダッシュボードから削除してもlistUsersに残るSupabaseの挙動に対応）
+  // 確認済みユーザーの場合、profilesテーブルでアプリ上のアクティブユーザーか判定
+  // （Supabase Auth APIはダッシュボード削除後もユーザーを返す場合がある）
   if (existingUser?.email_confirmed_at) {
-    const verifyRes = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users/${existingUser.id}`,
-      {
-        headers: {
-          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
-        },
-      }
-    );
-    if (verifyRes.ok) {
-      const verifyJson = await verifyRes.json();
-      const isTrulyActive = verifyJson?.email_confirmed_at && !verifyJson?.deleted_at && !verifyJson?.banned_until;
-      if (isTrulyActive) {
-        console.log("[Register] verified active confirmed user, returning early");
-        return NextResponse.json({ success: true });
-      }
-      console.log("[Register] user exists but not truly active, deleting. verify:", JSON.stringify({
-        email_confirmed_at: verifyJson?.email_confirmed_at,
-        deleted_at: verifyJson?.deleted_at,
-        banned_until: verifyJson?.banned_until,
-      }));
-    } else {
-      console.log("[Register] getUserById failed (user likely deleted), status:", verifyRes.status);
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("id", existingUser.id)
+      .maybeSingle();
+
+    if (profile) {
+      console.log("[Register] active user with profile found, returning early");
+      return NextResponse.json({ success: true });
     }
+    // プロフィールがない = ゴーストユーザー → 削除して再作成
+    console.log("[Register] ghost user (no profile), deleting and recreating");
     await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
   } else if (existingUser) {
-    // 未確認 or ソフトデリート済み → 削除して再作成
-    console.log("[Register] unconfirmed/deleted user found, deleting and recreating");
+    // 未確認ユーザー → 削除して再作成
+    console.log("[Register] unconfirmed user found, deleting and recreating");
     await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
   }
 
