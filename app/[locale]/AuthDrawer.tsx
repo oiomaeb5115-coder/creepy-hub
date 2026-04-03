@@ -27,6 +27,7 @@ type Labels = {
   alertLoginFailed: string;
   alertRegisterFailed: string;
   alertVerifyEmail: string;
+  alertEmailNotConfirmed: string;
   alertLockoutJustLocked: string;
   alertLockoutStillLocked: string;
   alertAttemptsLeft: string;
@@ -103,7 +104,7 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
       const json = await res.json();
 
       if (res.status === 403 && json.error === "email_not_confirmed") {
-        alert(labels.alertEmailNotConfirmed ?? "メールアドレスが未確認です。登録時に送信された確認メールのリンクをクリックしてください。");
+        alert(labels.alertEmailNotConfirmed);
         return;
       }
 
