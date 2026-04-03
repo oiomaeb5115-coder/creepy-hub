@@ -158,7 +158,7 @@ export default function RegisterPage() {
               await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                  redirectTo: `${window.location.origin}/auth/callback?locale=${locale}&type=oauth`,
+                  redirectTo: `${window.location.origin}/${locale}/auth/callback?type=register`,
                 },
               });
             }}
@@ -179,7 +179,7 @@ export default function RegisterPage() {
               await supabase.auth.signInWithOAuth({
                 provider: "discord",
                 options: {
-                  redirectTo: `${window.location.origin}/auth/callback?locale=${locale}&type=oauth`,
+                  redirectTo: `${window.location.origin}/${locale}/auth/callback?type=register`,
                 },
               });
             }}

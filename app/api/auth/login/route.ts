@@ -51,6 +51,22 @@ export async function POST(req: NextRequest) {
       .eq("email", email);
   }
 
+  // ---- メール確認済みチェック ----
+  const { data: userData } = await supabaseAdmin.auth.admin.listUsers({
+    filter: email,
+    perPage: 1,
+    page: 1,
+  });
+  const targetUser = userData?.users?.find(
+    (u) => u.email?.toLowerCase() === email.toLowerCase()
+  );
+  if (targetUser && !targetUser.email_confirmed_at) {
+    return NextResponse.json(
+      { error: "email_not_confirmed" },
+      { status: 403 }
+    );
+  }
+
   // ---- ログイン試行 ----
   const supabaseAnon = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

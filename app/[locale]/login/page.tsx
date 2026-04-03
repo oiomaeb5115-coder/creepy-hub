@@ -37,6 +37,11 @@ export default function LoginPage() {
       });
       const json = await res.json();
 
+      if (res.status === 403 && json.error === "email_not_confirmed") {
+        alert(dict.auth.emailNotConfirmed ?? "メールアドレスが未確認です。登録時に送信された確認メールのリンクをクリックしてください。");
+        return;
+      }
+
       if (res.status === 423) {
         if (json.justLocked) {
           alert(dict.auth.lockoutJustLocked);
@@ -136,7 +141,7 @@ export default function LoginPage() {
               await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                  redirectTo: `${window.location.origin}/auth/callback?locale=${locale}&type=oauth`,
+                  redirectTo: `${window.location.origin}/${locale}/auth/callback`,
                 },
               });
             }}
@@ -156,7 +161,7 @@ export default function LoginPage() {
               await supabase.auth.signInWithOAuth({
                 provider: "discord",
                 options: {
-                  redirectTo: `${window.location.origin}/auth/callback?locale=${locale}&type=oauth`,
+                  redirectTo: `${window.location.origin}/${locale}/auth/callback`,
                 },
               });
             }}

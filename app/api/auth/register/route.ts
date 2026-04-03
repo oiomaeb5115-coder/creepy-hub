@@ -65,17 +65,32 @@ export async function POST(req: NextRequest) {
     type: "signup",
     email,
     password,
-    options: { redirectTo: `${origin}/auth/callback?locale=${locale ?? "ja"}&type=register` },
+    options: { redirectTo: `${origin}/${locale ?? "ja"}/auth/callback?type=register` },
   });
 
-  if (error || !data?.properties?.action_link) {
-    return NextResponse.json({ error: error?.message ?? "登録に失敗しました" }, { status: 400 });
+  if (error) {
+    console.error("[Register] generateLink error:", error.message);
+    return NextResponse.json({ error: error.message ?? "登録に失敗しました" }, { status: 400 });
+  }
+
+  if (!data?.properties?.action_link) {
+    console.error("[Register] generateLink returned no action_link:", JSON.stringify(data));
+    return NextResponse.json({ error: "確認リンクの生成に失敗しました" }, { status: 500 });
   }
 
   const confirmationUrl = data.properties.action_link;
+  console.log("[Register] confirmation link generated for:", email);
+
+  // generateLink は admin API のためユーザーが自動確認される場合がある
+  // メール確認を必須にするため、email_confirmed_at を明示的にクリアする
+  if (data.user?.id) {
+    await supabaseAdmin.auth.admin.updateUser(data.user.id, {
+      email_confirm: false,
+    });
+  }
 
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const { error: emailError } = await resend.emails.send({
+  const { data: emailData, error: emailError } = await resend.emails.send({
     from: "creepy.hub <noreply@creepyhub.com>",
     to: email,
     subject: "【creepy.hub】メールアドレスの確認",
@@ -83,9 +98,11 @@ export async function POST(req: NextRequest) {
   });
 
   if (emailError) {
+    console.error("[Register] Resend email error:", JSON.stringify(emailError));
     return NextResponse.json({ error: "メール送信に失敗しました" }, { status: 500 });
   }
 
+  console.log("[Register] email sent successfully, id:", emailData?.id);
   return NextResponse.json({ success: true });
 }
 

@@ -169,12 +169,6 @@ export default async function WikiDetailPage({
             <Link href={`/${locale}`} className={styles.topLink}>
               {dict.nav.home}
             </Link>
-            <Link
-              href={`/${locale}/wiki/${safePage.slug}/revisions`}
-              className={styles.topLink}
-            >
-              {dict.wiki.history}
-            </Link>
             <WikiRandomButton
               locale={locale}
               label={dict.wiki.randomArticle}
