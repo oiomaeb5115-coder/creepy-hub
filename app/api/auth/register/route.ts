@@ -10,7 +10,9 @@ const REGISTER_RATE_LIMIT = {
 };
 
 export async function POST(req: NextRequest) {
+  console.log("[Register] === POST handler invoked ===");
   const { email, password, locale } = await req.json();
+  console.log("[Register] parsed body:", { email, locale });
 
   if (!email || !password) {
     return NextResponse.json({ error: "メールアドレスとパスワードを入力してください" }, { status: 400 });
