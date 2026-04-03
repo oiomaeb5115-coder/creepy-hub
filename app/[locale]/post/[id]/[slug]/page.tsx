@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import { postUrl } from "@/lib/postUrl";
 import PostImageGallery from "@/components/PostImageGallery";
@@ -26,7 +26,7 @@ export async function generateMetadata({
 }: StoryPageProps): Promise<Metadata> {
   const { locale, id } = await params;
 
-  const { data: post } = await supabase
+  const { data: post } = await supabaseAdmin
     .from("post")
     .select("title, content, image_url, slug")
     .eq("id", id)
@@ -42,7 +42,7 @@ export async function generateMetadata({
 
   // EN の場合は翻訳タイトル・本文を優先
   if (locale === "en") {
-    const { data: tr } = await supabase
+    const { data: tr } = await supabaseAdmin
       .from("post_translations")
       .select("title, content")
       .eq("post_id", id)
@@ -66,7 +66,7 @@ export async function generateMetadata({
   // JA の場合：英語翻訳が存在するかチェックして hreflang を条件付きで設定
   let hasEnTranslation = false;
   if (locale !== "en") {
-    const { data: trCheck } = await supabase
+    const { data: trCheck } = await supabaseAdmin
       .from("post_translations")
       .select("post_id")
       .eq("post_id", id)
@@ -149,7 +149,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   const { locale, id } = await params;
   const dict = await getDictionary(locale);
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("post")
     .select(
       "id, title, content, created_at, image_url, image_url_2, image_url_3, is_published, view_count, user_id, slug"
@@ -164,12 +164,12 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
     notFound();
   }
 
-  await supabase.rpc("increment_post_view", { p_post_id: post.id });
+  await supabaseAdmin.rpc("increment_post_view", { p_post_id: post.id });
 
   let author: ProfileRow | null = null;
 
   if (post.user_id) {
-    const { data: profileData } = await supabase
+    const { data: profileData } = await supabaseAdmin
       .from("profiles")
       .select("username, display_name")
       .eq("id", post.user_id)
@@ -179,7 +179,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   }
 
   // 翻訳データ取得
-  const { data: translationData } = await supabase
+  const { data: translationData } = await supabaseAdmin
     .from("post_translations")
     .select("title, content")
     .eq("post_id", post.id)
@@ -211,7 +211,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
 
   const displayedViewCount = (post.view_count ?? 0) + 1;
 
-  const { data: voteRows } = await supabase
+  const { data: voteRows } = await supabaseAdmin
     .from("post_votes")
     .select("vote_type")
     .eq("post_id", post.id);
@@ -219,7 +219,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   const initialScore =
     (voteRows ?? []).reduce((sum, row) => sum + (row.vote_type ?? 0), 0);
 
-  const { data: commentsData } = await supabase
+  const { data: commentsData } = await supabaseAdmin
     .from("post_comments")
     .select(`
       id,
@@ -234,7 +234,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
 
   const comments = (commentsData ?? []) as CommentRow[];
 
-  const { data: relatedPostsData } = await supabase
+  const { data: relatedPostsData } = await supabaseAdmin
     .from("post")
     .select("id, title, image_url, created_at, slug")
     .eq("is_published", true)

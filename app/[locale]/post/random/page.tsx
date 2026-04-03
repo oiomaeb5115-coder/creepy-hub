@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { postUrl } from "@/lib/postUrl";
 
 type PostRandomPageProps = {
@@ -14,7 +14,7 @@ type PostRandomRow = {
 export default async function PostRandomPage({ params }: PostRandomPageProps) {
   const { locale } = await params;
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("post")
     .select("id, slug")
     .eq("is_published", true)

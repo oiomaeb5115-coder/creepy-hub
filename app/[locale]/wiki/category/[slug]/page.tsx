@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
@@ -16,7 +16,7 @@ type WikiCategoryPageProps = {
 
 export async function generateMetadata({ params }: WikiCategoryPageProps): Promise<Metadata> {
   const { locale, slug } = await params;
-  const { data: cat } = await supabase
+  const { data: cat } = await supabaseAdmin
     .from("categories")
     .select("name, description")
     .eq("locale", locale)
@@ -60,7 +60,7 @@ export default async function WikiCategoryPage({
   const { locale, slug } = await params;
   const dict = await getDictionary(locale);
 
-  const { data: category, error: categoryError } = await supabase
+  const { data: category, error: categoryError } = await supabaseAdmin
     .from("categories")
     .select("id, slug, name, description, locale, icon_url, header_image_url, is_user_created, created_by")
     .eq("locale", locale)
@@ -73,7 +73,7 @@ export default async function WikiCategoryPage({
 
   const safeCategory = category as CategoryRow;
 
-  const { data: joins, error: joinError } = await supabase
+  const { data: joins, error: joinError } = await supabaseAdmin
     .from("wiki_page_categories")
     .select("wiki_page_id")
     .eq("category_id", safeCategory.id);
@@ -86,7 +86,7 @@ export default async function WikiCategoryPage({
   if (joinError) {
     wikiErrorMessage = joinError.message;
   } else if (wikiIds.length > 0) {
-    const { data: wikiItems, error: wikiError } = await supabase
+    const { data: wikiItems, error: wikiError } = await supabaseAdmin
       .from("wiki_pages")
       .select("id, slug, title, summary, image_url, view_count")
       .eq("locale", locale)

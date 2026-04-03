@@ -11,8 +11,12 @@ export async function compressImage(file: File): Promise<File> {
     initialQuality: 0.8,
   };
 
-  const compressed = await imageCompression(file, options);
-  if (compressed.size >= file.size) return file;
+  try {
+    const compressed = await imageCompression(file, options);
+    if (compressed.size >= file.size) return file;
 
-  return new File([compressed], file.name, { type: compressed.type });
+    return new File([compressed], file.name, { type: compressed.type });
+  } catch {
+    return file;
+  }
 }

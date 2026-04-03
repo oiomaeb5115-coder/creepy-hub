@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "../wiki.module.css";
 import BackButton from "@/components/BackButton";
@@ -26,7 +26,7 @@ export default async function WikiCategoriesPage({ params }: WikiCategoriesPageP
   const { locale } = await params;
   const dict = await getDictionary(locale);
 
-  const { data: categoriesData } = await supabase
+  const { data: categoriesData } = await supabaseAdmin
     .from("categories")
     .select("id, slug, name, description")
     .eq("locale", locale)

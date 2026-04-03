@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/compressImage";
+import { validateImageFile } from "@/lib/validateImageFile";
 import BackButton from "@/components/BackButton";
 import styles from "./page.module.css";
 import en from "@/locales/en.json";
@@ -96,6 +97,18 @@ export default function WikiCategoryEditPage() {
     userId: string,
     type: "icon" | "header"
   ): Promise<string | null> => {
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      throw new Error("画像ファイル（JPEG / PNG / WebP / GIF）のみアップロード可能です");
+    }
+    if (file.size > MAX_SIZE) {
+      throw new Error("ファイルサイズは5MB以内にしてください");
+    }
+    const isValidImage = await validateImageFile(file);
+    if (!isValidImage) {
+      throw new Error("ファイルの内容が画像形式と一致しません");
+    }
     const compressed = await compressImage(file);
     const fileExt = compressed.name.split(".").pop() || "jpg";
     const fileName = `wiki-${type}s/${userId}/${Date.now()}.${fileExt}`;

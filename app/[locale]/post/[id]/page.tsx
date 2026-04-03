@@ -1,5 +1,5 @@
 import { redirect, notFound } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { postUrl } from "@/lib/postUrl";
 
 type Props = {
@@ -15,7 +15,7 @@ type Props = {
 export default async function PostRedirectPage({ params }: Props) {
   const { locale, id } = await params;
 
-  const { data: post } = await supabase
+  const { data: post } = await supabaseAdmin
     .from("post")
     .select("id, slug")
     .eq("id", id)

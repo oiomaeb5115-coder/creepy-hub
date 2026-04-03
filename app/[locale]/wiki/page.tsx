@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "./wiki.module.css";
 import BackButton from "@/components/BackButton";
@@ -50,7 +50,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
   const [mainResult, categoriesResult] = await Promise.all([
-    supabase
+    supabaseAdmin
       .from("wiki_pages")
       .select("id, slug, title, summary, locale, view_count, updated_at, is_published, image_url")
       .eq("locale", locale)
@@ -58,7 +58,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
       .order(orderCol, { ascending: false })
       .limit(20),
 
-    supabase
+    supabaseAdmin
       .from("categories")
       .select("id, slug, name, description, icon_url")
       .eq("locale", locale)

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import styles from "../../wiki.module.css";
 import BackButton from "@/components/BackButton";
 
@@ -11,7 +11,7 @@ type WikiTagPageProps = {
 
 export async function generateMetadata({ params }: WikiTagPageProps): Promise<Metadata> {
   const { locale, slug } = await params;
-  const { data: tag } = await supabase
+  const { data: tag } = await supabaseAdmin
     .from("wiki_tags")
     .select("name")
     .eq("locale", locale)
@@ -43,7 +43,7 @@ type WikiRow = {
 export default async function WikiTagPage({ params }: WikiTagPageProps) {
   const { locale, slug } = await params;
 
-  const { data: tag, error: tagError } = await supabase
+  const { data: tag, error: tagError } = await supabaseAdmin
     .from("tags")
     .select("id, slug, name, description, locale")
     .eq("locale", locale)
@@ -56,7 +56,7 @@ export default async function WikiTagPage({ params }: WikiTagPageProps) {
 
   const safeTag = tag as TagRow;
 
-  const { data: joins, error: joinError } = await supabase
+  const { data: joins, error: joinError } = await supabaseAdmin
     .from("wiki_page_tags")
     .select("wiki_page_id")
     .eq("tag_id", safeTag.id);
@@ -69,7 +69,7 @@ export default async function WikiTagPage({ params }: WikiTagPageProps) {
   if (joinError) {
     wikiErrorMessage = joinError.message;
   } else if (wikiIds.length > 0) {
-    const { data: wikiItems, error: wikiError } = await supabase
+    const { data: wikiItems, error: wikiError } = await supabaseAdmin
       .from("wiki_pages")
       .select("id, slug, title, summary")
       .eq("locale", locale)

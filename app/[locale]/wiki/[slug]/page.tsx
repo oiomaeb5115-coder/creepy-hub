@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import AutoLinkedWikiContent from "@/components/AutoLinkedwikiContent";
 import { buildAutoLinkedHtml } from "@/lib/wiki-autolink";
@@ -24,7 +24,7 @@ export async function generateMetadata({
 }: WikiDetailPageProps): Promise<Metadata> {
   const { locale, slug } = await params;
 
-  const { data: page } = await supabase
+  const { data: page } = await supabaseAdmin
     .from("wiki_pages")
     .select("title, summary, image_url")
     .eq("locale", locale)
@@ -93,7 +93,7 @@ export default async function WikiDetailPage({
   const { locale, slug } = await params;
   const dict = await getDictionary(locale);
 
-  const { data: page, error } = await supabase
+  const { data: page, error } = await supabaseAdmin
     .from("wiki_pages")
     .select(
       "id, slug, title, subtitle, summary, content, locale, view_count, updated_at, is_published, image_url, author_id"
@@ -109,9 +109,9 @@ export default async function WikiDetailPage({
 
   const safePage = page as WikiPageRow;
 
-  await supabase.rpc("increment_wiki_view", { p_wiki_id: safePage.id });
+  await supabaseAdmin.rpc("increment_wiki_view", { p_wiki_id: safePage.id });
 
-  const { data: related } = await supabase
+  const { data: related } = await supabaseAdmin
     .from("wiki_pages")
     .select("id, slug, title, summary, image_url")
     .eq("locale", locale)
@@ -120,7 +120,7 @@ export default async function WikiDetailPage({
     .order("updated_at", { ascending: false })
     .limit(6);
 
-  const { data: wikiItemsData } = await supabase
+  const { data: wikiItemsData } = await supabaseAdmin
     .from("wiki_pages")
     .select("slug, title")
     .eq("locale", locale)
@@ -131,7 +131,7 @@ export default async function WikiDetailPage({
   // 英語版の存在チェック（ja ページの場合）
   let hasEnglishTranslation = false;
   if (locale === "ja") {
-    const { data: enPage } = await supabase
+    const { data: enPage } = await supabaseAdmin
       .from("wiki_pages")
       .select("id")
       .eq("slug", slug)

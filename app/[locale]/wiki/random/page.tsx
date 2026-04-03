@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 type WikiRandomPageProps = {
   params: Promise<{ locale: string }>;
@@ -14,7 +14,7 @@ export default async function WikiRandomPage({
 }: WikiRandomPageProps) {
   const { locale } = await params;
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("wiki_pages")
     .select("slug")
     .eq("locale", locale)

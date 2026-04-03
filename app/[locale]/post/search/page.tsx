@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "../page.module.css";
 import BackButton from "@/components/BackButton";
@@ -51,19 +51,31 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
   let posts: StoryPost[] = [];
 
   if (q) {
-    // 原文（title/content）と翻訳（post_translations）の両方を検索
-    const { data } = await supabase
+    const { data, error: postError } = await supabaseAdmin
       .from("post")
-      .select("id, title, content, created_at, image_url, view_count, slug, post_translations(title, content, locale)")
+      .select("id, title, content, created_at, image_url, view_count, slug")
       .eq("is_published", true)
       .or(`title.ilike.${keyword},content.ilike.${keyword}`)
       .order("view_count", { ascending: false })
       .limit(30);
 
+    if (postError) console.error("[SearchPosts] query error:", postError.message);
+
+    const postIds = (data ?? []).map((p: any) => p.id);
+    let translationsMap: Record<number, { title: string; content: string }> = {};
+    if (locale === "en" && postIds.length > 0) {
+      const { data: trData } = await supabaseAdmin
+        .from("post_translations")
+        .select("post_id, title, content")
+        .eq("locale", "en")
+        .in("post_id", postIds);
+      for (const tr of trData ?? []) {
+        translationsMap[tr.post_id] = { title: tr.title, content: tr.content };
+      }
+    }
+
     posts = (data ?? []).map((p: any) => {
-      const tr = locale === "en"
-        ? (p.post_translations ?? []).find((t: any) => t.locale === "en")
-        : null;
+      const tr = translationsMap[p.id] ?? null;
       return {
         id: p.id,
         title: tr?.title ?? p.title,

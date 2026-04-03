@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
@@ -17,7 +17,7 @@ type StoryCategoryPageProps = {
 
 export async function generateMetadata({ params }: StoryCategoryPageProps): Promise<Metadata> {
   const { locale, slug } = await params;
-  const { data: cat } = await supabase
+  const { data: cat } = await supabaseAdmin
     .from("story_categories")
     .select("name, name_en, description")
     .eq("slug", slug)
@@ -61,7 +61,7 @@ export default async function StoryCategoryPage({
   const dict = await getDictionary(locale);
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
-  const { data: categoryData, error: categoryError } = await supabase
+  const { data: categoryData, error: categoryError } = await supabaseAdmin
     .from("story_categories")
     .select("id, slug, name, name_en, description, is_active, is_user_created, created_by, icon_url, header_image_url")
     .eq("slug", slug)
@@ -76,17 +76,28 @@ export default async function StoryCategoryPage({
 
   const categoryName = locale === "en" ? (category.name_en ?? category.name) : category.name;
 
-  const { data: postsData } = await supabase
+  const { data: postsData } = await supabaseAdmin
     .from("post")
-    .select("id, title, content, created_at, image_url, view_count, category_id, slug, post_translations(title, content, locale)")
+    .select("id, title, content, created_at, image_url, view_count, category_id, slug")
     .eq("is_published", true)
     .eq("category_id", category.id)
     .order("created_at", { ascending: false });
 
+  const postIds = (postsData ?? []).map((p: any) => p.id);
+  let translationsMap: Record<number, { title: string; content: string }> = {};
+  if (locale === "en" && postIds.length > 0) {
+    const { data: trData } = await supabaseAdmin
+      .from("post_translations")
+      .select("post_id, title, content")
+      .eq("locale", "en")
+      .in("post_id", postIds);
+    for (const tr of trData ?? []) {
+      translationsMap[tr.post_id] = { title: tr.title, content: tr.content };
+    }
+  }
+
   const posts: PostRow[] = (postsData ?? []).map((p: any) => {
-    const tr = locale === "en"
-      ? (p.post_translations ?? []).find((t: any) => t.locale === "en")
-      : null;
+    const tr = translationsMap[p.id] ?? null;
     return {
       id: p.id,
       title: tr?.title ?? p.title,

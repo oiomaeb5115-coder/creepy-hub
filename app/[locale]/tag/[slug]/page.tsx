@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
-import { getStoryTagBySlug } from "@/lib/tags";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
 
@@ -31,12 +30,17 @@ export default async function StoryTagPage({ params }: TagPageProps) {
   const { locale, slug } = await params;
   const dict = await getDictionary(locale);
 
-  const { data: tagData } = await getStoryTagBySlug(slug);
+  const { data: tagData } = await supabaseAdmin
+    .from("story_tags")
+    .select("id, slug, name, description")
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .single();
   const tag = tagData as TagRow | null;
 
   if (!tag) notFound();
 
-  const { data: joins } = await supabase
+  const { data: joins } = await supabaseAdmin
     .from("post_story_tags")
     .select("post_id")
     .eq("tag_id", tag.id);
@@ -46,16 +50,27 @@ export default async function StoryTagPage({ params }: TagPageProps) {
   let posts: PostRow[] = [];
 
   if (postIds.length > 0) {
-    const { data } = await supabase
+    const { data } = await supabaseAdmin
       .from("post")
-      .select("id, title, content, image_url, view_count, created_at, slug, post_translations(title, content, locale)")
+      .select("id, title, content, image_url, view_count, created_at, slug")
       .eq("is_published", true)
       .in("id", postIds);
 
+    let translationsMap: Record<number, { title: string; content: string }> = {};
+    if (locale === "en" && (data ?? []).length > 0) {
+      const ids = (data ?? []).map((p: any) => p.id);
+      const { data: trData } = await supabaseAdmin
+        .from("post_translations")
+        .select("post_id, title, content")
+        .eq("locale", "en")
+        .in("post_id", ids);
+      for (const tr of trData ?? []) {
+        translationsMap[tr.post_id] = { title: tr.title, content: tr.content };
+      }
+    }
+
     posts = (data ?? []).map((p: any) => {
-      const tr = locale === "en"
-        ? (p.post_translations ?? []).find((t: any) => t.locale === "en")
-        : null;
+      const tr = translationsMap[p.id] ?? null;
       return {
         id: p.id,
         title: tr?.title ?? p.title,

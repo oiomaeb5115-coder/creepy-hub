@@ -21,14 +21,13 @@ type Chapter = {
 };
 
 function slugify(input: string): string {
-  const ascii = input
+  return input
     .trim()
     .toLowerCase()
     .replace(/[\s_]+/g, "-")
     .replace(/[^a-z0-9-]/g, "")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
-  return ascii.length > 0 ? ascii : `wiki-${Date.now()}`;
 }
 
 type WikiSubmitLabels = {
@@ -55,6 +54,8 @@ type WikiSubmitLabels = {
   alertThumbFail: string;
   alertChapterImgFail: string;
   alertSlugFail: string;
+  slugLabel: string;
+  alertSlugEmpty: string;
   alertWikiFail: string;
   successPublished: string;
   successDraft: string;
@@ -96,6 +97,9 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+
+  const [slugInput, setSlugInput] = useState("");
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState("");
@@ -318,10 +322,10 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
       }
 
       const content = chapterParts.join("\n\n");
-      const baseSlug = slugify(title);
+      const baseSlug = slugInput.trim();
 
       if (!baseSlug) {
-        alert(labels.alertSlugFail);
+        alert(labels.alertSlugEmpty);
         return;
       }
 
@@ -471,8 +475,29 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
                 type="text"
                 className={styles.formControl}
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setTitle(val);
+                  if (!slugManuallyEdited) {
+                    setSlugInput(slugify(val));
+                  }
+                }}
                 placeholder={labels.title}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="slugInput">{labels.slugLabel}</label>
+              <input
+                id="slugInput"
+                type="text"
+                className={styles.formControl}
+                value={slugInput}
+                onChange={(e) => {
+                  setSlugInput(e.target.value);
+                  setSlugManuallyEdited(true);
+                }}
+                placeholder="e.g. mashiro-meme"
               />
             </div>
 

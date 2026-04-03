@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import { postUrl } from "@/lib/postUrl";
 import styles from "./page.module.css";
@@ -69,17 +69,30 @@ export default async function StoryIndex({ params, searchParams }: Props) {
   let rawPosts: { id: number; title: string | null; content: string | null; created_at: string | null; image_url: string | null; image_url_2: string | null; image_url_3: string | null; view_count: number | null; slug: string | null; user_id: string | null; post_votes?: VoteRow[] }[] = [];
 
   {
-    const { data } = await supabase
+    const { data, error: postError } = await supabaseAdmin
       .from("post")
-      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, slug, post_votes(vote_type), post_translations(title, content, locale)")
+      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, slug, post_votes(vote_type)")
       .eq("is_published", true)
       .order(orderCol, { ascending: false })
       .limit(50);
 
+    if (postError) console.error("[PostList] query error:", postError.message);
+
+    const postIds = (data ?? []).map((p: any) => p.id);
+    let translationsMap: Record<number, { title: string; content: string }> = {};
+    if (locale === "en" && postIds.length > 0) {
+      const { data: trData } = await supabaseAdmin
+        .from("post_translations")
+        .select("post_id, title, content")
+        .eq("locale", "en")
+        .in("post_id", postIds);
+      for (const tr of trData ?? []) {
+        translationsMap[tr.post_id] = { title: tr.title, content: tr.content };
+      }
+    }
+
     rawPosts = (data ?? []).map((p: any) => {
-      const tr = locale === "en"
-        ? (p.post_translations ?? []).find((t: any) => t.locale === "en")
-        : null;
+      const tr = translationsMap[p.id] ?? null;
       return {
         id: p.id,
         title: tr?.title ?? p.title,
@@ -100,7 +113,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
   const userIds = [...new Set(rawPosts.map((p) => p.user_id).filter(Boolean))] as string[];
   let profilesMap: Record<string, AuthorProfile> = {};
   if (userIds.length > 0) {
-    const { data: profilesData } = await supabase
+    const { data: profilesData } = await supabaseAdmin
       .from("profiles")
       .select("id, username, display_name, avatar_url")
       .in("id", userIds);
@@ -115,7 +128,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
     author: p.user_id ? (profilesMap[p.user_id] ?? null) : null,
   }));
 
-  const { data: categoriesData } = await supabase
+  const { data: categoriesData } = await supabaseAdmin
     .from("story_categories")
     .select("id, slug, name, name_en, icon_url")
     .eq("is_active", true)

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import { postUrl } from "@/lib/postUrl";
 import styles from "./page.module.css";
@@ -264,7 +264,7 @@ export default async function HomePage({ params }: HomePageProps) {
   const { locale } = await params;
   const dict = await getDictionary(locale);
 
-  const storiesQuery = supabase
+  const storiesQuery = supabaseAdmin
     .from("post")
     .select(`
       id,
@@ -278,8 +278,7 @@ export default async function HomePage({ params }: HomePageProps) {
       user_id,
       slug,
       post_votes(vote_type),
-      post_comments(id),
-      post_translations(title, content, locale)
+      post_comments(id)
     `)
     .eq("is_published", true)
     .order("created_at", { ascending: false })
@@ -288,7 +287,7 @@ export default async function HomePage({ params }: HomePageProps) {
   const [latestStoriesResult, latestWikiResult, storyCategoriesResult, wikiCategoriesResult] = await Promise.all([
     storiesQuery,
 
-    supabase
+    supabaseAdmin
       .from("wiki_pages")
       .select("id, slug, title, summary, updated_at, view_count, image_url")
       .eq("locale", locale)
@@ -296,14 +295,14 @@ export default async function HomePage({ params }: HomePageProps) {
       .order("updated_at", { ascending: false })
       .limit(12),
 
-    supabase
+    supabaseAdmin
       .from("story_categories")
       .select("id, slug, name, name_en")
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .limit(20),
 
-    supabase
+    supabaseAdmin
       .from("categories")
       .select("id, slug, name")
       .eq("locale", locale)
@@ -311,10 +310,21 @@ export default async function HomePage({ params }: HomePageProps) {
       .order("created_at", { ascending: false }),
   ]);
 
+  const storyPostIds = (latestStoriesResult.data ?? []).map((p: any) => p.id);
+  let storyTranslationsMap: Record<number, { title: string; content: string }> = {};
+  if (locale === "en" && storyPostIds.length > 0) {
+    const { data: trData } = await supabaseAdmin
+      .from("post_translations")
+      .select("post_id, title, content")
+      .eq("locale", "en")
+      .in("post_id", storyPostIds);
+    for (const tr of trData ?? []) {
+      storyTranslationsMap[tr.post_id] = { title: tr.title, content: tr.content };
+    }
+  }
+
   const rawStories = (latestStoriesResult.data ?? []).map((p: any) => {
-    const tr = locale === "en"
-      ? (p.post_translations ?? []).find((t: any) => t.locale === "en")
-      : null;
+    const tr = storyTranslationsMap[p.id] ?? null;
     return {
     id: p.id,
     title: tr?.title ?? p.title,
@@ -336,7 +346,7 @@ export default async function HomePage({ params }: HomePageProps) {
   const userIds = [...new Set(rawStories.map((p) => p.user_id).filter(Boolean))] as string[];
   let profilesMap: Record<string, AuthorProfile> = {};
   if (userIds.length > 0) {
-    const { data: profilesData } = await supabase
+    const { data: profilesData } = await supabaseAdmin
       .from("profiles")
       .select("id, username, display_name, avatar_url")
       .in("id", userIds);

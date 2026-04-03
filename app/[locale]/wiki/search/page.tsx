@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "../wiki.module.css";
 import BackButton from "@/components/BackButton";
@@ -47,7 +47,7 @@ export default async function WikiSearchPage({ params, searchParams }: Props) {
   const keyword = `%${safeQ}%`;
 
   const { data } = q
-    ? await supabase
+    ? await supabaseAdmin
         .from("wiki_pages")
         .select("id,slug,title,summary,updated_at,view_count")
         .eq("locale", locale)

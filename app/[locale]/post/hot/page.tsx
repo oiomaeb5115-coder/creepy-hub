@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "../../page.module.css";
 import BackButton from "@/components/BackButton";
@@ -43,7 +43,7 @@ export default async function HotPage({ params }: Props) {
   const dict = await getDictionary(locale);
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
-  const { data: rawData } = await supabase
+  const { data: rawData, error: postError } = await supabaseAdmin
     .from("post")
     .select(`
       id,
@@ -54,11 +54,25 @@ export default async function HotPage({ params }: Props) {
       view_count,
       slug,
       post_votes(vote_type),
-      post_comments(id),
-      post_translations(title, content, locale)
+      post_comments(id)
     `)
     .eq("is_published", true)
     .limit(30);
+
+  if (postError) console.error("[HotPosts] query error:", postError.message);
+
+  const postIds = (rawData ?? []).map((p: any) => p.id);
+  let translationsMap: Record<number, { title: string; content: string }> = {};
+  if (locale === "en" && postIds.length > 0) {
+    const { data: trData } = await supabaseAdmin
+      .from("post_translations")
+      .select("post_id, title, content")
+      .eq("locale", "en")
+      .in("post_id", postIds);
+    for (const tr of trData ?? []) {
+      translationsMap[tr.post_id] = { title: tr.title, content: tr.content };
+    }
+  }
 
   const posts = (rawData ?? [])
     .map((post: any) => {
@@ -77,9 +91,7 @@ export default async function HotPage({ params }: Props) {
 
       const hotScore = score / Math.pow(hours + 2, 1.5);
 
-      const tr = locale === "en"
-        ? (post.post_translations ?? []).find((t: any) => t.locale === "en")
-        : null;
+      const tr = translationsMap[post.id] ?? null;
       const title = tr?.title ?? post.title;
       const content = tr?.content ?? post.content;
 
