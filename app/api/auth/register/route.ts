@@ -60,7 +60,9 @@ export async function POST(req: NextRequest) {
       deleted_at: lookupJson.users[0].deleted_at,
     } : null,
   }));
-  const existingUser = (lookupJson?.users as { id: string; email_confirmed_at: string | null; deleted_at: string | null }[] | undefined)?.[0];
+  const matchedUser = (lookupJson?.users as { id: string; email: string; email_confirmed_at: string | null; deleted_at: string | null }[] | undefined)
+    ?.find((u) => u.email.toLowerCase() === email.toLowerCase()) ?? null;
+  const existingUser = matchedUser;
 
   // 確認済みユーザーの場合、profilesテーブルでアプリ上のアクティブユーザーか判定
   // （Supabase Auth APIはダッシュボード削除後もユーザーを返す場合がある）

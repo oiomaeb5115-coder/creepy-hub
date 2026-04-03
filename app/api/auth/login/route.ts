@@ -62,7 +62,8 @@ export async function POST(req: NextRequest) {
     }
   );
   const lookupJson = await lookupRes.json();
-  const targetUser = (lookupJson?.users as { email_confirmed_at: string | null }[] | undefined)?.[0];
+  const targetUser = (lookupJson?.users as { email: string; email_confirmed_at: string | null }[] | undefined)
+    ?.find((u) => u.email.toLowerCase() === email.toLowerCase()) ?? null;
   if (targetUser && !targetUser.email_confirmed_at) {
     return NextResponse.json(
       { error: "email_not_confirmed" },
