@@ -52,14 +52,17 @@ export async function POST(req: NextRequest) {
   }
 
   // ---- メール確認済みチェック ----
-  const { data: userData } = await supabaseAdmin.auth.admin.listUsers({
-    filter: email,
-    perPage: 1,
-    page: 1,
-  });
-  const targetUser = userData?.users?.find(
-    (u) => u.email?.toLowerCase() === email.toLowerCase()
+  const lookupRes = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}&per_page=1`,
+    {
+      headers: {
+        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+      },
+    }
   );
+  const lookupJson = await lookupRes.json();
+  const targetUser = (lookupJson?.users as { email_confirmed_at: string | null }[] | undefined)?.[0];
   if (targetUser && !targetUser.email_confirmed_at) {
     return NextResponse.json(
       { error: "email_not_confirmed" },
