@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
     const randomUsername = `user_${Math.floor(100000 + Math.random() * 900000)}`;
     await supabaseAdmin
       .from("profiles")
-      .upsert({ id: data.user.id, username: randomUsername });
+      .upsert({ id: data.user.id, username: randomUsername, display_name: null });
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);

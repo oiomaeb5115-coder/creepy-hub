@@ -8,11 +8,21 @@ import { clearAuthCache } from "@/lib/auth";
 async function ensureSafeUsername(userId: string) {
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username")
+    .select("username, display_name")
     .eq("id", userId)
     .single();
 
   const current: string | null = (profile as { username: string | null } | null)?.username ?? null;
+  const displayName: string | null = (profile as { display_name: string | null } | null)?.display_name ?? null;
+
+  // display_name にメールアドレスが入っている場合はクリア
+  if (displayName && displayName.includes("@")) {
+    await supabase
+      .from("profiles")
+      .update({ display_name: null })
+      .eq("id", userId);
+  }
+
   if (current && !current.includes("@")) return;
 
   for (let i = 0; i < 5; i++) {
@@ -24,7 +34,7 @@ async function ensureSafeUsername(userId: string) {
       .eq("username", candidate)
       .maybeSingle();
     if (!existing) {
-      await supabase.from("profiles").upsert({ id: userId, username: candidate });
+      await supabase.from("profiles").upsert({ id: userId, username: candidate, display_name: null });
       return;
     }
   }

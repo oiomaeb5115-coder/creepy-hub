@@ -14,11 +14,21 @@ async function ensureSafeUsername(userId: string) {
 
   const { data: profile } = await admin
     .from("profiles")
-    .select("username")
+    .select("username, display_name")
     .eq("id", userId)
     .single();
 
   const current: string | null = profile?.username ?? null;
+  const displayName: string | null = (profile as { display_name: string | null } | null)?.display_name ?? null;
+
+  // display_name にメールアドレスが入っている場合はクリア
+  if (displayName && displayName.includes("@")) {
+    await admin
+      .from("profiles")
+      .update({ display_name: null })
+      .eq("id", userId);
+  }
+
   if (current && !current.includes("@")) return; // 既に安全なユーザー名
 
   // ユニークなユーザー名を生成（最大5回リトライ）
@@ -32,7 +42,7 @@ async function ensureSafeUsername(userId: string) {
     if (!existing) {
       await admin
         .from("profiles")
-        .upsert({ id: userId, username: candidate });
+        .upsert({ id: userId, username: candidate, display_name: null });
       return;
     }
   }
