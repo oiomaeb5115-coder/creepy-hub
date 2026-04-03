@@ -131,9 +131,16 @@
 
 .categoryBar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
   margin-bottom: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.categoryBar::-webkit-scrollbar {
+  display: none;
 }
 
 .categoryChip {
@@ -147,6 +154,8 @@
   font-size: 12px;
   letter-spacing: 0.06em;
   text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: background 0.15s, border-color 0.15s;
 }
 
@@ -166,6 +175,8 @@
   font-size: 12px;
   letter-spacing: 0.06em;
   text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: background 0.15s, color 0.15s;
 }
 
