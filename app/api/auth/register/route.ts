@@ -49,9 +49,19 @@ export async function POST(req: NextRequest) {
     }
   );
   const lookupJson = await lookupRes.json();
+  console.log("[Register] lookup result:", JSON.stringify({
+    userCount: lookupJson?.users?.length ?? 0,
+    firstUser: lookupJson?.users?.[0] ? {
+      id: lookupJson.users[0].id,
+      email: lookupJson.users[0].email,
+      email_confirmed_at: lookupJson.users[0].email_confirmed_at,
+      deleted_at: lookupJson.users[0].deleted_at,
+    } : null,
+  }));
   const existingUser = (lookupJson?.users as { id: string; email_confirmed_at: string | null }[] | undefined)?.[0];
 
   if (existingUser?.email_confirmed_at) {
+    console.log("[Register] existing confirmed user found, returning early");
     // すでに登録済みでも同一レスポンスを返す（メールアドレス列挙攻撃を防ぐため）
     return NextResponse.json({ success: true });
   }
