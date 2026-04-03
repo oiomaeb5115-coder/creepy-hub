@@ -58,16 +58,18 @@ export async function POST(req: NextRequest) {
       deleted_at: lookupJson.users[0].deleted_at,
     } : null,
   }));
-  const existingUser = (lookupJson?.users as { id: string; email_confirmed_at: string | null }[] | undefined)?.[0];
+  const existingUser = (lookupJson?.users as { id: string; email_confirmed_at: string | null; deleted_at: string | null }[] | undefined)?.[0];
 
-  if (existingUser?.email_confirmed_at) {
+  // ソフトデリート済みユーザーは「存在しない」として扱う（削除して再作成）
+  if (existingUser?.deleted_at) {
+    console.log("[Register] soft-deleted user found, deleting and recreating");
+    await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
+  } else if (existingUser?.email_confirmed_at) {
     console.log("[Register] existing confirmed user found, returning early");
     // すでに登録済みでも同一レスポンスを返す（メールアドレス列挙攻撃を防ぐため）
     return NextResponse.json({ success: true });
-  }
-
-  // 未確認ユーザーが存在する場合は削除して再作成
-  if (existingUser) {
+  } else if (existingUser) {
+    // 未確認ユーザーが存在する場合は削除して再作成
     await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
   }
 
