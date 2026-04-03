@@ -44,8 +44,7 @@ export default function RegisterPage() {
         return;
       }
 
-      alert(dict.auth.registerEmailSent);
-      window.location.href = `/${locale}/login`;
+      window.location.href = `/${locale}/register/email-sent`;
     } finally {
       setIsSubmitting(false);
     }

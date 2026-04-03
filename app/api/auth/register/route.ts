@@ -10,9 +10,7 @@ const REGISTER_RATE_LIMIT = {
 };
 
 export async function POST(req: NextRequest) {
-  console.log("[Register] === POST handler invoked ===");
   const { email, password, locale } = await req.json();
-  console.log("[Register] parsed body:", { email, locale });
 
   if (!email || !password) {
     return NextResponse.json({ error: "メールアドレスとパスワードを入力してください" }, { status: 400 });
@@ -121,6 +119,12 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({ email_confirm: false }),
       }
     );
+
+    // プロフィールをランダムユーザー名で即座に作成（メールアドレスが表示名に使われるのを防ぐ）
+    const randomUsername = `user_${Math.floor(100000 + Math.random() * 900000)}`;
+    await supabaseAdmin
+      .from("profiles")
+      .upsert({ id: data.user.id, username: randomUsername });
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);
