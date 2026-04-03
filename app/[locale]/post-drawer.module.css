@@ -352,6 +352,15 @@
   box-shadow: 0 0 10px rgba(200, 40, 50, 0.08);
 }
 
+/* Slug hint */
+.slugHint {
+  font-size: 10px;
+  color: rgba(200, 150, 140, 0.35);
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+  margin-top: -2px;
+}
+
 .tagChipEmpty {
   font-size: 10px;
   color: rgba(200, 150, 140, 0.25);

@@ -34,6 +34,7 @@ export default async function WikiSubmitPage({ params }: Props) {
     alertChapterImgFail: locale === "en" ? "Chapter image upload failed for chapter" : "章の画像アップロードに失敗しました: 章",
     alertSlugFail: locale === "en" ? "Could not generate a valid slug. Please adjust the title." : "有効な slug を生成できませんでした。タイトルを調整してください。",
     slugLabel: locale === "en" ? "URL Slug *" : "URL スラッグ *",
+    slugHint: locale === "en" ? "A short English ID used in the URL. Only lowercase letters, numbers, and hyphens. e.g. for a post about Shisaki Eiko, use \"shisaki-eiko\"" : "URLに使われる英語の短いID。英小文字・数字・ハイフンのみ。例: 四咲映子に関する投稿の場合「shisaki-eiko」",
     alertSlugEmpty: locale === "en" ? "Please enter a URL slug (e.g. mashiro-meme)." : "URLスラッグを入力してください（例: mashiro-meme）。",
     alertWikiFail: locale === "en" ? "Failed to create wiki" : "wiki作成に失敗しました",
     successPublished: locale === "en" ? "Wiki article published." : "wiki記事を公開しました。",

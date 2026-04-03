@@ -55,6 +55,7 @@ type WikiSubmitLabels = {
   alertChapterImgFail: string;
   alertSlugFail: string;
   slugLabel: string;
+  slugHint: string;
   alertSlugEmpty: string;
   alertWikiFail: string;
   successPublished: string;
@@ -430,7 +431,6 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
           </div>
           <div className={styles.headerActions}>
             <Link href={`/${resolvedLocale}/wiki`} className={styles.topLink}>{labels.wikiList}</Link>
-            <Link href={`/${resolvedLocale}`} className={styles.topLink}>{labels.home}</Link>
           </div>
         </header>
 
@@ -497,8 +497,9 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
                   setSlugInput(e.target.value);
                   setSlugManuallyEdited(true);
                 }}
-                placeholder="e.g. mashiro-meme"
+                placeholder="e.g. shisaki-eiko"
               />
+              <small className={styles.slugHint}>{labels.slugHint}</small>
             </div>
 
             <div className={styles.formGroup}>

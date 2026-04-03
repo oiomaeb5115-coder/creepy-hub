@@ -103,7 +103,6 @@
     "genre": "カテゴリー",
     "selectGenre": "選択してください",
     "titleLabel": "記事タイトル",
-    "tagsLabel": "タグ",
     "image1": "画像1",
     "image2": "画像2",
     "image3": "画像3",
@@ -114,7 +113,9 @@
     "alertBodyRequired": "本文を入力してください。",
     "alertSessionExpired": "ログイン状態が切れています。",
     "alertImageFailed": "画像アップロードに失敗しました: ",
-    "alertPostFailed": "投稿に失敗しました: "
+    "alertPostFailed": "投稿に失敗しました: ",
+    "slugLabel": "URL スラッグ",
+    "slugHint": "URLに使われる英語の短いID。英小文字・数字・ハイフンのみ。空欄の場合タイトルから自動生成されます。例: 四咲映子に関する投稿の場合「shisaki-eiko」"
   },
   "authDrawer": {
     "loginTitle": "ログイン",

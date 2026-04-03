@@ -69,7 +69,6 @@ export default async function WikiSearchPage({ params, searchParams }: Props) {
             <h1 className={styles.wikiTitle}>{dict.wiki.listTitle} — {dict.search.title}</h1>
           </div>
           <div className={styles.headerActions}>
-            <Link href={`/${locale}`} className={styles.topLink}>{dict.wiki.home}</Link>
             <Link href={`/${locale}/wiki`} className={styles.topLink}>{dict.wiki.listTitle}</Link>
           </div>
         </header>

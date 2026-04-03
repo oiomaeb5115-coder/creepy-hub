@@ -103,7 +103,6 @@
     "genre": "Category",
     "selectGenre": "Select...",
     "titleLabel": "Title",
-    "tagsLabel": "Tags",
     "image1": "Image 1",
     "image2": "Image 2",
     "image3": "Image 3",
@@ -114,7 +113,9 @@
     "alertBodyRequired": "Please enter content.",
     "alertSessionExpired": "Session expired.",
     "alertImageFailed": "Image upload failed: ",
-    "alertPostFailed": "Failed to post: "
+    "alertPostFailed": "Failed to post: ",
+    "slugLabel": "URL Slug",
+    "slugHint": "A short English ID used in the URL. Only lowercase letters, numbers, and hyphens. Leave blank to auto-generate from the title. e.g. for a post about Shisaki Eiko, use \"shisaki-eiko\""
   },
   "authDrawer": {
     "loginTitle": "Login",

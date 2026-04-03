@@ -6,7 +6,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAccessToken } from "@/lib/auth";
-import { getAllStoryTags } from "@/lib/tags";
 import { validateImageFile } from "@/lib/validateImageFile";
 import { compressImage } from "@/lib/compressImage";
 import { generateSlug } from "@/lib/slug";
@@ -26,7 +25,6 @@ type Labels = {
   genre: string;
   selectGenre: string;
   titleLabel: string;
-  tagsLabel: string;
   image1: string;
   image2: string;
   image3: string;
@@ -38,6 +36,8 @@ type Labels = {
   alertSessionExpired: string;
   alertImageFailed: string;
   alertPostFailed: string;
+  slugLabel: string;
+  slugHint: string;
 };
 
 type Props = { locale: string; labels: Labels };
@@ -48,14 +48,14 @@ export default function PostDrawer({ locale, labels }: Props) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [categories, setCategories] = useState<{ id: number; name: string; name_en: string | null }[]>([]);
-  const [availableTags, setAvailableTags] = useState<{ id: number; slug: string; name: string }[]>([]);
   const [categoryId, setCategoryId] = useState("");
   const [title, setTitle] = useState("");
-  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [body, setBody] = useState("");
   const [mainImage1, setMainImage1] = useState<File | null>(null);
   const [mainImage2, setMainImage2] = useState<File | null>(null);
   const [mainImage3, setMainImage3] = useState<File | null>(null);
+  const [slugInput, setSlugInput] = useState("");
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -89,13 +89,15 @@ export default function PostDrawer({ locale, labels }: Props) {
       const draft = JSON.parse(raw);
       if (typeof draft.title === "string") setTitle(draft.title);
       if (typeof draft.body === "string") setBody(draft.body);
-      if (Array.isArray(draft.selectedTagIds) && draft.selectedTagIds.every((v: unknown) => typeof v === "number")) {
-        setSelectedTagIds(draft.selectedTagIds);
-      }
       if (typeof draft.categoryId === "string" || typeof draft.categoryId === "number") {
         setCategoryId(String(draft.categoryId));
       }
-      setDraftRestored(true);
+      if (typeof draft.slugInput === "string") {
+        setSlugInput(draft.slugInput);
+        if (draft.slugInput) setSlugManuallyEdited(true);
+      }
+      const hasContent = draft.title || draft.body || draft.categoryId || draft.slugInput;
+      if (hasContent) setDraftRestored(true);
     } catch { /* ignore */ }
   }, [userId]);
 
@@ -103,21 +105,21 @@ export default function PostDrawer({ locale, labels }: Props) {
     if (!userId) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
-      localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, selectedTagIds, body }));
+      localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, body, slugInput }));
     }, 500);
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [userId, categoryId, title, selectedTagIds, body]);
+  }, [userId, categoryId, title, body, slugInput]);
 
   const deleteDraft = () => {
     if (!userId) return;
     localStorage.removeItem(`draft_post_${userId}`);
     setDraftRestored(false);
-    setCategoryId(""); setTitle(""); setSelectedTagIds([]); setBody("");
+    setCategoryId(""); setTitle(""); setBody(""); setSlugInput(""); setSlugManuallyEdited(false);
   };
 
   const saveDraftManually = () => {
     if (!userId) return;
-    localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, selectedTagIds, body }));
+    localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, body, slugInput }));
     setIsSaved(true);
     if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
     savedTimerRef.current = setTimeout(() => setIsSaved(false), 2000);
@@ -140,16 +142,7 @@ export default function PostDrawer({ locale, labels }: Props) {
         if (data) setCategories(data as { id: number; name: string; name_en: string | null }[]);
       });
 
-    getAllStoryTags().then(({ data }) => {
-      if (data) setAvailableTags(data as { id: number; slug: string; name: string }[]);
-    });
   }, []);
-
-  const toggleTag = (tagId: number) => {
-    setSelectedTagIds((prev) =>
-      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
-    );
-  };
 
   const uploadImage = async (
     file: File | null,
@@ -201,7 +194,8 @@ export default function PostDrawer({ locale, labels }: Props) {
         throw err;
       });
 
-      const slug = generateSlug(title.trim());
+      const rawSlug = slugInput.trim();
+      const slug = rawSlug || generateSlug(title.trim());
 
       const { data, error } = await supabase
         .from("post")
@@ -233,15 +227,9 @@ export default function PostDrawer({ locale, labels }: Props) {
         }]);
       }
 
-      // タグを post_story_tags に保存
-      if (selectedTagIds.length > 0 && data) {
-        await supabase.from("post_story_tags").insert(
-          selectedTagIds.map((tagId) => ({ post_id: data.id, tag_id: tagId }))
-        );
-      }
-
       if (userId) localStorage.removeItem(`draft_post_${userId}`);
-      setTitle(""); setBody(""); setSelectedTagIds([]); setCategoryId("");
+      setTitle(""); setBody(""); setCategoryId("");
+      setSlugInput(""); setSlugManuallyEdited(false);
       setMainImage1(null); setMainImage2(null); setMainImage3(null);
       setDraftRestored(false);
       setIsOpen(false);
@@ -306,27 +294,30 @@ export default function PostDrawer({ locale, labels }: Props) {
 
               <div className={styles.formGroup}>
                 <label htmlFor="drawer-title">{labels.titleLabel}</label>
-                <input id="drawer-title" type="text" className={styles.formControl} value={title} onChange={(e) => setTitle(e.target.value)} />
+                <input id="drawer-title" type="text" className={styles.formControl} value={title} onChange={(e) => {
+                  const val = e.target.value;
+                  setTitle(val);
+                  if (!slugManuallyEdited) {
+                    const auto = generateSlug(val);
+                    setSlugInput(auto ?? "");
+                  }
+                }} />
               </div>
 
               <div className={styles.formGroup}>
-                <label>{labels.tagsLabel}</label>
-                {availableTags.length > 0 ? (
-                  <div className={styles.tagChipRow}>
-                    {availableTags.map((tag) => (
-                      <button
-                        type="button"
-                        key={tag.id}
-                        className={`${styles.tagChip} ${selectedTagIds.includes(tag.id) ? styles.tagChipActive : ""}`}
-                        onClick={() => toggleTag(tag.id)}
-                      >
-                        {tag.name}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className={styles.tagChipEmpty}>タグがありません</p>
-                )}
+                <label htmlFor="drawer-slug">{labels.slugLabel}</label>
+                <input
+                  id="drawer-slug"
+                  type="text"
+                  className={styles.formControl}
+                  value={slugInput}
+                  onChange={(e) => {
+                    setSlugInput(e.target.value);
+                    setSlugManuallyEdited(true);
+                  }}
+                  placeholder="e.g. shisaki-eiko"
+                />
+                <small className={styles.slugHint}>{labels.slugHint}</small>
               </div>
 
               <div className={styles.formGroup}>

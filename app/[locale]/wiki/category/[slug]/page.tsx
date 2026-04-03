@@ -12,6 +12,7 @@ import FavoriteCategoryButton from "@/components/FavoriteCategoryButton";
 
 type WikiCategoryPageProps = {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ sort?: string }>;
 };
 
 export async function generateMetadata({ params }: WikiCategoryPageProps): Promise<Metadata> {
@@ -52,13 +53,18 @@ type WikiRow = {
   summary: string | null;
   image_url: string | null;
   view_count: number | null;
+  updated_at: string | null;
 };
 
 export default async function WikiCategoryPage({
   params,
+  searchParams,
 }: WikiCategoryPageProps) {
   const { locale, slug } = await params;
+  const { sort = "new" } = await searchParams;
+  const isPopular = sort === "popular";
   const dict = await getDictionary(locale);
+  const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
   const { data: category, error: categoryError } = await supabaseAdmin
     .from("categories")
@@ -86,13 +92,14 @@ export default async function WikiCategoryPage({
   if (joinError) {
     wikiErrorMessage = joinError.message;
   } else if (wikiIds.length > 0) {
+    const orderCol = isPopular ? "view_count" : "updated_at";
     const { data: wikiItems, error: wikiError } = await supabaseAdmin
       .from("wiki_pages")
-      .select("id, slug, title, summary, image_url, view_count")
+      .select("id, slug, title, summary, image_url, view_count, updated_at")
       .eq("locale", locale)
       .eq("is_published", true)
       .in("id", wikiIds)
-      .order("view_count", { ascending: false });
+      .order(orderCol, { ascending: false });
 
     if (wikiError) {
       wikiErrorMessage = wikiError.message;
@@ -184,6 +191,22 @@ export default async function WikiCategoryPage({
           </div>
         </header>
 
+        {/* Sort tabs */}
+        <div className={styles.sortTabs}>
+          <Link
+            href={`/${locale}/wiki/category/${slug}?sort=new`}
+            className={`${styles.sortTab} ${!isPopular ? styles.sortTabActive : ""}`}
+          >
+            {dict.wiki.newest}
+          </Link>
+          <Link
+            href={`/${locale}/wiki/category/${slug}?sort=popular`}
+            className={`${styles.sortTab} ${isPopular ? styles.sortTabActive : ""}`}
+          >
+            {dict.wiki.popular}
+          </Link>
+        </div>
+
         <section className={styles.cardSection}>
           <div className={styles.sectionHead}>
             <h2 className={styles.sectionTitle}>{dict.wiki.categoryArticlesTitle}</h2>
@@ -199,42 +222,36 @@ export default async function WikiCategoryPage({
           ) : items.length === 0 ? (
             <p className={styles.emptyText}>{dict.wiki.categoryEmptyInCat}</p>
           ) : (
-            <div className={styles.postGrid}>
-              {items.map((item) => (
-                <Link
-                  href={`/${locale}/wiki/${item.slug}`}
-                  key={item.id}
-                  className={styles.postCardLink}
-                >
-                  <article className={styles.postCard}>
-                    {item.image_url ? (
-                      <img
-                        src={item.image_url}
-                        alt={item.title}
-                        className={styles.postCardImage}
-                      />
-                    ) : (
-                      <div className={styles.postCardImagePlaceholder}>
-                        NO IMAGE
-                      </div>
-                    )}
-
-                    <div className={styles.postCardBody}>
-                      <div className={styles.postCardMetaRow}>
-                        <span className={styles.postCardViews}>
-                          👁 {item.view_count ?? 0}
-                        </span>
-                      </div>
-
-                      <h3 className={styles.postCardTitle}>{item.title}</h3>
-
-                      <p className={styles.postCardExcerpt}>
+            <div className={styles.feed}>
+              {items.map((item) => {
+                const dateStr = item.updated_at
+                  ? new Date(item.updated_at).toLocaleDateString(dateLocale)
+                  : "—";
+                return (
+                  <Link key={item.id} href={`/${locale}/wiki/${item.slug}`} className={styles.feedRow}>
+                    <div className={styles.feedContent}>
+                      <span className={styles.feedDate}>{dateStr}</span>
+                      <h3 className={styles.feedTitle}>{item.title}</h3>
+                      <p className={styles.feedSummary}>
                         {item.summary ?? dict.wiki.noSummary}
                       </p>
+                      {item.image_url && (
+                        <div className={styles.feedImageWrap}>
+                          <img
+                            src={item.image_url}
+                            alt={item.title}
+                            className={styles.feedImage}
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                      <div className={styles.feedFooter}>
+                        <span>👁 {item.view_count ?? 0}</span>
+                      </div>
                     </div>
-                  </article>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </section>

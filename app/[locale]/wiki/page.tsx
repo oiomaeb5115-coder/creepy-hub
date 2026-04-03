@@ -112,7 +112,6 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
             <p className={styles.wikiSubtitle}>{dict.wiki.subtitle}</p>
           </div>
           <div className={styles.headerActions}>
-            <Link href={`/${locale}`} className={styles.topLink}>{dict.nav.home}</Link>
             <Link href={`/${locale}/wiki/random`} className={`${styles.topLink} ${styles.topLinkAccent}`}>{dict.wiki.random}</Link>
             <Link href={`/${locale}/wiki/submit`} className={styles.topLink}>{dict.wiki.submit}</Link>
           </div>
@@ -177,35 +176,35 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
             <p className={styles.emptyText}>{dict.wiki.empty}</p>
           ) : (
             <div className={styles.feed}>
-              {mainItems.map((item) => (
-                <Link key={item.id} href={`/${locale}/wiki/${item.slug}`} className={styles.feedRow}>
-                  <div className={styles.feedContent}>
-                    <h3 className={styles.feedTitle}>{item.title}</h3>
-                    <p className={styles.feedSummary}>
-                      {item.summary ?? dict.wiki.noSummary}
-                    </p>
-                    <div className={styles.feedMeta}>
-                      <span>👁 {item.view_count ?? 0}</span>
+              {mainItems.map((item) => {
+                const dateStr = item.updated_at
+                  ? new Date(item.updated_at).toLocaleDateString(dateLocale)
+                  : "—";
+                return (
+                  <Link key={item.id} href={`/${locale}/wiki/${item.slug}`} className={styles.feedRow}>
+                    <div className={styles.feedContent}>
+                      <span className={styles.feedDate}>{dateStr}</span>
+                      <h3 className={styles.feedTitle}>{item.title}</h3>
+                      <p className={styles.feedSummary}>
+                        {item.summary ?? dict.wiki.noSummary}
+                      </p>
+                      {item.image_url && (
+                        <div className={styles.feedImageWrap}>
+                          <img
+                            src={item.image_url}
+                            alt={item.title}
+                            className={styles.feedImage}
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                      <div className={styles.feedFooter}>
+                        <span>👁 {item.view_count ?? 0} {dict.post.views}</span>
+                      </div>
                     </div>
-                  </div>
-                  {item.image_url && (
-                    <div className={styles.feedThumbCol}>
-                      <img
-                        src={item.image_url}
-                        alt={item.title}
-                        className={styles.feedThumb}
-                      />
-                    </div>
-                  )}
-                  <div className={styles.feedRight}>
-                    <span className={styles.feedDate}>
-                      {item.updated_at
-                        ? new Date(item.updated_at).toLocaleDateString(dateLocale)
-                        : "—"}
-                    </span>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </section>

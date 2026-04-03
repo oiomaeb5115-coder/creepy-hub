@@ -167,7 +167,6 @@ export default async function StoryIndex({ params, searchParams }: Props) {
             <h1 className={styles.pageTitle}>Horror Post</h1>
           </div>
           <div className={styles.headerActions}>
-            <Link href={`/${locale}`} className={styles.topLink}>{dict.nav.home}</Link>
             <PostRandomButton
               locale={locale}
               label={dict.post.random}
@@ -191,9 +190,6 @@ export default async function StoryIndex({ params, searchParams }: Props) {
         <div className={styles.categoryBar}>
           <Link href={`/${locale}/post`} className={styles.categoryChip}>
             {dict.post.all}
-          </Link>
-          <Link href={`/${locale}/post/following`} className={styles.categoryChip}>
-            {dict.post.following}
           </Link>
           {categories.map((cat) => (
             <Link
@@ -222,6 +218,12 @@ export default async function StoryIndex({ params, searchParams }: Props) {
             className={`${styles.sortTab} ${isPopular ? styles.sortTabActive : ""}`}
           >
             {dict.post.popular}
+          </Link>
+          <Link
+            href={`/${locale}/post/following`}
+            className={styles.sortTab}
+          >
+            {dict.post.following}
           </Link>
         </div>
 

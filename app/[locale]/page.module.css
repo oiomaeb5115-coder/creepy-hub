@@ -876,4 +876,16 @@
     border-bottom: 1px solid rgba(200, 40, 50, 0.1);
     padding-bottom: 16px;
   }
+
+  .heroTopButtons {
+    top: 8px;
+    right: 14px;
+    gap: 5px;
+  }
+
+  .topTextButton {
+    padding: 3px 8px;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+  }
 }

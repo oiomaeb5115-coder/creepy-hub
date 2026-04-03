@@ -47,7 +47,7 @@ export default async function WikiCategoriesPage({ params }: WikiCategoriesPageP
             <p className={styles.wikiSubtitle}>{dict.wiki.browseByCategory}</p>
           </div>
           <div className={styles.headerActions}>
-            <Link href={`/${locale}/wiki`} className={styles.topLink}>{dict.nav.home}</Link>
+            <Link href={`/${locale}/wiki`} className={styles.topLink}>{dict.wiki.listTitle}</Link>
           </div>
         </header>
 
