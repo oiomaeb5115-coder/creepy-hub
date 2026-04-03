@@ -84,9 +84,18 @@ export async function POST(req: NextRequest) {
   // generateLink は admin API のためユーザーが自動確認される場合がある
   // メール確認を必須にするため、email_confirmed_at を明示的にクリアする
   if (data.user?.id) {
-    await supabaseAdmin.auth.admin.updateUser(data.user.id, {
-      email_confirm: false,
-    });
+    await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users/${data.user.id}`,
+      {
+        method: "PUT",
+        headers: {
+          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email_confirm: false }),
+      }
+    );
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);
