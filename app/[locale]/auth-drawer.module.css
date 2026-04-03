@@ -19,47 +19,50 @@
   pointer-events: all;
 }
 
-/* Drawer (slide from right) */
+/* Drawer (slide from top, full screen) */
 .drawer {
   position: fixed;
   top: 0;
+  left: 0;
   right: 0;
-  width: min(100%, 480px);
+  width: 100%;
   height: 100dvh;
   z-index: 90;
-  background: #0a0406;
-  border-left: 1px solid rgba(180, 80, 70, 0.18);
+  background: #000000;
   overflow-y: auto;
-  transform: translateX(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 0 0 60px;
+  transform: translateY(-100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .drawerOpen {
-  transform: translateX(0);
+  transform: translateY(0);
 }
 
-/* Header */
+/* Logo area */
+.drawerLogo {
+  width: 80px;
+  height: auto;
+  margin: 52px auto 28px;
+  display: block;
+}
+
+/* Header (close button row) */
 .drawerHeader {
-  position: sticky;
+  position: absolute;
   top: 0;
+  right: 0;
   z-index: 10;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px;
-  background: rgba(10, 4, 6, 0.97);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(180, 80, 70, 0.12);
+  justify-content: flex-end;
+  padding: 18px 24px;
 }
 
 .drawerTitle {
-  font-size: 11px;
-  letter-spacing: 0.25em;
-  color: rgba(180, 130, 110, 0.5);
-  font-family: "装甲明朝", "Soukou Mincho", "Palatino Linotype", serif;
-  margin: 0;
-  text-transform: uppercase;
+  display: none;
 }
 
 .closeButton {
@@ -67,7 +70,7 @@
   border: 1px solid transparent;
   cursor: pointer;
   color: rgba(180, 130, 110, 0.4);
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1;
   padding: 4px 8px;
   transition: all 0.15s;
@@ -78,11 +81,20 @@
   border-color: rgba(180, 80, 70, 0.3);
 }
 
+/* Inner wrapper — constrains form width */
+.drawerInner {
+  width: 100%;
+  max-width: 420px;
+  padding: 0 24px 80px;
+  box-sizing: border-box;
+}
+
 /* Tabs */
 .tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
   border-bottom: 1px solid rgba(180, 80, 70, 0.1);
+  margin-bottom: 0;
 }
 
 .tab {
@@ -110,7 +122,7 @@
 
 /* Body */
 .drawerBody {
-  padding: 28px 24px;
+  padding: 28px 0;
 }
 
 .sectionTitle {

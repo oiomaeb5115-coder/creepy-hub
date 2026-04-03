@@ -199,12 +199,18 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
 
       <div className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ""}`}>
         <div className={styles.drawerHeader}>
-          <p className={styles.drawerTitle}>ACCOUNT</p>
           <button className={styles.closeButton} onClick={close} aria-label="close">
             ✕
           </button>
         </div>
 
+        <img
+          src="/images/ui/auth-logo.png"
+          alt="logo"
+          className={styles.drawerLogo}
+        />
+
+        <div className={styles.drawerInner}>
         <div className={styles.tabs}>
           <button
             className={`${styles.tab} ${mode === "login" ? styles.tabActive : ""}`}
@@ -301,6 +307,7 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
               </div>
             </>
           )}
+        </div>
         </div>
       </div>
     </>
