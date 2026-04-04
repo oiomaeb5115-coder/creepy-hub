@@ -2,11 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { translateWikiToEnglish } from "@/lib/cfTranslate";
 import { requireAdmin } from "@/lib/apiAuth";
+import { checkRateLimit } from "@/lib/rateLimit";
+
+const TRANSLATE_RATE_LIMIT = {
+  name: "translate-wiki-admin",
+  windowMs: 60 * 60 * 1000,
+  maxRequests: 50,
+};
 
 export async function POST(req: NextRequest) {
   const isAdmin = await requireAdmin(req);
   if (!isAdmin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const rl = checkRateLimit(TRANSLATE_RATE_LIMIT, "admin");
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "翻訳リクエストが多すぎます。しばらくしてからお試しください。" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
   }
 
   const { slug } = await req.json() as { slug: string };

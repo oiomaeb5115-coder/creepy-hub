@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const excludeParam = searchParams.get("exclude") ?? "";
 
   const excludeSlugs = excludeParam
-    ? excludeParam.split(",").map((s) => s.trim()).filter(Boolean)
+    ? excludeParam.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 200)
     : [];
 
   const { data, error } = await supabase

@@ -196,7 +196,7 @@
 .siteTitleWrap {
   width: 100%;
   max-width: 760px;
-  margin-bottom: 16px;
+  margin: 0 auto 16px;
   text-align: center;
 }
 

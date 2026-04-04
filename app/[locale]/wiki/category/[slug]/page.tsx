@@ -123,8 +123,12 @@ export default async function WikiCategoryPage({
       )}
 
       <div className={styles.categoryShell}>
-        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
-        <h1 className={styles.pageLogoTitle}>{safeCategory.name}</h1>
+        {!safeCategory.header_image_url && (
+          <>
+            <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
+            <h1 className={styles.pageLogoTitle}>{safeCategory.name}</h1>
+          </>
+        )}
         <BackButton />
         <header className={styles.categoryHeader}>
           <div className={styles.categoryTitleRow}>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { getClientIp } from "@/lib/getClientIp";
 
 const REGISTER_RATE_LIMIT = {
   name: "register",
@@ -16,8 +17,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "メールアドレスとパスワードを入力してください" }, { status: 400 });
   }
 
+  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return NextResponse.json({ error: "有効なメールアドレスを入力してください" }, { status: 400 });
+  }
+
+  if (typeof password !== "string" || password.length < 8 || password.length > 128) {
+    return NextResponse.json({ error: "パスワードは8文字以上128文字以下で入力してください" }, { status: 400 });
+  }
+
   // IPアドレスベースのレート制限
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ip = getClientIp(req);
   const rateCheck = checkRateLimit(REGISTER_RATE_LIMIT, ip);
   if (!rateCheck.allowed) {
     return NextResponse.json(
@@ -49,15 +58,6 @@ export async function POST(req: NextRequest) {
     }
   );
   const lookupJson = await lookupRes.json();
-  console.log("[Register] lookup result:", JSON.stringify({
-    userCount: lookupJson?.users?.length ?? 0,
-    firstUser: lookupJson?.users?.[0] ? {
-      id: lookupJson.users[0].id,
-      email: lookupJson.users[0].email,
-      email_confirmed_at: lookupJson.users[0].email_confirmed_at,
-      deleted_at: lookupJson.users[0].deleted_at,
-    } : null,
-  }));
   const matchedUser = (lookupJson?.users as { id: string; email: string; email_confirmed_at: string | null; deleted_at: string | null }[] | undefined)
     ?.find((u) => u.email.toLowerCase() === email.toLowerCase()) ?? null;
   const existingUser = matchedUser;
@@ -72,15 +72,12 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     if (profile) {
-      console.log("[Register] active user with profile found, returning early");
       return NextResponse.json({ success: true });
     }
     // プロフィールがない = ゴーストユーザー → 削除して再作成
-    console.log("[Register] ghost user (no profile), deleting and recreating");
     await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
   } else if (existingUser) {
     // 未確認ユーザー → 削除して再作成
-    console.log("[Register] unconfirmed user found, deleting and recreating");
     await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
   }
 
@@ -93,7 +90,7 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     console.error("[Register] generateLink error:", error.message);
-    return NextResponse.json({ error: error.message ?? "登録に失敗しました" }, { status: 400 });
+    return NextResponse.json({ error: "登録に失敗しました" }, { status: 400 });
   }
 
   if (!data?.properties?.action_link) {
@@ -102,7 +99,6 @@ export async function POST(req: NextRequest) {
   }
 
   const confirmationUrl = data.properties.action_link;
-  console.log("[Register] confirmation link generated for:", email);
 
   // generateLink は admin API のためユーザーが自動確認される場合がある
   // メール確認を必須にするため、email_confirmed_at を明示的にクリアする
@@ -140,7 +136,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "メール送信に失敗しました" }, { status: 500 });
   }
 
-  console.log("[Register] email sent successfully, id:", emailData?.id);
   return NextResponse.json({ success: true });
 }
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { getClientIp } from "@/lib/getClientIp";
 
 const RESET_RATE_LIMIT = {
   name: "reset-password",
@@ -19,8 +20,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return NextResponse.json({ error: "有効なメールアドレスを入力してください" }, { status: 400 });
+  }
+
   // IPアドレスベースのレート制限
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ip = getClientIp(req);
   const rateCheck = checkRateLimit(RESET_RATE_LIMIT, ip);
   if (!rateCheck.allowed) {
     return NextResponse.json(

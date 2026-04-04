@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { checkRateLimit } from "@/lib/rateLimit";
+
+const REPORT_RATE_LIMIT = {
+  name: "wiki-report",
+  windowMs: 60 * 60 * 1000,
+  maxRequests: 10,
+};
 
 async function getAuthorizedUser(req: NextRequest) {
   const authHeader = req.headers.get("Authorization");
@@ -21,6 +28,14 @@ export async function POST(
 ) {
   const user = await getAuthorizedUser(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const rl = checkRateLimit(REPORT_RATE_LIMIT, user.id);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "報告の送信が多すぎます。しばらくしてからお試しください。" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
 
   const { id } = await params;
   const wikiId = parseInt(id, 10);

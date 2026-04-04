@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/getDictionary";
+import { sanitizeDictHtml } from "@/lib/sanitizeDictHtml";
 import BackButton from "@/components/BackButton";
 import styles from "./page.module.css";
 
@@ -38,42 +39,42 @@ export default async function PrivacyPolicyPage({
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>{p.introTitle}</h2>
-          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: p.introBody }} />
+          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: sanitizeDictHtml(p.introBody) }} />
         </section>
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>{p.collectTitle}</h2>
-          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: p.collectBody }} />
+          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: sanitizeDictHtml(p.collectBody) }} />
         </section>
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>{p.useTitle}</h2>
-          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: p.useBody }} />
+          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: sanitizeDictHtml(p.useBody) }} />
         </section>
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>{p.thirdPartyTitle}</h2>
-          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: p.thirdPartyBody }} />
+          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: sanitizeDictHtml(p.thirdPartyBody) }} />
         </section>
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>{p.localStorageTitle}</h2>
-          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: p.localStorageBody }} />
+          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: sanitizeDictHtml(p.localStorageBody) }} />
         </section>
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>{p.securityTitle}</h2>
-          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: p.securityBody }} />
+          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: sanitizeDictHtml(p.securityBody) }} />
         </section>
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>{p.changesTitle}</h2>
-          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: p.changesBody }} />
+          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: sanitizeDictHtml(p.changesBody) }} />
         </section>
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>{p.contactTitle}</h2>
-          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: p.contactBody }} />
+          <div className={styles.sectionBody} dangerouslySetInnerHTML={{ __html: sanitizeDictHtml(p.contactBody) }} />
         </section>
       </div>
     </main>

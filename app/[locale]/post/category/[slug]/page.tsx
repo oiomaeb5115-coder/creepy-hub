@@ -10,9 +10,11 @@ import CategoryReportButton from "@/components/CategoryReportButton";
 import CategoryEditButton from "@/components/CategoryEditButton";
 import CategoryDeleteButton from "@/components/CategoryDeleteButton";
 import FavoriteCategoryButton from "@/components/FavoriteCategoryButton";
+import InlineVoteButtons from "@/components/InlineVoteButtons";
 
 type StoryCategoryPageProps = {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ sort?: string }>;
 };
 
 export async function generateMetadata({ params }: StoryCategoryPageProps): Promise<Metadata> {
@@ -43,23 +45,41 @@ type StoryCategoryRow = {
   header_image_url: string | null;
 };
 
+type AuthorProfile = {
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+
+type VoteRow = {
+  vote_type: number | null;
+};
+
 type PostRow = {
   id: number;
   title: string | null;
   content: string | null;
   created_at: string | null;
   image_url: string | null;
+  image_url_2: string | null;
+  image_url_3: string | null;
   view_count: number | null;
   category_id: number | null;
   slug: string | null;
+  post_votes: VoteRow[];
+  author: AuthorProfile | null;
 };
 
 export default async function StoryCategoryPage({
   params,
+  searchParams,
 }: StoryCategoryPageProps) {
   const { locale, slug } = await params;
+  const { sort = "new" } = await searchParams;
+  const isPopular = sort === "popular";
   const dict = await getDictionary(locale);
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
+  const orderCol = isPopular ? "view_count" : "created_at";
 
   const { data: categoryData, error: categoryError } = await supabaseAdmin
     .from("story_categories")
@@ -78,10 +98,10 @@ export default async function StoryCategoryPage({
 
   const { data: postsData } = await supabaseAdmin
     .from("post")
-    .select("id, title, content, created_at, image_url, view_count, category_id, slug")
+    .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, category_id, slug, user_id, post_votes(vote_type)")
     .eq("is_published", true)
     .eq("category_id", category.id)
-    .order("created_at", { ascending: false });
+    .order(orderCol, { ascending: false });
 
   const postIds = (postsData ?? []).map((p: any) => p.id);
   let translationsMap: Record<number, { title: string; content: string }> = {};
@@ -96,6 +116,19 @@ export default async function StoryCategoryPage({
     }
   }
 
+  // Batch fetch author profiles
+  const userIds = [...new Set((postsData ?? []).map((p: any) => p.user_id).filter(Boolean))] as string[];
+  let profilesMap: Record<string, AuthorProfile> = {};
+  if (userIds.length > 0) {
+    const { data: profilesData } = await supabaseAdmin
+      .from("profiles")
+      .select("id, username, display_name, avatar_url")
+      .in("id", userIds);
+    for (const p of profilesData ?? []) {
+      profilesMap[p.id] = { username: p.username, display_name: p.display_name, avatar_url: p.avatar_url };
+    }
+  }
+
   const posts: PostRow[] = (postsData ?? []).map((p: any) => {
     const tr = translationsMap[p.id] ?? null;
     return {
@@ -104,18 +137,24 @@ export default async function StoryCategoryPage({
       content: tr?.content ?? p.content,
       created_at: p.created_at,
       image_url: p.image_url,
+      image_url_2: p.image_url_2,
+      image_url_3: p.image_url_3,
       view_count: p.view_count,
       category_id: p.category_id,
-      slug: p.slug,
+      slug: p.slug as string | null,
+      post_votes: p.post_votes ?? [],
+      author: p.user_id ? (profilesMap[p.user_id] ?? null) : null,
     };
   });
 
+  const hasHero = Boolean(category.header_image_url);
+
   return (
     <main className={styles.categoryPage}>
-      {category.header_image_url && (
+      {hasHero && (
         <div className={styles.heroImage}>
           <img
-            src={category.header_image_url}
+            src={category.header_image_url!}
             alt={`${categoryName} header`}
             className={styles.heroImg}
           />
@@ -124,6 +163,12 @@ export default async function StoryCategoryPage({
       )}
 
       <div className={styles.categoryShell}>
+        {!hasHero && (
+          <>
+            <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
+            <h1 className={styles.pageLogoTitle}>{categoryName}</h1>
+          </>
+        )}
         <BackButton />
         <header className={styles.categoryHeader}>
           <div className={styles.categoryTitleRow}>
@@ -191,77 +236,88 @@ export default async function StoryCategoryPage({
           </div>
         </header>
 
-        <section className={styles.cardSection}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>{dict.post.label}</h2>
-            <p className={styles.sectionDescription}>
-              {categoryName}
-            </p>
-          </div>
+        {/* Sort tabs */}
+        <div className={styles.sortTabs}>
+          <Link
+            href={`/${locale}/post/category/${slug}?sort=new`}
+            className={`${styles.sortTab} ${!isPopular ? styles.sortTabActive : ""}`}
+          >
+            {dict.post.newest}
+          </Link>
+          <Link
+            href={`/${locale}/post/category/${slug}?sort=popular`}
+            className={`${styles.sortTab} ${isPopular ? styles.sortTabActive : ""}`}
+          >
+            {dict.post.popular}
+          </Link>
+        </div>
 
-          {posts.length === 0 ? (
-            <p className={styles.emptyText}>{dict.post.empty}</p>
-          ) : (
-            <div className={styles.postGrid}>
-              {posts.map((post) => {
-                const safeTitle = post.title ?? dict.post.untitled;
-                const safeContent = post.content ?? "";
-                const safeCreatedAt = post.created_at ?? "";
+        {posts.length === 0 ? (
+          <p className={styles.emptyText}>{dict.post.empty}</p>
+        ) : (
+          <div className={styles.feed}>
+            {posts.map((post) => {
+              const safeTitle = post.title ?? dict.post.untitled;
+              const safeContent = post.content ?? "";
+              const dateStr = post.created_at
+                ? new Date(post.created_at).toLocaleDateString(dateLocale)
+                : dict.post.unknownDate;
+              const imageUrls = [post.image_url, post.image_url_2, post.image_url_3]
+                .filter((url): url is string => Boolean(url))
+                .slice(0, 4);
+              const authorName = post.author?.display_name || post.author?.username || null;
+              const score = (post.post_votes ?? []).reduce(
+                (sum: number, v: VoteRow) => sum + (v.vote_type ?? 0),
+                0
+              );
 
-                return (
-                  <Link
-                    href={postUrl(locale, post.id, post.slug)}
-                    key={post.id}
-                    className={styles.postCardLink}
-                  >
-                    <article className={styles.postCard}>
-                      {post.image_url ? (
-                        <img
-                          src={post.image_url}
-                          alt={safeTitle}
-                          className={styles.postCardImage}
-                        />
+              return (
+                <Link
+                  key={post.id}
+                  href={postUrl(locale, post.id, post.slug)}
+                  className={styles.postRow}
+                >
+                  <div className={styles.postContent}>
+                    <div className={styles.postAuthorRow}>
+                      {post.author?.avatar_url ? (
+                        <img src={post.author.avatar_url} alt="" className={styles.postAvatar} />
                       ) : (
-                        <div
-                          className={`${styles.postCardImage} ${styles.postCardImagePlaceholder}`}
-                        >
-                          NO IMAGE
-                        </div>
+                        <span className={styles.postAvatarPlaceholder} />
                       )}
-
-                      <div className={styles.postCardBody}>
-                        <div className={styles.postCardMetaRow}>
-                          <span className={styles.postCardCategory}>
-                            {categoryName}
-                          </span>
-                          <span className={styles.postCardDate}>
-                            {safeCreatedAt
-                              ? new Date(safeCreatedAt).toLocaleDateString(dateLocale)
-                              : dict.post.unknownDate}
-                          </span>
-                        </div>
-
-                        <h3 className={styles.postCardTitle}>{safeTitle}</h3>
-
-                        <p className={styles.postCardExcerpt}>
-                          {safeContent.length > 400
-                            ? `${safeContent.slice(0, 400)}...`
-                            : safeContent}
-                        </p>
-
-                        <div className={styles.postCardFooter}>
-                          <span className={styles.postCardViews}>
-                            {dict.post.views}: {post.view_count ?? 0}
-                          </span>
-                        </div>
+                      <span className={styles.postAuthorName}>
+                        {authorName ? `@${post.author?.username ?? authorName}` : (locale === "en" ? "Anonymous" : "匿名")}
+                      </span>
+                      <span className={styles.postDate}>{dateStr}</span>
+                    </div>
+                    <h3 className={styles.postTitle}>{safeTitle}</h3>
+                    <p className={styles.postExcerpt}>
+                      {safeContent.length > 400
+                        ? `${safeContent.slice(0, 400)}...`
+                        : safeContent}
+                    </p>
+                    {imageUrls.length > 0 && (
+                      <div className={`${styles.postImageWrap} ${imageUrls.length >= 2 ? styles.postImageGrid : ""}`}>
+                        {imageUrls.map((url, i) => (
+                          <img
+                            key={i}
+                            src={url}
+                            alt={`${safeTitle} ${i + 1}`}
+                            className={styles.postImage}
+                            loading="lazy"
+                          />
+                        ))}
                       </div>
-                    </article>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </section>
+                    )}
+                    <div className={styles.postFooter}>
+                      <InlineVoteButtons postId={post.id} initialScore={score} />
+                      <span>👁 {post.view_count ?? 0} {dict.post.views}</span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
     </main>
   );

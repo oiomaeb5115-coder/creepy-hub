@@ -34,6 +34,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "name と slug は必須です" }, { status: 400 });
   }
 
+  if (name.trim().length > 50) {
+    return NextResponse.json({ error: "カテゴリ名は50文字以内にしてください" }, { status: 400 });
+  }
+
+  if (slug.trim().length > 80) {
+    return NextResponse.json({ error: "slug は80文字以内にしてください" }, { status: 400 });
+  }
+
   if (!/^[a-z0-9-]+$/.test(slug)) {
     return NextResponse.json(
       { error: "slug は半角英小文字・数字・ハイフンのみ使用できます" },
@@ -85,7 +93,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { error: insertError } = await supabase.from("categories").insert({
+  const { data: inserted, error: insertError } = await supabase.from("categories").insert({
     name: name.trim(),
     slug: slug.trim(),
     description: description?.trim() ?? null,
@@ -95,10 +103,25 @@ export async function POST(req: NextRequest) {
     created_by: userId,
     is_user_created: true,
     is_active: false,
-  });
+  }).select("id").single();
 
   if (insertError) {
     return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
+  }
+
+  // レースコンディション対策: INSERT後に再度カウントし、上限超過なら削除
+  const { count: postInsertCount } = await supabase
+    .from("categories")
+    .select("id", { count: "exact", head: true })
+    .eq("created_by", userId)
+    .eq("is_user_created", true);
+
+  if ((postInsertCount ?? 0) > 5 && inserted?.id) {
+    await supabase.from("categories").delete().eq("id", inserted.id);
+    return NextResponse.json(
+      { error: "カテゴリの作成上限（5個）に達しています" },
+      { status: 403 }
+    );
   }
 
   return NextResponse.json({ success: true }, { status: 201 });

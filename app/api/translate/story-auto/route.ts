@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { translateStoryToEnglish } from "@/lib/cfTranslate";
+import { checkRateLimit } from "@/lib/rateLimit";
+
+const TRANSLATE_AUTO_RATE_LIMIT = {
+  name: "translate-story-auto",
+  windowMs: 60 * 60 * 1000,
+  maxRequests: 10,
+};
 
 /**
  * 投稿公開時に自動で英語翻訳を生成するエンドポイント。
@@ -22,6 +29,14 @@ export async function POST(req: NextRequest) {
   const { data: userData, error: authError } = await supabase.auth.getUser(token);
   if (authError || !userData.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const rl = checkRateLimit(TRANSLATE_AUTO_RATE_LIMIT, userData.user.id);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "翻訳リクエストが多すぎます。しばらくしてからお試しください。" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
   }
 
   const { postId, force } = (await req.json()) as { postId: number; force?: boolean };

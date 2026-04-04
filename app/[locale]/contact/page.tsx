@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/getDictionary";
+import { sanitizeDictHtml } from "@/lib/sanitizeDictHtml";
 import BackButton from "@/components/BackButton";
 import styles from "../privacy-policy/page.module.css";
 
@@ -38,7 +39,7 @@ export default async function ContactPage({
         <section className={styles.section}>
           <div
             className={styles.sectionBody}
-            dangerouslySetInnerHTML={{ __html: c.body }}
+            dangerouslySetInnerHTML={{ __html: sanitizeDictHtml(c.body) }}
           />
         </section>
       </div>

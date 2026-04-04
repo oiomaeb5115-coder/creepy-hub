@@ -6,8 +6,11 @@ export async function GET(req: NextRequest) {
   const excludeParam = searchParams.get("exclude") ?? "";
 
   const excludeIds = excludeParam
-    ? excludeParam.split(",").map((s) => s.trim()).filter(Boolean)
+    ? excludeParam.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 200)
     : [];
+
+  // IDが数値であることを検証
+  const validExcludeIds = excludeIds.filter((id) => /^\d+$/.test(id));
 
   const { data, error } = await supabase
     .from("post")
@@ -20,8 +23,8 @@ export async function GET(req: NextRequest) {
   }
 
   // Prefer unread posts; fall back to all if everything has been read
-  const unread = excludeIds.length > 0
-    ? data.filter((row) => !excludeIds.includes(String(row.id)))
+  const unread = validExcludeIds.length > 0
+    ? data.filter((row) => !validExcludeIds.includes(String(row.id)))
     : data;
 
   const pool = unread.length > 0 ? unread : data;
