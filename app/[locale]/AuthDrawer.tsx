@@ -205,7 +205,7 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
         </div>
 
         <img
-          src="/images/ui/auth-logo_2.png"
+          src="/images/ui/auth-logo_2.webp"
           alt="logo"
           className={styles.drawerLogo}
         />

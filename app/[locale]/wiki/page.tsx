@@ -85,7 +85,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
   return (
     <main className={styles.wikiPage}>
       <div className={styles.pageHero}>
-        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
+        <img src="/images/ui/auth-logo_2.webp" alt="" className={styles.pageTopLogo} />
         <h1 className={styles.wikiTitle}>Occult Wiki</h1>
         <p className={styles.wikiSubtitle}>{dict.wiki.subtitle}</p>
       </div>

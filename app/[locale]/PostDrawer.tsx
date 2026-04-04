@@ -276,7 +276,7 @@ export default function PostDrawer({ locale, labels }: Props) {
           </button>
         </div>
 
-        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.drawerLogo} />
+        <img src="/images/ui/auth-logo_2.webp" alt="" className={styles.drawerLogo} />
 
         <div className={styles.drawerBody}>
           {!authChecked ? (

@@ -126,7 +126,7 @@ export default async function WikiDetailPage({
     .eq("locale", locale)
     .eq("is_published", true)
     .neq("id", safePage.id)
-    .limit(200);
+    .limit(50);
 
   // 英語版の存在チェック（ja ページの場合）
   let hasEnglishTranslation = false;

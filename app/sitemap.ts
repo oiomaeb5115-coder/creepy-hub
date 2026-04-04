@@ -2,6 +2,9 @@ import type { MetadataRoute } from 'next'
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { postUrl } from '@/lib/postUrl'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 3600 // 1時間キャッシュ
+
 const BASE_URL = 'https://creepyhub.com'
 const locales = ['ja', 'en']
 
@@ -44,23 +47,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     supabase
       .from('post')
       .select('id, slug, updated_at, created_at')
-      .eq('is_published', true),
+      .eq('is_published', true)
+      .limit(1000),
     // EN は翻訳済み投稿のみ（noindex ページをサイトマップに含めない）
     supabase
       .from('post_translations')
       .select('post_id, post:post!inner(id, slug, updated_at, created_at)')
       .eq('locale', 'en')
-      .eq('post.is_published', true),
+      .eq('post.is_published', true)
+      .limit(1000),
     supabase
       .from('wiki_pages')
       .select('slug, updated_at')
       .eq('locale', 'ja')
-      .eq('is_published', true),
+      .eq('is_published', true)
+      .limit(1000),
     supabase
       .from('wiki_pages')
       .select('slug, updated_at')
       .eq('locale', 'en')
-      .eq('is_published', true),
+      .eq('is_published', true)
+      .limit(1000),
     // カテゴリー
     supabase
       .from('story_categories')

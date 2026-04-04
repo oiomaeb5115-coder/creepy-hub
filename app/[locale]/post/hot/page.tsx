@@ -6,7 +6,7 @@ import styles from "../../page.module.css";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 type Props = {
   params: Promise<{ locale: string }>;

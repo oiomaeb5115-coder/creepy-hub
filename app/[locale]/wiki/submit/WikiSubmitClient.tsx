@@ -422,7 +422,7 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
   return (
     <main className={styles.submitPage}>
       <div className={styles.submitShell}>
-        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
+        <img src="/images/ui/auth-logo_2.webp" alt="" className={styles.pageTopLogo} />
         <h1 className={styles.pageLogoTitle}>{labels.headerTitle}</h1>
         <BackButton />
         <header className={styles.submitHeader}>

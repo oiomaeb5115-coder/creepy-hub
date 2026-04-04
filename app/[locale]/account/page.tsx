@@ -194,7 +194,7 @@ export default function AccountPage() {
   return (
     <main className={styles.accountPage}>
       <div className={styles.accountShell}>
-        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
+        <img src="/images/ui/auth-logo_2.webp" alt="" className={styles.pageTopLogo} />
         <BackButton />
         <header className={styles.accountHeader}>
           <div>

@@ -101,7 +101,8 @@ export default async function StoryCategoryPage({
     .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, category_id, slug, user_id, post_votes(vote_type)")
     .eq("is_published", true)
     .eq("category_id", category.id)
-    .order(orderCol, { ascending: false });
+    .order(orderCol, { ascending: false })
+    .limit(50);
 
   const postIds = (postsData ?? []).map((p: any) => p.id);
   let translationsMap: Record<number, { title: string; content: string }> = {};
@@ -165,7 +166,7 @@ export default async function StoryCategoryPage({
       <div className={styles.categoryShell}>
         {!hasHero && (
           <>
-            <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
+            <img src="/images/ui/auth-logo_2.webp" alt="" className={styles.pageTopLogo} />
             <h1 className={styles.pageLogoTitle}>{categoryName}</h1>
           </>
         )}

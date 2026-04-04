@@ -9,7 +9,7 @@ import CategorySidebar from "@/components/CategorySidebar";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -140,7 +140,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
   return (
     <main className={styles.storyPage}>
       <div className={styles.pageHero}>
-        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
+        <img src="/images/ui/auth-logo_2.webp" alt="" className={styles.pageTopLogo} />
         <h1 className={styles.pageTitle}>POST</h1>
         <p className={styles.pageSubtitle}>怖いもの、こと、お話、なんでも投稿していい場所</p>
       </div>

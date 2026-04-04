@@ -319,7 +319,7 @@ export default async function HomePage({ params }: HomePageProps) {
 
           <div className={styles.heroInner}>
             <img
-              src="/images/ui/auth-logo_2.png"
+              src="/images/ui/auth-logo_2.webp"
               alt=""
               className={styles.heroLogo}
             />
