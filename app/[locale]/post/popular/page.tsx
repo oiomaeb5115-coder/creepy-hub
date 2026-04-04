@@ -26,6 +26,8 @@ type StoryPost = {
   image_url: string | null;
   view_count: number | null;
   slug: string | null;
+  vote_score: number | null;
+  comment_count: number | null;
 };
 
 export default async function PopularPage({ params }: Props) {
@@ -34,7 +36,7 @@ export default async function PopularPage({ params }: Props) {
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
   const { data: rawData, error: postError } = await supabaseAdmin
-    .from("post")
+    .from("post_with_counts")
     .select(`
       id,
       title,
@@ -42,7 +44,9 @@ export default async function PopularPage({ params }: Props) {
       created_at,
       image_url,
       view_count,
-      slug
+      slug,
+      vote_score,
+      comment_count
     `)
     .eq("is_published", true)
     .limit(30);
@@ -64,8 +68,8 @@ export default async function PopularPage({ params }: Props) {
 
   const posts = (rawData ?? [])
     .map((post: any) => {
-      const score = 0;
-      const commentCount = 0;
+      const score = post.vote_score ?? 0;
+      const commentCount = post.comment_count ?? 0;
 
       const tr = translationsMap[post.id] ?? null;
       const title = tr?.title ?? post.title;
@@ -79,7 +83,7 @@ export default async function PopularPage({ params }: Props) {
         commentCount,
       };
     })
-    .sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
+    .sort((a, b) => b.score - a.score);
 
   return (
     <main className={styles.archivePage}>

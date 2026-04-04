@@ -30,6 +30,8 @@ type StoryPost = {
   image_url_3: string | null;
   view_count: number | null;
   slug: string | null;
+  vote_score: number | null;
+  comment_count: number | null;
   author?: AuthorProfile | null;
 };
 
@@ -73,8 +75,8 @@ function StoryCardGrid({
   const safeCreatedAt = post.created_at ?? "";
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
-  const score = 0;
-  const commentCount = 0;
+  const score = post.vote_score ?? 0;
+  const commentCount = post.comment_count ?? 0;
 
   const imageUrls = [post.image_url, post.image_url_2, post.image_url_3]
     .filter((url): url is string => Boolean(url))
@@ -196,7 +198,7 @@ export default async function HomePage({ params }: HomePageProps) {
   const dict = await getDictionary(locale);
 
   const storiesQuery = supabaseAdmin
-    .from("post")
+    .from("post_with_counts")
     .select(`
       id,
       title,
@@ -207,7 +209,9 @@ export default async function HomePage({ params }: HomePageProps) {
       image_url_3,
       view_count,
       user_id,
-      slug
+      slug,
+      vote_score,
+      comment_count
     `)
     .eq("is_published", true)
     .order("created_at", { ascending: false })
@@ -265,6 +269,8 @@ export default async function HomePage({ params }: HomePageProps) {
     view_count: p.view_count,
     slug: p.slug as string | null,
     user_id: p.user_id as string | null,
+    vote_score: p.vote_score,
+    comment_count: p.comment_count,
     author: null as AuthorProfile | null,
   };
   });
