@@ -149,6 +149,11 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
             {dict.wiki.allCategories}
           </Link>
         </div>
+        <div style={{ marginTop: "8px" }}>
+          <Link href={`/${locale}/wiki/category/create`} className={styles.categoryChipNew}>
+            {dict.wiki.createCategory}
+          </Link>
+        </div>
 
         {/* Sort toggle */}
         <div className={styles.sortTabs}>

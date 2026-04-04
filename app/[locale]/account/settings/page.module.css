@@ -198,6 +198,58 @@
   cursor: not-allowed;
 }
 
+/* ── Danger Zone ── */
+
+.dangerZone {
+  margin-top: 40px;
+  padding: 24px;
+  border: 1px solid rgba(180, 60, 60, 0.35);
+  background: rgba(30, 5, 8, 0.7);
+}
+
+.dangerTitle {
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: #e06060;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+}
+
+.dangerText {
+  margin: 0 0 18px;
+  font-size: 14px;
+  color: #9a8880;
+  line-height: 1.7;
+}
+
+.dangerError {
+  color: #e8a0a0;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.dangerButton {
+  min-height: 48px;
+  padding: 0 24px;
+  border: 1px solid rgba(200, 60, 60, 0.5);
+  background: rgba(120, 30, 30, 0.7);
+  color: #ffd0d0;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  transition: background 0.15s;
+}
+
+.dangerButton:hover {
+  background: rgba(160, 40, 40, 0.9);
+  border-color: rgba(220, 80, 80, 0.7);
+}
+
+.dangerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 760px) {
   .settingsHeader {
     flex-direction: column;

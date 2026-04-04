@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("Authorization");
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 5個上限チェック
-  const { count } = await supabase
+  const { count } = await supabaseAdmin
     .from("categories")
     .select("id", { count: "exact", head: true })
     .eq("created_by", userId)
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
   }
 
   // slug 重複チェック
-  const { data: existing } = await supabase
+  const { data: existing } = await supabaseAdmin
     .from("categories")
     .select("id")
     .eq("slug", slug.trim())
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { data: inserted, error: insertError } = await supabase.from("categories").insert({
+  const { data: inserted, error: insertError } = await supabaseAdmin.from("categories").insert({
     name: name.trim(),
     slug: slug.trim(),
     description: description?.trim() ?? null,
@@ -106,18 +107,19 @@ export async function POST(req: NextRequest) {
   }).select("id").single();
 
   if (insertError) {
+    console.error("[wiki-category/create] insert error:", insertError.message);
     return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
   }
 
   // レースコンディション対策: INSERT後に再度カウントし、上限超過なら削除
-  const { count: postInsertCount } = await supabase
+  const { count: postInsertCount } = await supabaseAdmin
     .from("categories")
     .select("id", { count: "exact", head: true })
     .eq("created_by", userId)
     .eq("is_user_created", true);
 
   if ((postInsertCount ?? 0) > 5 && inserted?.id) {
-    await supabase.from("categories").delete().eq("id", inserted.id);
+    await supabaseAdmin.from("categories").delete().eq("id", inserted.id);
     return NextResponse.json(
       { error: "カテゴリの作成上限（5個）に達しています" },
       { status: 403 }

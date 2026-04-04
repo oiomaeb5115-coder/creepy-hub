@@ -197,6 +197,11 @@ export default async function StoryIndex({ params, searchParams }: Props) {
             </Link>
           ))}
         </div>
+        <div style={{ marginTop: "8px" }}>
+          <Link href={`/${locale}/category/create`} className={styles.categoryChipNew}>
+            {dict.post.createCategory}
+          </Link>
+        </div>
 
         {/* Sort tabs */}
         <div className={styles.sortTabs}>

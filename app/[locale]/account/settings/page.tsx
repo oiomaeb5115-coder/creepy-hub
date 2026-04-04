@@ -33,6 +33,8 @@ export default function AccountSettingsPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -209,6 +211,41 @@ export default function AccountSettingsPage() {
       setTimeout(() => router.push(`/${locale}/account`), 1000);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm(dict.account.deleteAccountConfirm)) return;
+
+    setDeleting(true);
+    setDeleteError("");
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        router.push(`/${locale}/login`);
+        return;
+      }
+
+      const res = await fetch("/api/auth/delete-account", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (!res.ok) {
+        setDeleteError(dict.account.deleteAccountFailed);
+        return;
+      }
+
+      await supabase.auth.signOut();
+      router.push(`/${locale}`);
+    } catch {
+      setDeleteError(dict.account.deleteAccountFailed);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -404,6 +441,22 @@ export default function AccountSettingsPage() {
               </button>
             </div>
           </form>
+        </section>
+
+        <section className={styles.dangerZone}>
+          <h2 className={styles.dangerTitle}>Danger Zone</h2>
+          <p className={styles.dangerText}>{dict.account.deleteAccountDesc}</p>
+          {deleteError && (
+            <p className={styles.dangerError}>{deleteError}</p>
+          )}
+          <button
+            type="button"
+            className={styles.dangerButton}
+            onClick={handleDeleteAccount}
+            disabled={deleting}
+          >
+            {deleting ? dict.account.accountDeleting : dict.account.deleteAccount}
+          </button>
         </section>
       </div>
     </main>
