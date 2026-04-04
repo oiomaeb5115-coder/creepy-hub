@@ -8,5 +8,7 @@ export function postUrl(
   id: number | string,
   slug?: string | null
 ): string {
-  return slug ? `/${locale}/post/${id}/${slug}` : `/${locale}/post/${id}`;
+  return slug
+    ? `/${locale}/post/${id}/${encodeURIComponent(slug)}`
+    : `/${locale}/post/${id}`;
 }

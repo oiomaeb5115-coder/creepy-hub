@@ -19,3 +19,22 @@ export function generateSlug(title: string): string | null {
 
   return slug || null;
 }
+
+/**
+ * 手動入力されたスラッグをサニタイズする。
+ * URL文字（/,:,?,#等）を除去し、安全な文字列に変換。
+ * 空文字列の場合はnullを返す。
+ */
+export function sanitizeSlug(input: string): string | null {
+  if (!input) return null;
+
+  const sanitized = input
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 80);
+
+  return sanitized || null;
+}

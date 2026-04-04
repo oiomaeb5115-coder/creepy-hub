@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { getAccessToken } from "@/lib/auth";
 import { validateImageFile } from "@/lib/validateImageFile";
 import { compressImage } from "@/lib/compressImage";
-import { generateSlug } from "@/lib/slug";
+import { generateSlug, sanitizeSlug } from "@/lib/slug";
 import { postUrl } from "@/lib/postUrl";
 import styles from "./post-drawer.module.css";
 
@@ -194,7 +194,7 @@ export default function PostDrawer({ locale, labels }: Props) {
         throw err;
       });
 
-      const rawSlug = slugInput.trim();
+      const rawSlug = sanitizeSlug(slugInput.trim());
       const slug = rawSlug || generateSlug(title.trim());
 
       const { data, error } = await supabase
@@ -214,7 +214,11 @@ export default function PostDrawer({ locale, labels }: Props) {
         .select()
         .single();
 
-      if (error) { alert(`${labels.alertPostFailed}${error.message}`); return; }
+      if (error) {
+        console.error("[PostDrawer] INSERT failed:", error.code, error.message, error.details);
+        alert(`${labels.alertPostFailed}${error.message}`);
+        return;
+      }
 
       // EN locale で投稿した場合、post_translations に EN 翻訳行を作成
       // → EN版で閲覧時に翻訳テキストとして使用される
@@ -233,7 +237,9 @@ export default function PostDrawer({ locale, labels }: Props) {
       setMainImage1(null); setMainImage2(null); setMainImage3(null);
       setDraftRestored(false);
       setIsOpen(false);
-      window.location.href = postUrl(locale, data.id, data.slug);
+      const redirectUrl = postUrl(locale, data.id, data.slug);
+      console.log("[PostDrawer] Post created:", { id: data.id, slug: data.slug, redirectUrl });
+      window.location.href = redirectUrl;
     } catch {
       // already alerted
     } finally {
@@ -320,7 +326,12 @@ export default function PostDrawer({ locale, labels }: Props) {
                   className={styles.formControl}
                   value={slugInput}
                   onChange={(e) => {
-                    setSlugInput(e.target.value);
+                    const v = e.target.value
+                      .toLowerCase()
+                      .replace(/[^a-z0-9\s-]/g, "")
+                      .replace(/\s+/g, "-")
+                      .replace(/-+/g, "-");
+                    setSlugInput(v);
                     setSlugManuallyEdited(true);
                   }}
                   placeholder="e.g. shisaki-eiko"
