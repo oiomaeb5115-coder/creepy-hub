@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { postUrl } from '@/lib/postUrl'
 
 const BASE_URL = 'https://creepyhub.com'
