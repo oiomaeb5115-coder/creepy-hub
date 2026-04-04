@@ -318,6 +318,11 @@ export default async function HomePage({ params }: HomePageProps) {
           </div>
 
           <div className={styles.heroInner}>
+            <img
+              src="/images/ui/auth-logo_2.png"
+              alt=""
+              className={styles.heroLogo}
+            />
             <div className={styles.siteTitleWrap}>
               <h1 className={styles.siteTitleText}>
                 CREEPY HUB

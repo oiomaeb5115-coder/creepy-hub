@@ -104,6 +104,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
         </div>
       </CategorySidebar>
       <div className={styles.wikiShell}>
+        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
         <BackButton />
         <header className={styles.wikiHeader}>
           <div>
@@ -144,9 +145,6 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
           ))}
           <Link href={`/${locale}/wiki/categories`} className={styles.categoryChipMore}>
             {dict.wiki.allCategories}
-          </Link>
-          <Link href={`/${locale}/wiki/category/create`} className={styles.categoryChipNew}>
-            {dict.wiki.createCategory}
           </Link>
         </div>
 

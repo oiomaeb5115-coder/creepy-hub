@@ -197,6 +197,14 @@
   width: 100%;
   max-width: 760px;
   margin-bottom: 16px;
+  text-align: center;
+}
+
+.heroLogo {
+  display: block;
+  height: 72px;
+  width: auto;
+  margin: 0 auto 12px;
 }
 
 .siteTitleText {

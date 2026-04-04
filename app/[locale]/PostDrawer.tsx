@@ -241,15 +241,21 @@ export default function PostDrawer({ locale, labels }: Props) {
     }
   };
 
+  const hideFloatingButton =
+    pathname.endsWith("/wiki/submit") ||
+    /\/wiki\/[^/]+\/edit$/.test(pathname);
+
   return (
     <>
-      <button
-        className={styles.floatingButton}
-        onClick={() => setIsOpen(true)}
-        aria-label={labels.publish}
-      >
-        <Image src="/images/ui/post.png" alt="POST" width={68} height={68} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-      </button>
+      {!hideFloatingButton && (
+        <button
+          className={styles.floatingButton}
+          onClick={() => setIsOpen(true)}
+          aria-label={labels.publish}
+        >
+          <Image src="/images/ui/post.png" alt="POST" width={68} height={68} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        </button>
+      )}
 
       <div
         className={`${styles.overlay} ${isOpen ? styles.overlayVisible : ""}`}
@@ -263,6 +269,8 @@ export default function PostDrawer({ locale, labels }: Props) {
             ✕
           </button>
         </div>
+
+        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.drawerLogo} />
 
         <div className={styles.drawerBody}>
           {!authChecked ? (

@@ -56,6 +56,13 @@
   border-bottom: 1px solid rgba(200, 40, 50, 0.12);
 }
 
+.drawerLogo {
+  display: block;
+  height: 48px;
+  width: auto;
+  margin: 20px auto 0;
+}
+
 .drawerTitle {
   font-size: 11px;
   letter-spacing: 0.25em;

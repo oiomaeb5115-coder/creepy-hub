@@ -5,6 +5,13 @@
   padding: 32px 20px 100px;
 }
 
+.pageTopLogo {
+  display: block;
+  height: 60px;
+  width: auto;
+  margin: 24px auto 0;
+}
+
 .accountShell {
   max-width: 1000px;
   margin: 0 auto;

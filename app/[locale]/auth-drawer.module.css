@@ -43,9 +43,10 @@
 
 /* Logo area */
 .drawerLogo {
-  width: 80px;
+  width: 33vw;
+  max-width: 260px;
   height: auto;
-  margin: 52px auto 28px;
+  margin: 40px auto 24px;
   display: block;
 }
 
@@ -81,6 +82,28 @@
   border-color: rgba(180, 80, 70, 0.3);
 }
 
+/* Welcome text */
+.welcomeText {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #f5f1eb;
+  margin: 10px 0 28px;
+  letter-spacing: 0.08em;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+}
+
+/* Mode title (ログイン / 登録) */
+.modeTitle {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(180, 130, 110, 0.55);
+  letter-spacing: 0.18em;
+  margin: 0 0 18px;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  text-transform: uppercase;
+}
+
 /* Inner wrapper — constrains form width */
 .drawerInner {
   width: 100%;
@@ -89,35 +112,59 @@
   box-sizing: border-box;
 }
 
-/* Tabs */
+/* Tabs — carousel style (active always centered) */
 .tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border-bottom: 1px solid rgba(180, 80, 70, 0.1);
-  margin-bottom: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 10px 0;
 }
 
 .tab {
   background: none;
   border: none;
-  padding: 16px;
-  font-size: 11px;
+  padding: 6px 4px;
+  font-size: 10px;
   letter-spacing: 0.18em;
-  color: rgba(180, 130, 110, 0.35);
+  color: rgba(180, 130, 110, 0.28);
   font-family: "装甲明朝", "Soukou Mincho", serif;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
+  border-bottom: 1px solid transparent;
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   text-transform: uppercase;
 }
 
-.tab:hover {
-  color: rgba(200, 150, 130, 0.6);
+/* Inactive tab → absolutely positioned to the side */
+.tab:not(.tabActive) {
+  position: absolute;
+  font-size: 9px;
+  opacity: 0.35;
 }
 
+/* LOGIN (first child) inactive → left */
+.tab:first-child:not(.tabActive) {
+  left: 24px;
+}
+
+/* REGISTER (last child) inactive → right */
+.tab:last-child:not(.tabActive) {
+  right: 24px;
+}
+
+.tab:hover {
+  color: rgba(200, 150, 130, 0.5);
+}
+
+/* Active tab — in normal flow, auto-centered by parent */
 .tabActive {
-  color: rgba(245, 241, 235, 0.85);
+  position: relative;
+  font-size: 15px;
+  color: rgba(245, 241, 235, 0.9);
   border-bottom-color: rgba(200, 80, 70, 0.6);
+  letter-spacing: 0.22em;
+  border-bottom: 1px solid rgba(200, 80, 70, 0.6);
 }
 
 /* Body */
@@ -126,17 +173,17 @@
 }
 
 .sectionTitle {
-  font-size: 22px;
+  font-size: 18px;
   letter-spacing: 0.04em;
   color: #f5f1eb;
-  margin: 0 0 8px;
+  margin: 0 0 5px;
   font-family: "装甲明朝", "Soukou Mincho", serif;
 }
 
 .sectionSub {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(180, 130, 110, 0.4);
-  margin: 0 0 28px;
+  margin: 0 0 18px;
   letter-spacing: 0.04em;
 }
 
@@ -144,12 +191,12 @@
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
+  gap: 5px;
+  margin-bottom: 14px;
 }
 
 .formGroup label {
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 0.18em;
   color: rgba(180, 130, 110, 0.45);
   font-family: "装甲明朝", "Soukou Mincho", serif;
@@ -160,8 +207,8 @@
   background: rgba(180, 80, 70, 0.03);
   border: 1px solid rgba(180, 80, 70, 0.15);
   color: #f5f1eb;
-  padding: 10px 14px;
-  font-size: 14px;
+  padding: 7px 11px;
+  font-size: 13px;
   font-family: inherit;
   outline: none;
   transition: all 0.2s;
@@ -175,7 +222,7 @@
 }
 
 .submitRow {
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .primaryButton {
@@ -183,8 +230,8 @@
   background: rgba(180, 60, 50, 0.2);
   border: 1px solid rgba(200, 80, 70, 0.4);
   color: #f5f1eb;
-  padding: 13px;
-  font-size: 12px;
+  padding: 10px;
+  font-size: 11px;
   letter-spacing: 0.16em;
   font-family: "装甲明朝", "Soukou Mincho", serif;
   cursor: pointer;
@@ -231,7 +278,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 20px 0;
+  margin: 14px 0;
   font-size: 9px;
   letter-spacing: 0.15em;
   color: rgba(180, 130, 110, 0.2);
@@ -251,8 +298,8 @@
   background: rgba(180, 80, 70, 0.03);
   border: 1px solid rgba(180, 80, 70, 0.15);
   color: rgba(245, 241, 235, 0.75);
-  padding: 11px;
-  font-size: 12px;
+  padding: 8px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   font-family: inherit;
   cursor: pointer;
@@ -274,8 +321,8 @@
   background: rgba(88, 101, 242, 0.03);
   border: 1px solid rgba(88, 101, 242, 0.25);
   color: rgba(245, 241, 235, 0.75);
-  padding: 11px;
-  font-size: 12px;
+  padding: 8px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   font-family: inherit;
   cursor: pointer;
@@ -283,7 +330,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 6px;
   transition: all 0.2s;
 }
 
@@ -307,8 +354,8 @@
 .checkboxLabel {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 10px;
   color: rgba(200, 170, 155, 0.7);
   cursor: pointer;
   line-height: 1.5;

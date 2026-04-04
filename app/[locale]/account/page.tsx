@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getIsAdmin } from "@/lib/auth";
 import { compressImage } from "@/lib/compressImage";
@@ -27,8 +27,13 @@ export default function AccountPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
   const dict = locale === "en" ? en : ja;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const modalParam = searchParams.get("modal");
 
   const [loading, setLoading] = useState(true);
+  const [notAuthenticated, setNotAuthenticated] = useState(false);
+  const modalWasOpened = useRef(false);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -46,12 +51,13 @@ export default function AccountPage() {
     const loadAccount = async () => {
       try {
         const {
-          data: { session },
-          error: sessionError,
-        } = await supabase.auth.getSession();
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
 
-        if (sessionError || !session?.user) {
-          window.location.href = `/${locale}/login`;
+        if (userError || !user) {
+          setNotAuthenticated(true);
+          router.replace(`/${locale}/account?modal=login`);
           return;
         }
 
@@ -60,7 +66,7 @@ export default function AccountPage() {
           .select(
             "id, username, display_name, avatar_url, banner_url, bio, website_url, location, is_public"
           )
-          .eq("id", session.user.id)
+          .eq("id", user.id)
           .single();
 
         if (profileError) {
@@ -77,6 +83,15 @@ export default function AccountPage() {
 
     loadAccount();
   }, [locale]);
+
+  useEffect(() => {
+    if (notAuthenticated && modalParam === "login") {
+      modalWasOpened.current = true;
+    }
+    if (notAuthenticated && modalWasOpened.current && !modalParam) {
+      router.replace(`/${locale}`);
+    }
+  }, [notAuthenticated, modalParam, locale, router]);
 
   const openEdit = () => {
     setEditDisplayName(profile?.display_name ?? "");
@@ -97,11 +112,11 @@ export default function AccountPage() {
       alert("ファイルサイズは5MB以内にしてください");
       return null;
     }
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return null;
+    const { data: { user: uploadUser } } = await supabase.auth.getUser();
+    if (!uploadUser) return null;
     const compressed = await compressImage(file);
     const fileExt = compressed.name.split(".").pop() || "jpg";
-    const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
+    const fileName = `${uploadUser.id}/${Date.now()}.${fileExt}`;
     const { error: uploadError } = await supabase.storage
       .from(bucket)
       .upload(fileName, compressed, { cacheControl: "3600", upsert: true });
@@ -173,17 +188,13 @@ export default function AccountPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <main className={styles.accountPage}>
-        <div className={styles.accountShell}>{dict.common.loading}</div>
-      </main>
-    );
-  }
+  if (loading) return null;
+  if (notAuthenticated) return null;
 
   return (
     <main className={styles.accountPage}>
       <div className={styles.accountShell}>
+        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
         <BackButton />
         <header className={styles.accountHeader}>
           <div>

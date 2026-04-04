@@ -205,12 +205,17 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
         </div>
 
         <img
-          src="/images/ui/auth-logo.png"
+          src="/images/ui/auth-logo_2.png"
           alt="logo"
           className={styles.drawerLogo}
         />
 
+        <p className={styles.welcomeText}>Welcome!</p>
+
         <div className={styles.drawerInner}>
+        <p className={styles.modeTitle}>
+          {mode === "login" ? labels.loginTitle : labels.registerTitle}
+        </p>
         <div className={styles.tabs}>
           <button
             className={`${styles.tab} ${mode === "login" ? styles.tabActive : ""}`}
@@ -229,8 +234,6 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
         <div className={styles.drawerBody}>
           {mode === "login" ? (
             <>
-              <h2 className={styles.sectionTitle}>{labels.loginTitle}</h2>
-              <p className={styles.sectionSub}>{labels.loginSub}</p>
               <form onSubmit={handleLogin}>
                 <div className={styles.formGroup}>
                   <label htmlFor="auth-email">{labels.emailLabel}</label>
@@ -260,8 +263,6 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
             </>
           ) : (
             <>
-              <h2 className={styles.sectionTitle}>{labels.registerTitle}</h2>
-              <p className={styles.sectionSub}>{labels.registerSub}</p>
               <form onSubmit={handleRegister}>
                 <div className={styles.formGroup}>
                   <label htmlFor="reg-email">{labels.emailLabel}</label>

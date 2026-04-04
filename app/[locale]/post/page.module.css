@@ -14,6 +14,14 @@
   align-items: flex-start;
 }
 
+.pageTopLogo {
+  display: block;
+  height: 60px;
+  width: auto;
+  margin: 24px auto 0;
+}
+
+
 .storyShell {
   flex: 1;
   min-width: 0;
@@ -42,6 +50,14 @@
   line-height: 1.1;
   color: #f5f1eb;
   font-family: "装甲明朝", "Soukou Mincho", serif;
+  text-align: center;
+}
+
+.pageSubtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: #a49080;
+  text-align: center;
 }
 
 .headerActions {

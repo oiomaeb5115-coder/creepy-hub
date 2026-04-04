@@ -160,11 +160,13 @@ export default async function StoryIndex({ params, searchParams }: Props) {
         </div>
       </CategorySidebar>
       <div className={styles.storyShell}>
+        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
         <BackButton />
         <header className={styles.pageHeader}>
           <div>
-            <p className={styles.breadcrumb}>HORROR POST / ARCHIVE</p>
-            <h1 className={styles.pageTitle}>Horror Post</h1>
+            <p className={styles.breadcrumb}>POST / ARCHIVE</p>
+            <h1 className={styles.pageTitle}>POST</h1>
+            <p className={styles.pageSubtitle}>怖いもの、こと、お話、なんでも投稿していい場所</p>
           </div>
           <div className={styles.headerActions}>
             <PostRandomButton
@@ -200,9 +202,6 @@ export default async function StoryIndex({ params, searchParams }: Props) {
               {locale === "en" ? (cat.name_en ?? cat.name) : cat.name}
             </Link>
           ))}
-          <Link href={`/${locale}/category/create`} className={styles.categoryChipNew}>
-            {dict.post.createCategory}
-          </Link>
         </div>
 
         {/* Sort tabs */}

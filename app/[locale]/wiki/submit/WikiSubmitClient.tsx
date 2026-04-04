@@ -422,31 +422,24 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
   return (
     <main className={styles.submitPage}>
       <div className={styles.submitShell}>
+        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
+        <h1 className={styles.pageLogoTitle}>{labels.headerTitle}</h1>
         <BackButton />
         <header className={styles.submitHeader}>
           <div>
             <p className={styles.submitBreadcrumb}>ARCHIVE / WIKI / SUBMIT</p>
-            <h1 className={styles.submitTitle}>{labels.headerTitle}</h1>
             <p className={styles.submitSubtitle}>{labels.headerSubtitle}</p>
-          </div>
-          <div className={styles.headerActions}>
-            <Link href={`/${resolvedLocale}/wiki`} className={styles.topLink}>{labels.wikiList}</Link>
           </div>
         </header>
 
         <section className={styles.card}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>{labels.sectionTitle}</h2>
-            <p className={styles.sectionDescription}>{labels.sectionDesc}</p>
-          </div>
-
           <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.draftNotice}>
               {labels.draftNotice}
             </div>
 
             {draftRestored && (
-              <div className={styles.draftRestoredRow}>
+              <div className={styles.draftRestoredToast}>
                 <span className={styles.draftRestoredMsg}>{labels.draftRestored}</span>
                 <button type="button" className={styles.draftDeleteBtn} onClick={deleteDraftFn}>
                   {labels.deleteDraft}
@@ -538,9 +531,6 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
                   ))}
                 </div>
               )}
-              <Link href={`/${resolvedLocale}/wiki/category/create`} className={styles.categoryCreateLink}>
-                {labels.categoryCreate}
-              </Link>
             </div>
 
             <div className={styles.formGroup}>

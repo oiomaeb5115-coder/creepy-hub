@@ -15,6 +15,13 @@
   align-items: flex-start;
 }
 
+.pageTopLogo {
+  display: block;
+  height: 60px;
+  width: auto;
+  margin: 24px auto 0;
+}
+
 .wikiShell {
   flex: 1;
   min-width: 0;
