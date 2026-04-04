@@ -100,7 +100,8 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
       `
       )
       .eq("post_id", postId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true })
+      .limit(100);
 
     if (error) {
       console.error("comment load error:", error);

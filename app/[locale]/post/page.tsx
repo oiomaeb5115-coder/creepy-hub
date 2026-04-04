@@ -31,10 +31,6 @@ type AuthorProfile = {
   avatar_url: string | null;
 };
 
-type VoteRow = {
-  vote_type: number | null;
-};
-
 type StoryPost = {
   id: number;
   title: string | null;
@@ -45,7 +41,6 @@ type StoryPost = {
   image_url_3: string | null;
   view_count: number | null;
   slug: string | null;
-  post_votes?: VoteRow[];
   author?: AuthorProfile | null;
 };
 
@@ -65,12 +60,12 @@ export default async function StoryIndex({ params, searchParams }: Props) {
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
   const orderCol = isPopular ? "view_count" : "created_at";
 
-  let rawPosts: { id: number; title: string | null; content: string | null; created_at: string | null; image_url: string | null; image_url_2: string | null; image_url_3: string | null; view_count: number | null; slug: string | null; user_id: string | null; post_votes?: VoteRow[] }[] = [];
+  let rawPosts: { id: number; title: string | null; content: string | null; created_at: string | null; image_url: string | null; image_url_2: string | null; image_url_3: string | null; view_count: number | null; slug: string | null; user_id: string | null }[] = [];
 
   {
     const { data, error: postError } = await supabaseAdmin
       .from("post")
-      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, slug, post_votes(vote_type)")
+      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, slug")
       .eq("is_published", true)
       .order(orderCol, { ascending: false })
       .limit(50);
@@ -103,7 +98,6 @@ export default async function StoryIndex({ params, searchParams }: Props) {
         view_count: p.view_count,
         slug: p.slug as string | null,
         user_id: p.user_id as string | null,
-        post_votes: p.post_votes,
       };
     });
   }
@@ -123,7 +117,6 @@ export default async function StoryIndex({ params, searchParams }: Props) {
 
   const posts: StoryPost[] = rawPosts.map((p) => ({
     ...p,
-    post_votes: p.post_votes,
     author: p.user_id ? (profilesMap[p.user_id] ?? null) : null,
   }));
 
@@ -239,10 +232,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
                 .filter((url): url is string => Boolean(url))
                 .slice(0, 4);
               const authorName = post.author?.display_name || post.author?.username || null;
-              const score = (post.post_votes ?? []).reduce(
-                (sum: number, v: VoteRow) => sum + (v.vote_type ?? 0),
-                0
-              );
+              const score = 0;
 
               return (
                 <Link

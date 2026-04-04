@@ -154,7 +154,8 @@ export default function UserProfilePage() {
         .from("follows")
         .select("follower_id, profile:profiles!follower_id(id, username, display_name, avatar_url)")
         .eq("following_id", profile.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(50);
 
       if (data) {
         const rows = data as unknown as FollowerRow[];
@@ -175,7 +176,8 @@ export default function UserProfilePage() {
         .from("follows")
         .select("following_id, profile:profiles!following_id(id, username, display_name, avatar_url)")
         .eq("follower_id", profile.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(50);
 
       if (data) {
         const rows = data as unknown as FollowingRow[];

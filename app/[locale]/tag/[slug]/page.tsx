@@ -43,7 +43,8 @@ export default async function StoryTagPage({ params }: TagPageProps) {
   const { data: joins } = await supabaseAdmin
     .from("post_story_tags")
     .select("post_id")
-    .eq("tag_id", tag.id);
+    .eq("tag_id", tag.id)
+    .limit(100);
 
   const postIds = (joins ?? []).map((row: any) => row.post_id);
 

@@ -259,7 +259,7 @@ export default function PostDrawer({ locale, labels }: Props) {
           onClick={() => setIsOpen(true)}
           aria-label={labels.publish}
         >
-          <Image src="/images/ui/post.png" alt="POST" width={68} height={68} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          <Image src="/images/ui/post.png" alt="POST" width={68} height={68} priority style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
         </button>
       )}
 

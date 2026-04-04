@@ -18,14 +18,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: dict.meta.popularTitle, robots: { index: false, follow: true } };
 }
 
-type VoteRow = {
-  vote_type: number | null;
-};
-
-type CommentRow = {
-  id: number;
-};
-
 type StoryPost = {
   id: number;
   title: string | null;
@@ -34,8 +26,6 @@ type StoryPost = {
   image_url: string | null;
   view_count: number | null;
   slug: string | null;
-  post_votes?: VoteRow[];
-  post_comments?: CommentRow[];
 };
 
 export default async function PopularPage({ params }: Props) {
@@ -52,9 +42,7 @@ export default async function PopularPage({ params }: Props) {
       created_at,
       image_url,
       view_count,
-      slug,
-      post_votes(vote_type),
-      post_comments(id)
+      slug
     `)
     .eq("is_published", true)
     .limit(30);
@@ -76,12 +64,8 @@ export default async function PopularPage({ params }: Props) {
 
   const posts = (rawData ?? [])
     .map((post: any) => {
-      const score = (post.post_votes ?? []).reduce(
-        (sum: number, v: VoteRow) => sum + (v.vote_type ?? 0),
-        0
-      );
-
-      const commentCount = (post.post_comments ?? []).length;
+      const score = 0;
+      const commentCount = 0;
 
       const tr = translationsMap[post.id] ?? null;
       const title = tr?.title ?? post.title;
@@ -95,7 +79,7 @@ export default async function PopularPage({ params }: Props) {
         commentCount,
       };
     })
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
 
   return (
     <main className={styles.archivePage}>
