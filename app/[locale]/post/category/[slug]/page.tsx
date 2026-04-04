@@ -140,25 +140,24 @@ export default async function StoryCategoryPage({
               <p className={styles.categorySubtitle}>
                 {category.description ?? `${categoryName} — ${dict.post.label}`}
               </p>
+              <div className={styles.favoriteBelowDesc}>
+                <FavoriteCategoryButton
+                  type="story"
+                  slug={category.slug}
+                  name={categoryName}
+                  locale={locale}
+                  labels={{
+                    unfavorite: dict.common.favoriteRemove,
+                    favoriteAdd: dict.common.favoriteAdd,
+                    favorite: dict.common.favorite,
+                    unfavorited: dict.common.unfavorite,
+                  }}
+                />
+              </div>
             </div>
           </div>
 
           <div className={styles.headerActions}>
-            <Link href={`/${locale}`} className={styles.topLink}>
-              {dict.common.home}
-            </Link>
-            <FavoriteCategoryButton
-              type="story"
-              slug={category.slug}
-              name={categoryName}
-              locale={locale}
-              labels={{
-                unfavorite: dict.common.favoriteRemove,
-                favoriteAdd: dict.common.favoriteAdd,
-                favorite: dict.common.favorite,
-                unfavorited: dict.common.unfavorite,
-              }}
-            />
             <CategoryEditButton
               categoryId={category.id}
               createdBy={category.created_by}

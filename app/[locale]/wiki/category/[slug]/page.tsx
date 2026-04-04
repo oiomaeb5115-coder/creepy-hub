@@ -123,6 +123,8 @@ export default async function WikiCategoryPage({
       )}
 
       <div className={styles.categoryShell}>
+        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
+        <h1 className={styles.pageLogoTitle}>{safeCategory.name}</h1>
         <BackButton />
         <header className={styles.categoryHeader}>
           <div className={styles.categoryTitleRow}>
@@ -135,29 +137,27 @@ export default async function WikiCategoryPage({
             )}
             <div>
               <p className={styles.categoryBreadcrumb}>OCCULT WIKI / CATEGORY</p>
-              <h1 className={styles.categoryTitle}>{safeCategory.name}</h1>
               <p className={styles.categorySubtitle}>
                 {safeCategory.description ?? dict.wiki.categoryDefaultDesc}
               </p>
+              <div className={styles.favoriteBelowDesc}>
+                <FavoriteCategoryButton
+                  type="wiki"
+                  slug={safeCategory.slug}
+                  name={safeCategory.name}
+                  locale={locale}
+                  labels={{
+                    unfavorite: dict.common.favoriteRemove,
+                    favoriteAdd: dict.common.favoriteAdd,
+                    favorite: dict.common.favorite,
+                    unfavorited: dict.common.unfavorite,
+                  }}
+                />
+              </div>
             </div>
           </div>
 
           <div className={styles.headerActions}>
-            <Link href={`/${locale}/wiki`} className={styles.topLink}>
-              {dict.wiki.listTitle}
-            </Link>
-            <FavoriteCategoryButton
-              type="wiki"
-              slug={safeCategory.slug}
-              name={safeCategory.name}
-              locale={locale}
-              labels={{
-                unfavorite: dict.common.favoriteRemove,
-                favoriteAdd: dict.common.favoriteAdd,
-                favorite: dict.common.favorite,
-                unfavorited: dict.common.unfavorite,
-              }}
-            />
             <WikiCategoryEditButton
               categoryId={safeCategory.id}
               createdBy={safeCategory.created_by}
@@ -191,6 +191,7 @@ export default async function WikiCategoryPage({
           </div>
         </header>
 
+
         {/* Sort tabs */}
         <div className={styles.sortTabs}>
           <Link
@@ -208,12 +209,6 @@ export default async function WikiCategoryPage({
         </div>
 
         <section className={styles.cardSection}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>{dict.wiki.categoryArticlesTitle}</h2>
-            <p className={styles.sectionDescription}>
-              {safeCategory.name}
-            </p>
-          </div>
 
           {wikiErrorMessage ? (
             <p className={styles.emptyText}>

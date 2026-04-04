@@ -83,6 +83,12 @@
   color: #a49080;
 }
 
+.favoriteBelowDesc {
+  margin-top: 12px;
+  transform: scale(0.78);
+  transform-origin: left center;
+}
+
 .headerActions {
   display: flex;
   gap: 12px;

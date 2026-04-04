@@ -23,10 +23,10 @@ export async function DELETE(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // ソフトデリート: deleted_at をセット
+  // ソフトデリート: is_active を false にし deleted_at をセット
   const { error } = await supabase
     .from("categories")
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ is_active: false, deleted_at: new Date().toISOString() })
     .eq("id", categoryId);
 
   if (error) {
