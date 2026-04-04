@@ -7,7 +7,6 @@ import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 import CategorySidebar from "@/components/CategorySidebar";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
-import PostRandomButton from "@/components/PostRandomButton";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
 
 export const dynamic = "force-dynamic";
@@ -140,6 +139,11 @@ export default async function StoryIndex({ params, searchParams }: Props) {
 
   return (
     <main className={styles.storyPage}>
+      <div className={styles.pageHero}>
+        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
+        <h1 className={styles.pageTitle}>POST</h1>
+        <p className={styles.pageSubtitle}>怖いもの、こと、お話、なんでも投稿していい場所</p>
+      </div>
       <div className={styles.pageLayout}>
       <CategorySidebar
         title="CREEPY POSTS"
@@ -160,20 +164,10 @@ export default async function StoryIndex({ params, searchParams }: Props) {
         </div>
       </CategorySidebar>
       <div className={styles.storyShell}>
-        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
         <BackButton />
         <header className={styles.pageHeader}>
           <div>
             <p className={styles.breadcrumb}>POST / ARCHIVE</p>
-            <h1 className={styles.pageTitle}>POST</h1>
-            <p className={styles.pageSubtitle}>怖いもの、こと、お話、なんでも投稿していい場所</p>
-          </div>
-          <div className={styles.headerActions}>
-            <PostRandomButton
-              locale={locale}
-              label={dict.post.random}
-              className={`${styles.topLink} ${styles.topLinkAccent}`}
-            />
           </div>
         </header>
 

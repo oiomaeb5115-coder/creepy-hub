@@ -15,7 +15,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const dict = await getDictionary(locale);
-  return { title: dict.meta.postSearchTitle };
+  return { title: dict.meta.postSearchTitle, robots: { index: false, follow: true } };
 }
 
 type StoryPost = {

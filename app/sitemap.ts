@@ -7,17 +7,10 @@ const locales = ['ja', 'en']
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages = [
-    '',
-    '/post',
-    '/post/popular',
-    '/post/hot',
-    '/post/search',
-    '/wiki',
-    '/wiki/search',
-    '/wiki/random',
-    '/search',
-    '/register',
-    '/login',
+    '',       // home
+    '/post',  // post一覧
+    '/wiki',  // wiki一覧
+    '/wiki/categories', // wikiカテゴリー一覧
   ]
 
   const entries: MetadataRoute.Sitemap = []
@@ -42,8 +35,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // 動的コンテンツ（Stories・Wiki）
-  const [jaStoriesResult, enStoriesResult, jaWikiResult, enWikiResult] = await Promise.all([
+  // 動的コンテンツ（Stories・Wiki・カテゴリー）
+  const [
+    jaStoriesResult, enStoriesResult,
+    jaWikiResult, enWikiResult,
+    storyCategoriesResult, jaWikiCategoriesResult, enWikiCategoriesResult,
+  ] = await Promise.all([
     supabase
       .from('post')
       .select('id, slug, updated_at, created_at')
@@ -64,6 +61,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .select('slug, updated_at')
       .eq('locale', 'en')
       .eq('is_published', true),
+    // カテゴリー
+    supabase
+      .from('story_categories')
+      .select('slug')
+      .eq('is_active', true),
+    supabase
+      .from('categories')
+      .select('slug')
+      .eq('locale', 'ja'),
+    supabase
+      .from('categories')
+      .select('slug')
+      .eq('locale', 'en'),
   ])
 
   // Stories JA（全公開投稿）
@@ -104,6 +114,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(page.updated_at),
       changeFrequency: 'weekly',
       priority: 0.8,
+    })
+  }
+
+  // 投稿カテゴリー（両locale）
+  for (const cat of storyCategoriesResult.data ?? []) {
+    for (const locale of locales) {
+      entries.push({
+        url: `${BASE_URL}/${locale}/post/category/${cat.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.6,
+      })
+    }
+  }
+
+  // Wikiカテゴリー JA
+  for (const cat of jaWikiCategoriesResult.data ?? []) {
+    entries.push({
+      url: `${BASE_URL}/ja/wiki/category/${cat.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.6,
+    })
+  }
+
+  // Wikiカテゴリー EN
+  for (const cat of enWikiCategoriesResult.data ?? []) {
+    entries.push({
+      url: `${BASE_URL}/en/wiki/category/${cat.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.6,
     })
   }
 

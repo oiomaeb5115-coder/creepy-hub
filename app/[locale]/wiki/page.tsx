@@ -84,6 +84,11 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
 
   return (
     <main className={styles.wikiPage}>
+      <div className={styles.pageHero}>
+        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
+        <h1 className={styles.wikiTitle}>Occult Wiki</h1>
+        <p className={styles.wikiSubtitle}>{dict.wiki.subtitle}</p>
+      </div>
       <div className={styles.pageLayout}>
       <CategorySidebar
         title="OCCULT WIKI"
@@ -104,13 +109,10 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
         </div>
       </CategorySidebar>
       <div className={styles.wikiShell}>
-        <img src="/images/ui/auth-logo_2.png" alt="" className={styles.pageTopLogo} />
         <BackButton />
         <header className={styles.wikiHeader}>
           <div>
             <p className={styles.wikiBreadcrumb}>OCCULT WIKI / ARCHIVE</p>
-            <h1 className={styles.wikiTitle}>Occult Wiki</h1>
-            <p className={styles.wikiSubtitle}>{dict.wiki.subtitle}</p>
           </div>
           <div className={styles.headerActions}>
             <Link href={`/${locale}/wiki/random`} className={`${styles.topLink} ${styles.topLinkAccent}`}>{dict.wiki.random}</Link>

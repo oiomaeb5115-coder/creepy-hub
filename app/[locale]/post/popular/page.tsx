@@ -15,7 +15,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const dict = await getDictionary(locale);
-  return { title: dict.meta.popularTitle };
+  return { title: dict.meta.popularTitle, robots: { index: false, follow: true } };
 }
 
 type VoteRow = {

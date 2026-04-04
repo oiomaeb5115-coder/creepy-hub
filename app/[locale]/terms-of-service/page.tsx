@@ -13,6 +13,7 @@ export async function generateMetadata({
   return {
     title: dict.terms.metaTitle,
     description: dict.terms.metaDescription,
+    robots: { index: false, follow: true },
   };
 }
 
