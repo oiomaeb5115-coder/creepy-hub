@@ -9,7 +9,7 @@ import CategorySidebar from "@/components/CategorySidebar";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 type Props = {
   params: Promise<{ locale: string }>;

@@ -9,7 +9,7 @@ import AdminPendingSection from "@/components/AdminPendingSection";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
 import StoriesRow from "@/components/StoriesRow";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 type HomePageProps = {
   params: Promise<{ locale: string }>;
@@ -244,55 +244,55 @@ export default async function HomePage({ params }: HomePageProps) {
       .order("created_at", { ascending: false }),
   ]);
 
-  const storyPostIds = (latestStoriesResult.data ?? []).map((p: any) => p.id);
-  let storyTranslationsMap: Record<number, { title: string; content: string }> = {};
-  if (locale === "en" && storyPostIds.length > 0) {
-    const { data: trData } = await supabaseAdmin
-      .from("post_translations")
-      .select("post_id, title, content")
-      .eq("locale", "en")
-      .in("post_id", storyPostIds);
-    for (const tr of trData ?? []) {
-      storyTranslationsMap[tr.post_id] = { title: tr.title, content: tr.content };
-    }
+  const postsData = latestStoriesResult.data ?? [];
+  const storyPostIds = postsData.map((p: any) => p.id);
+  const userIds = [...new Set(postsData.map((p: any) => p.user_id).filter(Boolean))] as string[];
+
+  // 翻訳クエリとプロフィールクエリを並列実行
+  const [translationsResult, profilesResult] = await Promise.all([
+    locale === "en" && storyPostIds.length > 0
+      ? supabaseAdmin
+          .from("post_translations")
+          .select("post_id, title, content")
+          .eq("locale", "en")
+          .in("post_id", storyPostIds)
+      : Promise.resolve({ data: [] }),
+    userIds.length > 0
+      ? supabaseAdmin
+          .from("profiles")
+          .select("id, username, display_name, avatar_url")
+          .in("id", userIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const storyTranslationsMap: Record<number, { title: string; content: string }> = {};
+  for (const tr of translationsResult.data ?? []) {
+    storyTranslationsMap[tr.post_id] = { title: tr.title, content: tr.content };
   }
 
-  const rawStories = (latestStoriesResult.data ?? []).map((p: any) => {
+  const profilesMap: Record<string, AuthorProfile> = {};
+  for (const p of profilesResult.data ?? []) {
+    profilesMap[p.id] = { username: p.username, display_name: p.display_name, avatar_url: p.avatar_url };
+  }
+
+  const latestStories = postsData.map((p: any) => {
     const tr = storyTranslationsMap[p.id] ?? null;
     return {
-    id: p.id,
-    title: tr?.title ?? p.title,
-    content: tr?.content ?? p.content,
-    created_at: p.created_at,
-    image_url: p.image_url,
-    image_url_2: p.image_url_2,
-    image_url_3: p.image_url_3,
-    view_count: p.view_count,
-    slug: p.slug as string | null,
-    user_id: p.user_id as string | null,
-    vote_score: p.vote_score,
-    comment_count: p.comment_count,
-    author: null as AuthorProfile | null,
-  };
-  });
-
-  // Batch fetch profiles
-  const userIds = [...new Set(rawStories.map((p) => p.user_id).filter(Boolean))] as string[];
-  let profilesMap: Record<string, AuthorProfile> = {};
-  if (userIds.length > 0) {
-    const { data: profilesData } = await supabaseAdmin
-      .from("profiles")
-      .select("id, username, display_name, avatar_url")
-      .in("id", userIds);
-    for (const p of profilesData ?? []) {
-      profilesMap[p.id] = { username: p.username, display_name: p.display_name, avatar_url: p.avatar_url };
-    }
-  }
-
-  const latestStories = rawStories.map((p) => ({
-    ...p,
-    author: p.user_id ? (profilesMap[p.user_id] ?? null) : null,
-  })) as StoryPost[];
+      id: p.id,
+      title: tr?.title ?? p.title,
+      content: tr?.content ?? p.content,
+      created_at: p.created_at,
+      image_url: p.image_url,
+      image_url_2: p.image_url_2,
+      image_url_3: p.image_url_3,
+      view_count: p.view_count,
+      slug: p.slug as string | null,
+      user_id: p.user_id as string | null,
+      vote_score: p.vote_score,
+      comment_count: p.comment_count,
+      author: p.user_id ? (profilesMap[p.user_id] ?? null) : null,
+    };
+  }) as StoryPost[];
   const latestWiki = (latestWikiResult.data ?? []) as WikiPost[];
   const storyCategories = (storyCategoriesResult.data ?? []) as StoryCategoryRow[];
   const wikiCategories = (wikiCategoriesResult.data ?? []) as WikiCategoryRow[];

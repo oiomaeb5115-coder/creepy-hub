@@ -12,23 +12,36 @@ export async function GET(req: NextRequest) {
   // IDが数値であることを検証
   const validExcludeIds = excludeIds.filter((id) => /^\d+$/.test(id));
 
-  const { data, error } = await supabase
+  // DB側でexclude済みの投稿を除外し、1件だけ取得
+  let query = supabase
     .from("post")
     .select("id")
-    .eq("is_published", true)
-    .limit(200);
+    .eq("is_published", true);
+
+  if (validExcludeIds.length > 0) {
+    query = query.not("id", "in", `(${validExcludeIds.join(",")})`);
+  }
+
+  const { data, error } = await query.limit(50);
 
   if (error || !data || data.length === 0) {
+    // fallback: excludeなしで再取得
+    if (validExcludeIds.length > 0) {
+      const { data: fallback } = await supabase
+        .from("post")
+        .select("id")
+        .eq("is_published", true)
+        .limit(50);
+      const pool = fallback ?? [];
+      const picked = pool[Math.floor(Math.random() * pool.length)];
+      return NextResponse.json({ id: picked?.id ?? null });
+    }
     return NextResponse.json({ id: null }, { status: 200 });
   }
 
-  // Prefer unread posts; fall back to all if everything has been read
-  const unread = validExcludeIds.length > 0
-    ? data.filter((row) => !validExcludeIds.includes(String(row.id)))
-    : data;
+  const picked = data[Math.floor(Math.random() * data.length)];
 
-  const pool = unread.length > 0 ? unread : data;
-  const picked = pool[Math.floor(Math.random() * pool.length)];
-
-  return NextResponse.json({ id: picked?.id ?? null });
+  const res = NextResponse.json({ id: picked?.id ?? null });
+  res.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=120");
+  return res;
 }

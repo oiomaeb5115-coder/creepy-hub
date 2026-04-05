@@ -13,7 +13,8 @@ export async function GET() {
     .from("user_stories")
     .select("id, user_id, media_url, media_type, duration_ms, text_overlays, created_at, expires_at")
     .gt("expires_at", now)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(50);
 
   if (error) {
     // テーブル未作成時はエラーではなく空配列を返す
@@ -64,5 +65,7 @@ export async function GET() {
       return new Date(bLatest).getTime() - new Date(aLatest).getTime();
     });
 
-  return NextResponse.json({ users });
+  const res = NextResponse.json({ users });
+  res.headers.set("Cache-Control", "public, s-maxage=120, stale-while-revalidate=300");
+  return res;
 }

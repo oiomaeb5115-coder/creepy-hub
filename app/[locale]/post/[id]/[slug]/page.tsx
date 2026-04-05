@@ -14,7 +14,7 @@ import PostActionButtons from "@/components/PostActionButtons";
 import PostReadTracker from "@/components/PostReadTracker";
 import ReportButton from "@/components/ReportButton";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 const BASE_URL = "https://creepyhub.com";
 
