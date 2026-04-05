@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 type Props = {
   imageSrc: string;
@@ -21,16 +21,31 @@ export default function AvatarCropper({ imageSrc, onCrop, onCancel }: Props) {
   const dragStart = useRef({ x: 0, y: 0 });
   const offsetStart = useRef({ x: 0, y: 0 });
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const initDone = useRef(false);
 
-  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    imgRef.current = img;
+  const initFromImg = (img: HTMLImageElement) => {
+    if (initDone.current) return;
     const nw = img.naturalWidth;
     const nh = img.naturalHeight;
+    if (nw === 0 || nh === 0) return;
+    initDone.current = true;
+    imgRef.current = img;
     setNaturalSize({ w: nw, h: nh });
     setScale(CIRCLE_SIZE / Math.min(nw, nh));
     setOffset({ x: 0, y: 0 });
     setReady(true);
+  };
+
+  // ref callback: catches images that loaded synchronously (data URLs)
+  const imgCallbackRef = useCallback((el: HTMLImageElement | null) => {
+    if (el && el.complete && el.naturalWidth > 0) {
+      initFromImg(el);
+    }
+  }, []);
+
+  // onLoad: catches images that loaded asynchronously
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    initFromImg(e.currentTarget);
   };
 
   // Pointer drag
@@ -142,6 +157,7 @@ export default function AvatarCropper({ imageSrc, onCrop, onCancel }: Props) {
         >
           {/* The actual image */}
           <img
+            ref={imgCallbackRef}
             src={imageSrc}
             alt=""
             draggable={false}
