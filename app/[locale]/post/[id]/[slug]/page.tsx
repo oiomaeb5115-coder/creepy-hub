@@ -275,18 +275,16 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
       <PostReadTracker id={String(post.id)} />
       <div className={styles.archiveShell}>
         <BackButton />
-        <header className={styles.archiveHeader}>
-          <div>
-            <p className={styles.archiveBreadcrumb}>ARCHIVE / OCCULT DATABASE</p>
-            <h1 className={styles.archiveTitle}>{dict.post.headerTitle}</h1>
-            <p className={styles.archiveSubtitle}>{dict.post.headerSubtitle}</p>
-          </div>
-
-          <div className={styles.archiveActions}>
-            <Link href={`/${locale}`} className={styles.archiveTopLink}>
-              {dict.nav.home}
-            </Link>
-          </div>
+        <header className={styles.postHeader}>
+          <img
+            src="/images/ui/auth-logo_2.webp"
+            alt="creepy.hub"
+            className={styles.postHeaderLogo}
+          />
+          <p className={styles.postHeaderLabel}>POST</p>
+          <p className={styles.postHeaderDesc}>
+            {locale === "en" ? "A page for viewing individual posts" : "個人の投稿を表示するページ"}
+          </p>
         </header>
 
         <section className={styles.archiveContentCard}>
@@ -320,7 +318,25 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
 
           <PostImageGallery imageUrls={imageUrls} title={displayTitle} />
 
-          {/* Reddit風アクションバー（画像の下） */}
+          <div className={styles.storyDetailContent}>
+            {contentLines.map((line: string, index: number) => {
+              if (line.startsWith("## ")) {
+                return (
+                  <h3 key={index} className={styles.storySectionTitle}>
+                    {line.replace("## ", "")}
+                  </h3>
+                );
+              }
+
+              if (!line.trim()) {
+                return <br key={index} />;
+              }
+
+              return <p key={index}>{line}</p>;
+            })}
+          </div>
+
+          {/* アクションバー（コンテンツの下） */}
           <div className={styles.storyActionBar}>
             <div className={styles.storyActionBarLeft}>
               <PostVoteButtons
@@ -365,6 +381,8 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                   deleteFailed: dict.common.deleteFailed,
                 }}
               />
+            </div>
+            <div className={styles.storyActionBarRight}>
               <ReportButton
                 reportUrl={`/api/post/${post.id}/report`}
                 labels={{
@@ -376,24 +394,6 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                 }}
               />
             </div>
-          </div>
-
-          <div className={styles.storyDetailContent}>
-            {contentLines.map((line: string, index: number) => {
-              if (line.startsWith("## ")) {
-                return (
-                  <h3 key={index} className={styles.storySectionTitle}>
-                    {line.replace("## ", "")}
-                  </h3>
-                );
-              }
-
-              if (!line.trim()) {
-                return <br key={index} />;
-              }
-
-              return <p key={index}>{line}</p>;
-            })}
           </div>
 
           <PostComments

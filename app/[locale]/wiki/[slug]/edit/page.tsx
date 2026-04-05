@@ -178,7 +178,8 @@ export default function WikiEditPage() {
       const chapterParts: string[] = [];
       for (let i = 0; i < chapters.length; i++) {
         const ch = chapters[i];
-        let part = `## ${ch.title.trim() || `章${i + 1}`}\n\n${ch.body.trim()}`;
+        const title = ch.title.trim();
+        let part = title ? `## ${title}\n\n${ch.body.trim()}` : ch.body.trim();
         if (ch.imageFile) {
           try {
             const imgUrl = await uploadImage(ch.imageFile, uid, `ch${i}`);
@@ -337,7 +338,7 @@ export default function WikiEditPage() {
                 </div>
                 <div style={groupStyle}>
                   <label style={labelStyle}>章タイトル</label>
-                  <input style={controlStyle} type="text" value={ch.title} onChange={(e) => updateChapter(i, "title", e.target.value)} />
+                  <input style={controlStyle} type="text" value={ch.title} onChange={(e) => updateChapter(i, "title", e.target.value)} placeholder={`章${i + 1}`} />
                 </div>
                 <div style={groupStyle}>
                   <label style={labelStyle}>本文</label>

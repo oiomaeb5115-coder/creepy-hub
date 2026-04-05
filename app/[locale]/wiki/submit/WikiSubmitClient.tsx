@@ -304,8 +304,8 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
       const chapterParts: string[] = [];
       for (let i = 0; i < chapters.length; i++) {
         const ch = chapters[i];
-        const heading = ch.title.trim() || `${labels.chapterSection} ${i + 1}`;
-        let part = `## ${heading}\n\n${ch.body.trim()}`;
+        const title = ch.title.trim();
+        let part = title ? `## ${title}\n\n${ch.body.trim()}` : ch.body.trim();
 
         if (ch.imageFile) {
           setUploadingChapter(i);

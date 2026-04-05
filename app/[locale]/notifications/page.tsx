@@ -78,8 +78,15 @@ export default function NotificationsPage() {
         .order("created_at", { ascending: false })
         .limit(50);
 
-      const notifs = (notifData ?? []) as Notification[];
-      setNotifications(notifs);
+      // Deduplicate: keep only the latest notification per post_id + actor_id + type
+      const seen = new Set<string>();
+      const dedupedNotifs = ((notifData ?? []) as Notification[]).filter((n) => {
+        const key = `${n.post_id}_${n.actor_id}_${n.type}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      setNotifications(dedupedNotifs);
 
       // Batch fetch actor usernames
       const actorIds = [...new Set(notifs.map((n) => n.actor_id).filter(Boolean) as string[])];

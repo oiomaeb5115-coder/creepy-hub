@@ -160,7 +160,11 @@ export default function StoryEditPage() {
       const finalImageUrl3 = uploaded3 ?? imageUrl3;
 
       const mergedContent = chapters
-        .map((ch, i) => `## ${ch.title.trim() || `章${i + 1}`}\n\n${ch.body.trim()}`)
+        .map((ch) => {
+          const title = ch.title.trim();
+          const heading = title ? `## ${title}\n\n` : "";
+          return `${heading}${ch.body.trim()}`;
+        })
         .join("\n\n");
 
       const token = await getAccessToken();
@@ -292,7 +296,7 @@ export default function StoryEditPage() {
                 </div>
                 <div style={groupStyle}>
                   <label style={labelStyle}>章タイトル</label>
-                  <input style={controlStyle} type="text" value={ch.title} onChange={(e) => updateChapter(i, "title", e.target.value)} />
+                  <input style={controlStyle} type="text" value={ch.title} onChange={(e) => updateChapter(i, "title", e.target.value)} placeholder={`章${i + 1}`} />
                 </div>
                 <div style={groupStyle}>
                   <label style={labelStyle}>本文</label>

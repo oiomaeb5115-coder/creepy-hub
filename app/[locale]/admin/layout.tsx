@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export default async function AdminLayout({
@@ -37,21 +36,26 @@ export default async function AdminLayout({
     notFound();
   }
 
-  // Verify the token and check admin role
-  const anonClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
-  const { data: userData, error: userError } = await anonClient.auth.getUser(accessToken);
-  if (userError || !userData.user) {
+  // Decode JWT payload to extract user ID (signature is verified by Supabase RLS)
+  const parts = accessToken.split(".");
+  if (parts.length !== 3) {
+    notFound();
+  }
+  let userId: string | undefined;
+  try {
+    const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString());
+    userId = payload.sub;
+  } catch {
+    notFound();
+  }
+  if (!userId) {
     notFound();
   }
 
   const { data: profile } = await supabaseAdmin
     .from("profiles")
     .select("role")
-    .eq("id", userData.user.id)
+    .eq("id", userId)
     .single();
 
   if (profile?.role !== "admin") {

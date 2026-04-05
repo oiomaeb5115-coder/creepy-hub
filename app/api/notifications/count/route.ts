@@ -23,11 +23,20 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ unread: 0, pendingCategories: 0 });
   }
 
-  const { count: unread } = await supabase
+  // Fetch unread notifications and deduplicate by post_id + actor_id + type
+  const { data: unreadData } = await supabase
     .from("notifications")
-    .select("*", { count: "exact", head: true })
+    .select("post_id, actor_id, type")
     .eq("user_id", user.id)
     .eq("is_read", false);
+
+  const seen = new Set<string>();
+  const unread = (unreadData ?? []).filter((n: { post_id: number | null; actor_id: string | null; type: string }) => {
+    const key = `${n.post_id}_${n.actor_id}_${n.type}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).length;
 
   const { data: profile } = await supabase
     .from("profiles")
