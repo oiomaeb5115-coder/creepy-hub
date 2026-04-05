@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import styles from "./StoriesRow.module.css";
 
 type StoryItem = {
@@ -48,7 +47,6 @@ function timeAgo(dateStr: string): string {
 
 export default function StoriesRow({ locale }: Props) {
   const [items, setItems] = useState<FlatItem[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     fetch("/api/stories")
@@ -77,14 +75,7 @@ export default function StoriesRow({ locale }: Props) {
         setItems(flat);
       })
       .catch(console.error);
-
-    supabase.auth.getSession().then(({ data }) => {
-      setIsLoggedIn(!!data.session);
-    });
   }, []);
-
-  // コンテンツもログインもない場合は非表示
-  if (items.length === 0 && !isLoggedIn) return null;
 
   return (
     <section className={styles.storiesSection}>
@@ -96,24 +87,20 @@ export default function StoriesRow({ locale }: Props) {
             {locale === "en" ? "Short videos & images" : "ショート動画・画像"}
           </span>
         </div>
-        {items.length > 0 && (
-          <Link href={`/${locale}/stream`} className={styles.seeAllLink}>
-            {locale === "en" ? "See all →" : "すべて見る →"}
-          </Link>
-        )}
+        <Link href={`/${locale}/stream`} className={styles.seeAllLink}>
+          {locale === "en" ? "See all →" : "すべて見る →"}
+        </Link>
       </div>
 
       {/* 横スクロールカード行 */}
       <div className={styles.storiesScroll}>
-        {/* ＋追加カード（ログイン時のみ） */}
-        {isLoggedIn && (
-          <Link href={`/${locale}/story/new`} className={styles.addStoryCard}>
-            <div className={styles.addIcon}>+</div>
-            <span className={styles.addLabel}>
-              {locale === "en" ? "Add" : "追加"}
-            </span>
-          </Link>
-        )}
+        {/* ＋追加カード（常時表示） */}
+        <Link href={`/${locale}/story/new`} className={styles.addStoryCard}>
+          <div className={styles.addIcon}>+</div>
+          <span className={styles.addLabel}>
+            {locale === "en" ? "Add" : "追加"}
+          </span>
+        </Link>
 
         {/* ストリームカード — タップでstreamページへ */}
         {items.map((item) => {
