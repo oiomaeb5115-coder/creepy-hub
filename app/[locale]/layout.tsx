@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { getDictionary } from "@/lib/getDictionary";
 import BottomNavProfileLink from "./BottomNavProfileLink";
 import PageTransition from "./PageTransition";
-import PostDrawer from "./PostDrawer";
+import FloatingPostButton from "./FloatingPostButton";
 import AuthDrawer from "./AuthDrawer";
 import Link from "next/link";
 import styles from "./layout.module.css";
@@ -100,7 +100,7 @@ export default async function LocaleLayout({
         rightsClaimLabel={dict.footer.rightsClaim}
       />
 
-      <PostDrawer locale={locale} labels={dict.postDrawer} />
+      <FloatingPostButton locale={locale} />
       <AuthDrawer locale={locale} labels={dict.authDrawer} />
       <WelcomeVideoModal videoSrc="/welcome.webm/welcome-1.webm" />
       <StorageConsent

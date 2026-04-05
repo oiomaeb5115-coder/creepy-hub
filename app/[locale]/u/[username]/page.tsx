@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -8,7 +8,6 @@ import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
 import FollowButton from "@/components/FollowButton";
-import BlockButton from "@/components/BlockButton";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
 
@@ -97,6 +96,12 @@ export default function UserProfilePage() {
   const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [wikiLoaded, setWikiLoaded] = useState(false);
 
+  // ⋮メニュー＆ブロック
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+  const [blockToggling, setBlockToggling] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setCurrentUserId(session?.user?.id ?? null);
@@ -158,7 +163,7 @@ export default function UserProfilePage() {
         .from("post_comments")
         .select("id, post_id, content, created_at, post:post_id(id, title, slug)")
         .eq("user_id", profile.id)
-        .is("is_deleted", null)
+        .or("is_deleted.is.null,is_deleted.eq.false")
         .order("created_at", { ascending: false })
         .limit(50);
 
@@ -259,6 +264,62 @@ export default function UserProfilePage() {
 
     loadFollowing();
   }, [modalOpen, followingLoaded, profile]);
+
+  // ⋮メニュー外クリックで閉じる
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
+  // ブロック状態チェック
+  useEffect(() => {
+    if (!currentUserId || !profile || currentUserId === profile.id) return;
+    const checkBlock = async () => {
+      const { data } = await supabase
+        .from("blocks")
+        .select("id")
+        .eq("blocker_id", currentUserId)
+        .eq("blocked_id", profile.id)
+        .maybeSingle();
+      setBlocked(!!data);
+    };
+    checkBlock();
+  }, [currentUserId, profile]);
+
+  const handleBlockToggle = async () => {
+    if (!currentUserId || !profile) return;
+    const confirmMsg = locale === "en"
+      ? "Block this user?"
+      : "このユーザーをブロックしますか？";
+    if (!blocked && !confirm(confirmMsg)) return;
+
+    setBlockToggling(true);
+    setMenuOpen(false);
+    try {
+      if (blocked) {
+        await supabase
+          .from("blocks")
+          .delete()
+          .eq("blocker_id", currentUserId)
+          .eq("blocked_id", profile.id);
+        setBlocked(false);
+      } else {
+        await supabase.from("blocks").insert({
+          blocker_id: currentUserId,
+          blocked_id: profile.id,
+        });
+        setBlocked(true);
+      }
+    } finally {
+      setBlockToggling(false);
+    }
+  };
 
   const isOwnProfile = currentUserId === profile?.id;
 
@@ -474,7 +535,65 @@ export default function UserProfilePage() {
             ) : (
               <>
                 <FollowButton targetUserId={profile.id} />
-                <BlockButton targetUserId={profile.id} />
+                {currentUserId && (
+                  <div style={{ position: "relative" }} ref={menuRef}>
+                    <button
+                      type="button"
+                      onClick={() => setMenuOpen((v) => !v)}
+                      disabled={blockToggling}
+                      style={{
+                        background: "none",
+                        border: "1px solid rgba(161,102,108,0.4)",
+                        borderRadius: "999px",
+                        color: "#8a7870",
+                        fontSize: "18px",
+                        cursor: "pointer",
+                        padding: "4px 10px",
+                        lineHeight: 1,
+                      }}
+                      aria-label="menu"
+                    >
+                      ⋮
+                    </button>
+                    {menuOpen && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          right: 0,
+                          zIndex: 50,
+                          marginTop: "4px",
+                          minWidth: "140px",
+                          background: "#1a0c0e",
+                          border: "1px solid rgba(161,102,108,0.3)",
+                          borderRadius: "8px",
+                          boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={handleBlockToggle}
+                          style={{
+                            display: "block",
+                            width: "100%",
+                            padding: "10px 16px",
+                            background: "none",
+                            border: "none",
+                            color: blocked ? "#ff9090" : "#e05c6a",
+                            fontSize: "13px",
+                            textAlign: "left",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {blocked
+                            ? (locale === "en" ? "Unblock" : "ブロック解除")
+                            : (locale === "en" ? "Block" : "ブロック")}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>

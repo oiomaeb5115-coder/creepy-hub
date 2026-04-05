@@ -455,7 +455,6 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
               commentSubmit: dict.common.commentSubmit,
               commentLoading: dict.common.commentLoading,
               noComments: dict.common.noComments,
-              deletedComment: dict.common.deletedComment,
               reply: dict.common.reply,
               replyPlaceholder: dict.common.replyPlaceholder,
               cancel: dict.common.cancel,
