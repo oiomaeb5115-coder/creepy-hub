@@ -110,29 +110,29 @@ export default function PostVoteButtons({
         return;
       }
 
-      setScore((prev) => prev + 1);
+      setScore((prev) => {
+        const newScore = prev + 1;
+        // スコアが丁度5に達した瞬間だけ自動翻訳を発火
+        if (newScore === 5) {
+          getAccessToken().then((token) => {
+            if (!token) return;
+            fetch("/api/translate/story-auto", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ postId }),
+            }).catch(() => {});
+          });
+        }
+        return newScore;
+      });
       setCurrentVote(1);
     } finally {
       setSubmitting(false);
     }
   };
-
-  // スコアが5以上になったら自動翻訳を発火
-  useEffect(() => {
-    if (score >= 5) {
-      getAccessToken().then((token) => {
-        if (!token) return;
-        fetch("/api/translate/story-auto", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ postId }),
-        }).catch(() => {});
-      });
-    }
-  }, [score, postId]);
 
   const disabled = loading || submitting;
 
