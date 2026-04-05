@@ -142,17 +142,15 @@ export default function AccountSettingsPage() {
   const handleAvatarFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Read as data URL before opening cropper
-    const reader = new FileReader();
-    reader.onload = () => {
-      setCropperSrc(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    // Revoke previous blob URL if any
+    if (cropperSrc) URL.revokeObjectURL(cropperSrc);
+    setCropperSrc(URL.createObjectURL(file));
     // Reset input so re-selecting the same file triggers change
     e.target.value = "";
   };
 
   const handleAvatarCropped = async (croppedFile: File) => {
+    if (cropperSrc) URL.revokeObjectURL(cropperSrc);
     setCropperSrc(null);
     setUploadingAvatar(true);
     try {
@@ -471,7 +469,7 @@ export default function AccountSettingsPage() {
         <AvatarCropper
           imageSrc={cropperSrc}
           onCrop={handleAvatarCropped}
-          onCancel={() => setCropperSrc(null)}
+          onCancel={() => { if (cropperSrc) URL.revokeObjectURL(cropperSrc); setCropperSrc(null); }}
         />
       )}
     </main>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 type Props = {
   imageSrc: string;
@@ -14,38 +14,33 @@ const OUTPUT_SIZE = 512;
 
 export default function AvatarCropper({ imageSrc, onCrop, onCancel }: Props) {
   const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
-  const [ready, setReady] = useState(false);
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const offsetStart = useRef({ x: 0, y: 0 });
   const imgRef = useRef<HTMLImageElement | null>(null);
-  const initDone = useRef(false);
 
-  const initFromImg = (img: HTMLImageElement) => {
-    if (initDone.current) return;
+  const ready = naturalSize.w > 0 && naturalSize.h > 0;
+
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    imgRef.current = img;
     const nw = img.naturalWidth;
     const nh = img.naturalHeight;
-    if (nw === 0 || nh === 0) return;
-    initDone.current = true;
-    imgRef.current = img;
-    setNaturalSize({ w: nw, h: nh });
-    setScale(CIRCLE_SIZE / Math.min(nw, nh));
-    setOffset({ x: 0, y: 0 });
-    setReady(true);
+    if (nw > 0 && nh > 0 && naturalSize.w === 0) {
+      setNaturalSize({ w: nw, h: nh });
+      setScale(CIRCLE_SIZE / Math.min(nw, nh));
+    }
   };
 
-  // ref callback: catches images that loaded synchronously (data URLs)
-  const imgCallbackRef = useCallback((el: HTMLImageElement | null) => {
-    if (el && el.complete && el.naturalWidth > 0) {
-      initFromImg(el);
+  const handleImgRef = (el: HTMLImageElement | null) => {
+    if (!el) return;
+    imgRef.current = el;
+    if (el.complete && el.naturalWidth > 0 && naturalSize.w === 0) {
+      setNaturalSize({ w: el.naturalWidth, h: el.naturalHeight });
+      setScale(CIRCLE_SIZE / Math.min(el.naturalWidth, el.naturalHeight));
     }
-  }, []);
-
-  // onLoad: catches images that loaded asynchronously
-  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    initFromImg(e.currentTarget);
   };
 
   // Pointer drag
@@ -157,21 +152,19 @@ export default function AvatarCropper({ imageSrc, onCrop, onCancel }: Props) {
         >
           {/* The actual image */}
           <img
-            ref={imgCallbackRef}
+            ref={handleImgRef}
             src={imageSrc}
             alt=""
             draggable={false}
             onLoad={handleImageLoad}
             style={{
               position: "absolute",
-              left: ready ? imgLeft : 0,
-              top: ready ? imgTop : 0,
-              width: ready ? iw : "100%",
-              height: ready ? ih : "100%",
-              objectFit: ready ? undefined : "contain",
+              left: imgLeft,
+              top: imgTop,
+              width: iw,
+              height: ih,
               pointerEvents: "none",
               userSelect: "none",
-              opacity: ready ? 1 : 0,
             }}
           />
 

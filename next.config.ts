@@ -11,8 +11,8 @@ const nextConfig: NextConfig = {
       `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV === 'development' ? "'unsafe-eval'" : ""} https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net`,
       // Tailwind CSS / Next.js がインラインスタイルを使用するため必要
       "style-src 'self' 'unsafe-inline'",
-      // Supabase Storage・外部画像を許可（data: は XSS ベクターとなるため除外）
-      "img-src 'self' https:",
+      // Supabase Storage・外部画像・アバタークロッパー用 blob: を許可
+      "img-src 'self' https: blob:",
       // Supabase API・Cloudflare Workers AI への接続を許可
       "connect-src 'self' https://*.supabase.co https://api.cloudflare.com",
       // フォント（必要に応じて追加）
