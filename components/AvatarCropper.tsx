@@ -13,34 +13,37 @@ const VIEW_SIZE = 400;
 const OUTPUT_SIZE = 512;
 
 export default function AvatarCropper({ imageSrc, onCrop, onCancel }: Props) {
-  const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
-  const [scale, setScale] = useState(1);
+  const [displaySize, setDisplaySize] = useState({ w: 0, h: 0 });
+  const [baseScale, setBaseScale] = useState(1);
+  const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const offsetStart = useRef({ x: 0, y: 0 });
   const imgRef = useRef<HTMLImageElement | null>(null);
 
-  const ready = naturalSize.w > 0 && naturalSize.h > 0;
+  const ready = displaySize.w > 0 && displaySize.h > 0;
 
-  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
+  const initImage = (img: HTMLImageElement) => {
+    if (displaySize.w > 0) return;
     imgRef.current = img;
-    const nw = img.naturalWidth;
-    const nh = img.naturalHeight;
-    if (nw > 0 && nh > 0 && naturalSize.w === 0) {
-      setNaturalSize({ w: nw, h: nh });
-      setScale(CIRCLE_SIZE / Math.min(nw, nh));
-    }
+    // Use the element's rendered size (respects EXIF orientation)
+    const dw = img.width || img.naturalWidth;
+    const dh = img.height || img.naturalHeight;
+    if (dw <= 0 || dh <= 0) return;
+    setDisplaySize({ w: dw, h: dh });
+    // baseScale fits the shorter side to the circle
+    setBaseScale(CIRCLE_SIZE / Math.min(dw, dh));
   };
 
   const handleImgRef = (el: HTMLImageElement | null) => {
     if (!el) return;
     imgRef.current = el;
-    if (el.complete && el.naturalWidth > 0 && naturalSize.w === 0) {
-      setNaturalSize({ w: el.naturalWidth, h: el.naturalHeight });
-      setScale(CIRCLE_SIZE / Math.min(el.naturalWidth, el.naturalHeight));
-    }
+    if (el.complete && el.naturalWidth > 0) initImage(el);
+  };
+
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    initImage(e.currentTarget);
   };
 
   // Pointer drag
@@ -64,17 +67,16 @@ export default function AvatarCropper({ imageSrc, onCrop, onCancel }: Props) {
   // Scroll zoom
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
-    setScale((prev) => {
+    setZoom((prev) => {
       const next = prev * (e.deltaY < 0 ? 1.08 : 0.92);
-      const minScale = CIRCLE_SIZE / Math.max(naturalSize.w, naturalSize.h) * 0.5;
-      return Math.max(minScale, Math.min(next, 5));
+      return Math.max(0.5, Math.min(next, 5));
     });
   };
 
   // Crop via canvas (only on Apply)
   const handleApply = () => {
     const img = imgRef.current;
-    if (!img) return;
+    if (!img || !ready) return;
 
     const canvas = document.createElement("canvas");
     canvas.width = OUTPUT_SIZE;
@@ -87,24 +89,21 @@ export default function AvatarCropper({ imageSrc, onCrop, onCancel }: Props) {
     ctx.arc(OUTPUT_SIZE / 2, OUTPUT_SIZE / 2, OUTPUT_SIZE / 2, 0, Math.PI * 2);
     ctx.clip();
 
-    // Map from view coordinates to output
-    const ratio = OUTPUT_SIZE / CIRCLE_SIZE;
-    const iw = naturalSize.w * scale;
-    const ih = naturalSize.h * scale;
-    // Image position in view space (centered + offset)
-    const imgX = (VIEW_SIZE - iw) / 2 + offset.x;
-    const imgY = (VIEW_SIZE - ih) / 2 + offset.y;
-    // Crop circle position in view space
+    const totalScale = baseScale * zoom;
+    const dw = displaySize.w * totalScale;
+    const dh = displaySize.h * totalScale;
+    // Image center in view space
+    const cx = VIEW_SIZE / 2 + offset.x;
+    const cy = VIEW_SIZE / 2 + offset.y;
+    // Crop circle in view space
     const cropLeft = (VIEW_SIZE - CIRCLE_SIZE) / 2;
     const cropTop = (VIEW_SIZE - CIRCLE_SIZE) / 2;
 
-    ctx.drawImage(
-      img,
-      (imgX - cropLeft) * ratio,
-      (imgY - cropTop) * ratio,
-      iw * ratio,
-      ih * ratio
-    );
+    const ratio = OUTPUT_SIZE / CIRCLE_SIZE;
+    const dx = (cx - dw / 2 - cropLeft) * ratio;
+    const dy = (cy - dh / 2 - cropTop) * ratio;
+
+    ctx.drawImage(img, dx, dy, dw * ratio, dh * ratio);
 
     canvas.toBlob(
       (blob) => {
@@ -116,11 +115,8 @@ export default function AvatarCropper({ imageSrc, onCrop, onCancel }: Props) {
     );
   };
 
-  // Computed image transform
-  const iw = naturalSize.w * scale;
-  const ih = naturalSize.h * scale;
-  const imgLeft = (VIEW_SIZE - iw) / 2 + offset.x;
-  const imgTop = (VIEW_SIZE - ih) / 2 + offset.y;
+  // The combined scale factor
+  const totalScale = baseScale * zoom;
 
   return (
     <div style={overlayStyle}>
@@ -150,7 +146,7 @@ export default function AvatarCropper({ imageSrc, onCrop, onCancel }: Props) {
           onPointerUp={handlePointerUp}
           onWheel={handleWheel}
         >
-          {/* The actual image */}
+          {/* The actual image — no explicit width/height, use transform only */}
           <img
             ref={handleImgRef}
             src={imageSrc}
@@ -159,12 +155,13 @@ export default function AvatarCropper({ imageSrc, onCrop, onCancel }: Props) {
             onLoad={handleImageLoad}
             style={{
               position: "absolute",
-              left: imgLeft,
-              top: imgTop,
-              width: iw,
-              height: ih,
+              left: "50%",
+              top: "50%",
+              transform: `translate(-50%, -50%) translate(${offset.x}px, ${offset.y}px) scale(${totalScale})`,
+              transformOrigin: "center center",
               pointerEvents: "none",
               userSelect: "none",
+              maxWidth: "none",
             }}
           />
 
@@ -197,11 +194,11 @@ export default function AvatarCropper({ imageSrc, onCrop, onCancel }: Props) {
           <span style={{ fontSize: 14, color: "#8a7870" }}>−</span>
           <input
             type="range"
-            min={0.01}
+            min={0.5}
             max={5}
             step={0.01}
-            value={scale}
-            onChange={(e) => setScale(Number(e.target.value))}
+            value={zoom}
+            onChange={(e) => setZoom(Number(e.target.value))}
             style={{ flex: 1, accentColor: "#c49090" }}
           />
           <span style={{ fontSize: 14, color: "#8a7870" }}>+</span>
