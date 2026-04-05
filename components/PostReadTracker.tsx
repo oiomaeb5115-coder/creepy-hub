@@ -13,9 +13,13 @@ export default function PostReadTracker({ id }: { id: string }) {
       if (!list.includes(id)) {
         const updated = [...list, id].slice(-MAX_STORED);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+        // Increment server-side view count
+        fetch(`/api/post/${id}/view`, { method: "POST" }).catch(() => {});
       }
     } catch {
-      // localStorage unavailable — skip silently
+      // localStorage unavailable — still try to count the view
+      fetch(`/api/post/${id}/view`, { method: "POST" }).catch(() => {});
     }
   }, [id]);
 

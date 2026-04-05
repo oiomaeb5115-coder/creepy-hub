@@ -9,11 +9,12 @@ import styles from "./page.module.css";
 import PostComments from "@/components/PostComments";
 import PostVoteButtons from "@/components/PostVoteButtons";
 import PostBookmarkButton from "@/components/PostBookmarkButton";
-import BackButton from "@/components/BackButton";
 import TranslateButton from "@/components/TranslateButton";
 import PostActionButtons from "@/components/PostActionButtons";
 import PostReadTracker from "@/components/PostReadTracker";
 import ReportButton from "@/components/ReportButton";
+
+export const revalidate = 60;
 
 const BASE_URL = "https://creepyhub.com";
 
@@ -40,7 +41,6 @@ export async function generateMetadata({
     ? post.content.replace(/\n+/g, " ").trim().slice(0, 160)
     : undefined;
 
-  // EN の場合は翻訳タイトル・本文を優先
   if (locale === "en") {
     const { data: tr } = await supabaseAdmin
       .from("post_translations")
@@ -49,7 +49,6 @@ export async function generateMetadata({
       .eq("locale", "en")
       .single();
 
-    // 翻訳が存在しない場合は noindex（日本語ページの重複扱い防止）
     if (!tr) {
       return {
         robots: { index: false, follow: true },
@@ -63,7 +62,6 @@ export async function generateMetadata({
     if (tr.content) description = tr.content.replace(/\n+/g, " ").trim().slice(0, 160);
   }
 
-  // JA の場合：英語翻訳が存在するかチェックして hreflang を条件付きで設定
   let hasEnTranslation = false;
   if (locale !== "en") {
     const { data: trCheck } = await supabaseAdmin
@@ -119,17 +117,7 @@ type PostRow = {
 type ProfileRow = {
   username: string | null;
   display_name: string | null;
-};
-
-type CommentRow = {
-  id: number;
-  post_id: number;
-  parent_id: number | null;
-  content: string;
-  created_at: string;
-  profiles?: {
-    username: string;
-  }[];
+  avatar_url: string | null;
 };
 
 type TranslationRow = {
@@ -144,6 +132,21 @@ type RelatedPostRow = {
   created_at: string | null;
   slug: string | null;
 };
+
+function formatRelativeTime(dateStr: string, locale: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diffSec = Math.floor((now - then) / 1000);
+
+  if (diffSec < 60) return locale === "en" ? `${diffSec}s` : `${diffSec}秒前`;
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return locale === "en" ? `${diffMin}m` : `${diffMin}分前`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return locale === "en" ? `${diffHour}h` : `${diffHour}時間前`;
+  const diffDay = Math.floor(diffHour / 24);
+  if (diffDay < 30) return locale === "en" ? `${diffDay}d` : `${diffDay}日前`;
+  return new Date(dateStr).toLocaleDateString(locale === "en" ? "en-US" : "ja-JP");
+}
 
 export default async function StoryDetailPage({ params }: StoryPageProps) {
   const { locale, id } = await params;
@@ -164,21 +167,18 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
     notFound();
   }
 
-  await supabaseAdmin.rpc("increment_post_view", { p_post_id: post.id });
-
   let author: ProfileRow | null = null;
 
   if (post.user_id) {
     const { data: profileData } = await supabaseAdmin
       .from("profiles")
-      .select("username, display_name")
+      .select("username, display_name, avatar_url")
       .eq("id", post.user_id)
       .single();
 
     author = (profileData as ProfileRow | null) ?? null;
   }
 
-  // 翻訳データ取得
   const { data: translationData } = await supabaseAdmin
     .from("post_translations")
     .select("title, content")
@@ -189,7 +189,6 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   const translation = translationData as TranslationRow | null;
   const hasEnglishTranslation = !!translation;
 
-  // locale=en の場合は翻訳テキストを使用
   const displayTitle =
     locale === "en" && translation?.title
       ? translation.title
@@ -209,7 +208,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
     post.image_url_3,
   ].filter((url): url is string => Boolean(url));
 
-  const displayedViewCount = (post.view_count ?? 0) + 1;
+  const displayedViewCount = post.view_count ?? 0;
 
   const { data: voteRows } = await supabaseAdmin
     .from("post_votes")
@@ -219,20 +218,12 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   const initialScore =
     (voteRows ?? []).reduce((sum, row) => sum + (row.vote_type ?? 0), 0);
 
-  const { data: commentsData } = await supabaseAdmin
+  const { data: commentCountData } = await supabaseAdmin
     .from("post_comments")
-    .select(`
-      id,
-      post_id,
-      parent_id,
-      content,
-      created_at,
-      profiles(username)
-    `)
-    .eq("post_id", post.id)
-    .order("created_at", { ascending: true });
+    .select("id", { count: "exact", head: true })
+    .eq("post_id", post.id);
 
-  const comments = (commentsData ?? []) as CommentRow[];
+  const commentCount = commentCountData?.length ?? 0;
 
   const { data: relatedPostsData } = await supabaseAdmin
     .from("post")
@@ -245,6 +236,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   const relatedPosts = (relatedPostsData ?? []) as RelatedPostRow[];
 
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
+  const relativeTime = safeCreatedAt ? formatRelativeTime(safeCreatedAt, locale) : "";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -267,62 +259,86 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   };
 
   return (
-    <main className={styles.archivePage}>
+    <main className={styles.page}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <PostReadTracker id={String(post.id)} />
-      <div className={styles.archiveShell}>
-        <BackButton />
-        <header className={styles.postHeader}>
-          <img
-            src="/images/ui/auth-logo_2.webp"
-            alt="creepy.hub"
-            className={styles.postHeaderLogo}
-          />
-          <p className={styles.postHeaderLabel}>POST</p>
-          <p className={styles.postHeaderDesc}>
-            {locale === "en" ? "A page for viewing individual posts" : "個人の投稿を表示するページ"}
-          </p>
-        </header>
 
-        <section className={styles.archiveContentCard}>
-          {/* 著者・閲覧数・ホームリンク */}
-          <div className={styles.storyTopMeta}>
-            {author?.username ? (
-              <Link
-                href={`/${locale}/u/${author.username}`}
-                className={styles.storyAuthor}
-              >
-                @{author.username}
+      <div className={styles.shell}>
+        {/* ── Top bar ── */}
+        <div className={styles.topBar}>
+          <Link href={`/${locale}`} className={styles.backBtn} aria-label="Back">
+            ←
+          </Link>
+          <h1 className={styles.topBarTitle}>{displayTitle}</h1>
+        </div>
+
+        {/* ── Post body ── */}
+        <div className={styles.postBody}>
+          {/* Author row */}
+          <div className={styles.authorRow}>
+            {author?.avatar_url ? (
+              <Link href={`/${locale}/u/${author.username}`}>
+                <img
+                  src={author.avatar_url}
+                  alt={author.display_name ?? author.username ?? ""}
+                  className={styles.authorAvatar}
+                />
               </Link>
             ) : (
-              <span className={styles.storyAuthor}>{dict.post.unknownAuthor}</span>
+              <div className={styles.authorAvatarPlaceholder}>👤</div>
             )}
-            <div className={styles.storyViewCount}>
-              {dict.post.views}: {displayedViewCount}
+
+            <div className={styles.authorInfo}>
+              <div className={styles.authorNameRow}>
+                {author?.username ? (
+                  <>
+                    <Link
+                      href={`/${locale}/u/${author.username}`}
+                      className={styles.authorDisplayName}
+                    >
+                      {author.display_name ?? author.username}
+                    </Link>
+                    <span className={styles.authorUsername}>
+                      @{author.username}
+                    </span>
+                  </>
+                ) : (
+                  <span className={styles.authorDisplayName}>
+                    {dict.post.unknownAuthor}
+                  </span>
+                )}
+                {relativeTime && (
+                  <span className={styles.authorTime}>・{relativeTime}</span>
+                )}
+              </div>
             </div>
-            <Link href={`/${locale}`} className={styles.storyBackButton}>
-              {dict.post.backToHome}
-            </Link>
+
+            <PostActionButtons
+              postId={post.id}
+              authorId={post.user_id}
+              locale={locale}
+              labels={{
+                edit: dict.common.edit,
+                delete: dict.common.delete,
+                deleting: dict.common.deleting,
+                deleteConfirm: dict.common.deleteConfirmStory,
+                deleteFailed: dict.common.deleteFailed,
+              }}
+            />
           </div>
 
-          <p className={styles.storyDetailMeta}>
-            {safeCreatedAt
-              ? new Date(safeCreatedAt).toLocaleString(dateLocale)
-              : dict.post.unknownDate}
-          </p>
+          {/* Post title */}
+          <h2 className={styles.postTitle}>{displayTitle}</h2>
 
-          <h2 className={styles.storyDetailTitle}>{displayTitle}</h2>
-
-          <PostImageGallery imageUrls={imageUrls} title={displayTitle} />
-
-          <div className={styles.storyDetailContent}>
+          {/* Post content */}
+          <div className={styles.postContent}>
             {contentLines.map((line: string, index: number) => {
               if (line.startsWith("## ")) {
                 return (
-                  <h3 key={index} className={styles.storySectionTitle}>
+                  <h3 key={index}>
                     {line.replace("## ", "")}
                   </h3>
                 );
@@ -336,9 +352,29 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
             })}
           </div>
 
-          {/* アクションバー（コンテンツの下） */}
-          <div className={styles.storyActionBar}>
-            <div className={styles.storyActionBarLeft}>
+          {/* Images */}
+          {imageUrls.length > 0 && (
+            <div className={styles.postImageWrap}>
+              <PostImageGallery imageUrls={imageUrls} title={displayTitle} />
+            </div>
+          )}
+
+          {/* Stats row */}
+          <div className={styles.statsRow}>
+            <span>
+              {safeCreatedAt
+                ? new Date(safeCreatedAt).toLocaleString(dateLocale)
+                : dict.post.unknownDate}
+            </span>
+            <span className={styles.statsDot}>・</span>
+            <span>
+              {dict.post.views}: {displayedViewCount}
+            </span>
+          </div>
+
+          {/* Action bar */}
+          <div className={styles.actionBar}>
+            <div className={styles.actionItem}>
               <PostVoteButtons
                 postId={post.id}
                 initialScore={initialScore}
@@ -349,6 +385,9 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                   rateFailed: dict.common.rateFailed,
                 }}
               />
+            </div>
+
+            <div className={styles.actionItem}>
               <PostBookmarkButton
                 postId={post.id}
                 labels={{
@@ -359,6 +398,9 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                   unbookmark: dict.common.unbookmark,
                 }}
               />
+            </div>
+
+            <div className={styles.actionItem}>
               <TranslateButton
                 type="story"
                 id={post.id}
@@ -367,20 +409,24 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                 labels={dict.post}
                 slug={post.slug ?? undefined}
               />
-              <PostActionButtons
-                postId={post.id}
-                authorId={post.user_id}
-                locale={locale}
-                labels={{
-                  edit: dict.common.edit,
-                  delete: dict.common.delete,
-                  deleting: dict.common.deleting,
-                  deleteConfirm: dict.common.deleteConfirmStory,
-                  deleteFailed: dict.common.deleteFailed,
-                }}
-              />
             </div>
-            <div className={styles.storyActionBarRight}>
+          </div>
+
+          {/* Management row (report) */}
+          <div className={styles.mgmtRow}>
+            <div className={styles.mgmtLeft}>
+              <Link
+                href={`/${locale}`}
+                style={{
+                  fontSize: "12px",
+                  color: "rgba(180, 130, 110, 0.5)",
+                  textDecoration: "none",
+                }}
+              >
+                {dict.post.backToHome}
+              </Link>
+            </div>
+            <div className={styles.mgmtRight}>
               <ReportButton
                 reportUrl={`/api/post/${post.id}/report`}
                 labels={{
@@ -393,7 +439,10 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
               />
             </div>
           </div>
+        </div>
 
+        {/* Comments */}
+        <div className={styles.commentsWrap}>
           <PostComments
             postId={post.id}
             locale={locale}
@@ -414,34 +463,34 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
               replySubmit: dict.common.replySubmit,
             }}
           />
+        </div>
 
-          {relatedPosts.length > 0 && (
-            <section className={styles.relatedSection}>
-              <h3 className={styles.relatedTitle}>
-                {locale === "en" ? "Related Posts" : "関連記事"}
-              </h3>
-              <div className={styles.relatedGrid}>
-                {relatedPosts.map((rp) => (
-                  <Link key={rp.id} href={postUrl(locale, rp.id, rp.slug)} className={styles.relatedCard}>
-                    {rp.image_url ? (
-                      <img src={rp.image_url} alt={rp.title ?? ""} className={styles.relatedCardImg} />
-                    ) : (
-                      <div className={styles.relatedCardImgPlaceholder} />
-                    )}
-                    <div className={styles.relatedCardBody}>
-                      <h4 className={styles.relatedCardTitle}>{rp.title}</h4>
-                      <p className={styles.relatedCardText}>
-                        {rp.created_at
-                          ? new Date(rp.created_at).toLocaleDateString(dateLocale)
-                          : ""}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
-        </section>
+        {relatedPosts.length > 0 && (
+          <section className={styles.relatedSection}>
+            <h3 className={styles.relatedTitle}>
+              {locale === "en" ? "Related Posts" : "関連記事"}
+            </h3>
+            <div className={styles.relatedGrid}>
+              {relatedPosts.map((rp) => (
+                <Link key={rp.id} href={postUrl(locale, rp.id, rp.slug)} className={styles.relatedCard}>
+                  {rp.image_url ? (
+                    <img src={rp.image_url} alt={rp.title ?? ""} className={styles.relatedCardImg} />
+                  ) : (
+                    <div className={styles.relatedCardImgPlaceholder} />
+                  )}
+                  <div className={styles.relatedCardBody}>
+                    <h4 className={styles.relatedCardTitle}>{rp.title}</h4>
+                    <p className={styles.relatedCardText}>
+                      {rp.created_at
+                        ? new Date(rp.created_at).toLocaleDateString(dateLocale)
+                        : ""}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </main>
   );

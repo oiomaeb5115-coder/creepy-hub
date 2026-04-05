@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/compressImage";
 import styles from "./page.module.css";
 import AvatarCropper from "@/components/AvatarCropper";
+import BannerCropper from "@/components/BannerCropper";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
 
@@ -37,6 +38,7 @@ export default function AccountSettingsPage() {
   const [deleteError, setDeleteError] = useState("");
 
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
+  const [bannerCropperSrc, setBannerCropperSrc] = useState<string | null>(null);
 
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -163,15 +165,20 @@ export default function AccountSettingsPage() {
     }
   };
 
-  const handleBannerUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleBannerFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (bannerCropperSrc) URL.revokeObjectURL(bannerCropperSrc);
+    setBannerCropperSrc(URL.createObjectURL(file));
+    e.target.value = "";
+  };
 
+  const handleBannerCropped = async (croppedFile: File) => {
+    if (bannerCropperSrc) URL.revokeObjectURL(bannerCropperSrc);
+    setBannerCropperSrc(null);
     setUploadingBanner(true);
     try {
-      const publicUrl = await uploadImage(file, "banners");
+      const publicUrl = await uploadImage(croppedFile, "banners");
       if (publicUrl) {
         setBannerUrl(publicUrl);
       }
@@ -359,7 +366,7 @@ export default function AccountSettingsPage() {
                 type="file"
                 accept="image/*"
                 className={styles.formControl}
-                onChange={handleBannerUpload}
+                onChange={handleBannerFileSelect}
               />
               <p className={styles.helpText}>
                 {uploadingBanner ? dict.account.uploading : dict.account.uploadHint}
@@ -454,6 +461,14 @@ export default function AccountSettingsPage() {
           imageSrc={cropperSrc}
           onCrop={handleAvatarCropped}
           onCancel={() => { if (cropperSrc) URL.revokeObjectURL(cropperSrc); setCropperSrc(null); }}
+        />
+      )}
+
+      {bannerCropperSrc && (
+        <BannerCropper
+          imageSrc={bannerCropperSrc}
+          onCrop={handleBannerCropped}
+          onCancel={() => { if (bannerCropperSrc) URL.revokeObjectURL(bannerCropperSrc); setBannerCropperSrc(null); }}
         />
       )}
     </main>
