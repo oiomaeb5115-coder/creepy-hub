@@ -32,6 +32,24 @@ type PostRow = {
   slug: string | null;
 };
 
+type CommentRow = {
+  id: number;
+  post_id: number;
+  content: string;
+  created_at: string | null;
+  post: { id: number; title: string | null; slug: string | null } | null;
+};
+
+type WikiRow = {
+  id: number;
+  title: string;
+  slug: string;
+  summary: string | null;
+  image_url: string | null;
+  view_count: number | null;
+  updated_at: string | null;
+};
+
 type BookmarkRow = {
   post_id: number;
   post: PostRow;
@@ -47,7 +65,8 @@ type UserRow = {
 type FollowerRow = { follower_id: string; profile: UserRow | null };
 type FollowingRow = { following_id: string; profile: UserRow | null };
 
-type TabKey = "posts" | "bookmarks" | "following" | "followers";
+type TabKey = "posts" | "replies" | "wiki" | "bookmarks";
+type ModalKey = "following" | "followers" | null;
 
 export default function UserProfilePage() {
   const params = useParams<{ locale: string; username: string }>();
@@ -59,17 +78,24 @@ export default function UserProfilePage() {
   const [notFound, setNotFound] = useState(false);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [posts, setPosts] = useState<PostRow[]>([]);
+  const [comments, setComments] = useState<CommentRow[]>([]);
+  const [wikiPages, setWikiPages] = useState<WikiRow[]>([]);
   const [bookmarks, setBookmarks] = useState<PostRow[]>([]);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("posts");
 
-  // フォロー/フォロワーリスト
+  // モーダル用
+  const [modalOpen, setModalOpen] = useState<ModalKey>(null);
   const [followers, setFollowers] = useState<UserRow[]>([]);
   const [followingUsers, setFollowingUsers] = useState<UserRow[]>([]);
   const [followersLoaded, setFollowersLoaded] = useState(false);
   const [followingLoaded, setFollowingLoaded] = useState(false);
+
+  // 遅延読み込みフラグ
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
+  const [wikiLoaded, setWikiLoaded] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -123,6 +149,51 @@ export default function UserProfilePage() {
     load();
   }, [username]);
 
+  // 返信タブ: コメント取得（遅延読み込み）
+  useEffect(() => {
+    if (activeTab !== "replies" || commentsLoaded || !profile) return;
+
+    const loadComments = async () => {
+      const { data } = await supabase
+        .from("post_comments")
+        .select("id, post_id, content, created_at, post:post_id(id, title, slug)")
+        .eq("user_id", profile.id)
+        .is("is_deleted", null)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (data) {
+        setComments(data as unknown as CommentRow[]);
+      }
+      setCommentsLoaded(true);
+    };
+
+    loadComments();
+  }, [activeTab, commentsLoaded, profile]);
+
+  // Wikiタブ: Wiki記事取得（遅延読み込み）
+  useEffect(() => {
+    if (activeTab !== "wiki" || wikiLoaded || !profile) return;
+
+    const loadWiki = async () => {
+      const { data } = await supabase
+        .from("wiki_pages")
+        .select("id, title, slug, summary, image_url, view_count, updated_at")
+        .eq("author_id", profile.id)
+        .eq("is_published", true)
+        .is("deleted_at", null)
+        .order("updated_at", { ascending: false })
+        .limit(50);
+
+      if (data) {
+        setWikiPages(data as WikiRow[]);
+      }
+      setWikiLoaded(true);
+    };
+
+    loadWiki();
+  }, [activeTab, wikiLoaded, profile]);
+
   // ブックマーク取得（本人のプロフィール閲覧時のみ）
   useEffect(() => {
     if (!profile || !currentUserId) return;
@@ -145,9 +216,9 @@ export default function UserProfilePage() {
     loadBookmarks();
   }, [profile, currentUserId]);
 
-  // フォロワー取得（タブ選択時に遅延読み込み）
+  // モーダル: フォロワー取得
   useEffect(() => {
-    if (activeTab !== "followers" || followersLoaded || !profile) return;
+    if (modalOpen !== "followers" || followersLoaded || !profile) return;
 
     const loadFollowers = async () => {
       const { data } = await supabase
@@ -165,11 +236,11 @@ export default function UserProfilePage() {
     };
 
     loadFollowers();
-  }, [activeTab, followersLoaded, profile]);
+  }, [modalOpen, followersLoaded, profile]);
 
-  // フォロー中取得（タブ選択時に遅延読み込み）
+  // モーダル: フォロー中取得
   useEffect(() => {
-    if (activeTab !== "following" || followingLoaded || !profile) return;
+    if (modalOpen !== "following" || followingLoaded || !profile) return;
 
     const loadFollowing = async () => {
       const { data } = await supabase
@@ -187,7 +258,7 @@ export default function UserProfilePage() {
     };
 
     loadFollowing();
-  }, [activeTab, followingLoaded, profile]);
+  }, [modalOpen, followingLoaded, profile]);
 
   const isOwnProfile = currentUserId === profile?.id;
 
@@ -253,6 +324,74 @@ export default function UserProfilePage() {
     </>
   );
 
+  const renderCommentList = () => (
+    <>
+      {comments.length === 0 && (
+        <p className={styles.empty}>
+          {locale === "en" ? "No replies yet." : "まだ返信はありません。"}
+        </p>
+      )}
+      <div className={styles.feed}>
+        {comments.map((c) => {
+          const postTitle = c.post?.title ?? dict.post.untitled;
+          const href = c.post ? postUrl(locale, c.post.id, c.post.slug) : "#";
+          const excerpt = c.content.length > 60
+            ? `${c.content.slice(0, 60)}…`
+            : c.content;
+
+          return (
+            <Link key={c.id} href={href} className={styles.commentRow}>
+              <p className={styles.commentMeta}>
+                {postTitle}
+                {c.created_at && (
+                  <span className={styles.commentDate}>
+                    {new Date(c.created_at).toLocaleDateString(locale === "en" ? "en-US" : "ja-JP")}
+                  </span>
+                )}
+              </p>
+              <p className={styles.commentContent}>{excerpt}</p>
+            </Link>
+          );
+        })}
+      </div>
+    </>
+  );
+
+  const renderWikiList = () => (
+    <>
+      {wikiPages.length === 0 && (
+        <p className={styles.empty}>
+          {locale === "en" ? "No wiki articles yet." : "まだWiki記事はありません。"}
+        </p>
+      )}
+      <div className={styles.feed}>
+        {wikiPages.map((w) => (
+          <Link
+            key={w.id}
+            href={`/${locale}/wiki/${w.slug}`}
+            className={styles.postRow}
+          >
+            <div className={styles.thumbCol}>
+              {w.image_url ? (
+                <img src={w.image_url} alt={w.title} className={styles.thumb} />
+              ) : (
+                <div className={styles.thumbPlaceholder}>WIKI</div>
+              )}
+            </div>
+            <div className={styles.postContent}>
+              <div className={styles.tagRow}>
+                <span className={styles.badgeWiki}>Wiki</span>
+              </div>
+              <h3 className={styles.postTitle}>{w.title}</h3>
+              {w.summary && <p className={styles.postExcerpt}>{w.summary}</p>}
+              <p className={styles.postViews}>👁 {w.view_count ?? 0}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </>
+  );
+
   const renderUserList = (users: UserRow[], emptyMsg: string) => (
     <>
       {users.length === 0 && (
@@ -264,6 +403,7 @@ export default function UserProfilePage() {
             key={u.id}
             href={`/${locale}/u/${u.username}`}
             className={styles.userRow}
+            onClick={() => setModalOpen(null)}
           >
             {u.avatar_url ? (
               <img src={u.avatar_url} alt={u.display_name ?? ""} className={styles.userAvatar} />
@@ -287,80 +427,91 @@ export default function UserProfilePage() {
   return (
     <main className={styles.profilePage}>
       <div className={styles.shell}>
-        <BackButton />
+        {/* トップバー */}
+        <div className={styles.topBar}>
+          <BackButton />
+          <div className={styles.topBarInfo}>
+            <h2>{profile.display_name ?? profile.username}</h2>
+            <p className={styles.topBarSub}>
+              {posts.length} {dict.profile.stories}
+            </p>
+          </div>
+        </div>
 
+        {/* バナー */}
         {profile.banner_url ? (
           <img src={profile.banner_url} className={styles.banner} alt="banner" />
         ) : (
           <div className={styles.bannerPlaceholder}></div>
         )}
 
-        <div className={styles.header}>
+        {/* アバター＋アクションボタン行 */}
+        <div className={styles.avatarActionRow}>
           {profile.avatar_url ? (
             <img src={profile.avatar_url} className={styles.avatar} alt={profile.display_name ?? "avatar"} />
           ) : (
             <div className={styles.avatarPlaceholder}></div>
           )}
 
-          <div className={styles.userInfo}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-              <h1 style={{ margin: 0 }}>
-                {profile.display_name ?? profile.username}
-              </h1>
-              {currentUserId === profile.id ? (
-                <Link
-                  href={`/${locale}/account/settings`}
-                  style={{
-                    padding: "6px 14px",
-                    border: "1px solid #555",
-                    color: "#ccc",
-                    fontSize: "13px",
-                    textDecoration: "none",
-                    letterSpacing: "0.05em",
-                  }}
-                >
-                  {locale === "en" ? "Edit Profile" : "プロフィールを編集"}
-                </Link>
-              ) : (
-                <>
-                  <FollowButton targetUserId={profile.id} />
-                  <BlockButton targetUserId={profile.id} />
-                </>
-              )}
-            </div>
-
-            <p className={styles.username}>
-              @{profile.username}
-            </p>
-
-            {profile.location && (
-              <p className={styles.meta}>
-                📍 {profile.location}
-              </p>
-            )}
-
-            <div className={styles.followStats}>
-              <button
-                className={styles.followStatBtn}
-                onClick={() => setActiveTab("following")}
+          <div className={styles.actions}>
+            {isOwnProfile ? (
+              <Link
+                href={`/${locale}/account/settings`}
+                style={{
+                  padding: "8px 18px",
+                  border: "1px solid rgba(161,102,108,0.4)",
+                  borderRadius: "999px",
+                  color: "#f0e0e0",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                  letterSpacing: "0.03em",
+                  background: "transparent",
+                }}
               >
-                <span className={styles.followCount}>{followingCount}</span>
-                <span className={styles.followLabel}>{dict.profile.following}</span>
-              </button>
-              <button
-                className={styles.followStatBtn}
-                onClick={() => setActiveTab("followers")}
-              >
-                <span className={styles.followCount}>{followerCount}</span>
-                <span className={styles.followLabel}>{dict.profile.followers}</span>
-              </button>
-            </div>
-
-            {profile.bio && (
-              <p className={styles.bio}>
-                {profile.bio}
-              </p>
+                {locale === "en" ? "Edit Profile" : "プロフィールを編集"}
+              </Link>
+            ) : (
+              <>
+                <FollowButton targetUserId={profile.id} />
+                <BlockButton targetUserId={profile.id} />
+              </>
             )}
+          </div>
+        </div>
+
+        {/* ユーザー情報 */}
+        <div className={styles.userInfo}>
+          <h1 className={styles.displayName}>
+            {profile.display_name ?? profile.username}
+          </h1>
+          <p className={styles.username}>@{profile.username}</p>
+
+          {profile.bio && (
+            <p className={styles.bio}>{profile.bio}</p>
+          )}
+
+          {profile.location && (
+            <div className={styles.metaRow}>
+              <span className={styles.metaItem}>📍 {profile.location}</span>
+            </div>
+          )}
+
+          <div className={styles.followStats}>
+            <button
+              className={styles.followStatBtn}
+              onClick={() => setModalOpen("following")}
+            >
+              <span className={styles.followCount}>{followingCount}</span>
+              <span className={styles.followLabel}>{dict.profile.following}</span>
+            </button>
+            <button
+              className={styles.followStatBtn}
+              onClick={() => setModalOpen("followers")}
+            >
+              <span className={styles.followCount}>{followerCount}</span>
+              <span className={styles.followLabel}>{dict.profile.followers}</span>
+            </button>
           </div>
         </div>
 
@@ -381,30 +532,24 @@ export default function UserProfilePage() {
             </button>
           )}
           <button
-            className={`${styles.tab} ${activeTab === "following" ? styles.tabActive : ""}`}
-            onClick={() => setActiveTab("following")}
+            className={`${styles.tab} ${activeTab === "replies" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("replies")}
           >
-            {dict.profile.following}
+            {locale === "en" ? "Replies" : "返信"}
           </button>
           <button
-            className={`${styles.tab} ${activeTab === "followers" ? styles.tabActive : ""}`}
-            onClick={() => setActiveTab("followers")}
+            className={`${styles.tab} ${activeTab === "wiki" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("wiki")}
           >
-            {dict.profile.followers}
+            Wiki
           </button>
         </div>
 
         <section className={styles.section}>
           {activeTab === "posts" && renderPostList(posts, dict.profile.noStories)}
           {activeTab === "bookmarks" && renderPostList(bookmarks, dict.profile.noBookmarks)}
-          {activeTab === "following" && renderUserList(
-            followingUsers,
-            locale === "en" ? "Not following anyone yet." : "まだ誰もフォローしていません。"
-          )}
-          {activeTab === "followers" && renderUserList(
-            followers,
-            locale === "en" ? "No followers yet." : "まだフォロワーがいません。"
-          )}
+          {activeTab === "replies" && renderCommentList()}
+          {activeTab === "wiki" && renderWikiList()}
         </section>
 
         <div className={styles.back}>
@@ -412,8 +557,38 @@ export default function UserProfilePage() {
             {dict.profile.backToHome}
           </Link>
         </div>
-
       </div>
+
+      {/* フォロー/フォロワーモーダル */}
+      {modalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setModalOpen(null)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>
+                {modalOpen === "following" ? dict.profile.following : dict.profile.followers}
+              </h3>
+              <button
+                className={styles.modalClose}
+                onClick={() => setModalOpen(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              {modalOpen === "following" &&
+                renderUserList(
+                  followingUsers,
+                  locale === "en" ? "Not following anyone yet." : "まだ誰もフォローしていません。"
+                )}
+              {modalOpen === "followers" &&
+                renderUserList(
+                  followers,
+                  locale === "en" ? "No followers yet." : "まだフォロワーがいません。"
+                )}
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

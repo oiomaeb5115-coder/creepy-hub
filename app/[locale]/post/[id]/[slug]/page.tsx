@@ -344,11 +344,9 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                 initialScore={initialScore}
                 labels={{
                   upvote: dict.common.upvote,
-                  downvote: dict.common.downvote,
                   rateLoginRequired: dict.common.rateLoginRequired,
                   rateRevokeFailed: dict.common.rateRevokeFailed,
                   rateFailed: dict.common.rateFailed,
-                  rateChangeFailed: dict.common.rateChangeFailed,
                 }}
               />
               <PostBookmarkButton

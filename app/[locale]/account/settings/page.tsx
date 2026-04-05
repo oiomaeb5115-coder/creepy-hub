@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/compressImage";
 import styles from "./page.module.css";
-import BackButton from "@/components/BackButton";
+import AvatarCropper from "@/components/AvatarCropper";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
 
@@ -35,6 +35,8 @@ export default function AccountSettingsPage() {
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  const [cropperSrc, setCropperSrc] = useState<string | null>(null);
 
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -137,15 +139,24 @@ export default function AccountSettingsPage() {
     return data.publicUrl;
   };
 
-  const handleAvatarUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleAvatarFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Read as data URL before opening cropper
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropperSrc(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    // Reset input so re-selecting the same file triggers change
+    e.target.value = "";
+  };
 
+  const handleAvatarCropped = async (croppedFile: File) => {
+    setCropperSrc(null);
     setUploadingAvatar(true);
     try {
-      const publicUrl = await uploadImage(file, "avatars");
+      const publicUrl = await uploadImage(croppedFile, "avatars");
       if (publicUrl) {
         setAvatarUrl(publicUrl);
       }
@@ -260,7 +271,9 @@ export default function AccountSettingsPage() {
   return (
     <main className={styles.settingsPage}>
       <div className={styles.settingsShell}>
-        <BackButton />
+        <Link href={`/${locale}/account`} className={styles.backLink}>
+          ← {dict.account.backToProfile}
+        </Link>
         <header className={styles.settingsHeader}>
           <div>
             <p className={styles.settingsBreadcrumb}>ACCOUNT / SETTINGS</p>
@@ -268,12 +281,6 @@ export default function AccountSettingsPage() {
             <p className={styles.settingsSubtitle}>
               {dict.account.settingsSubtitle}
             </p>
-          </div>
-
-          <div className={styles.headerActions}>
-            <Link href={`/${locale}/account`} className={styles.topLink}>
-              {dict.account.backToProfile}
-            </Link>
           </div>
         </header>
 
@@ -334,7 +341,7 @@ export default function AccountSettingsPage() {
                 type="file"
                 accept="image/*"
                 className={styles.formControl}
-                onChange={handleAvatarUpload}
+                onChange={handleAvatarFileSelect}
               />
               <p className={styles.helpText}>
                 {uploadingAvatar ? dict.account.uploading : dict.account.uploadHint}
@@ -459,6 +466,14 @@ export default function AccountSettingsPage() {
           </button>
         </section>
       </div>
+
+      {cropperSrc && (
+        <AvatarCropper
+          imageSrc={cropperSrc}
+          onCrop={handleAvatarCropped}
+          onCancel={() => setCropperSrc(null)}
+        />
+      )}
     </main>
   );
 }

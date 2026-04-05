@@ -8,9 +8,7 @@ type Labels = {
   rateLoginRequired?: string;
   rateRevokeFailed?: string;
   rateFailed?: string;
-  rateChangeFailed?: string;
   upvote?: string;
-  downvote?: string;
 };
 
 type PostVoteButtonsProps = {
@@ -29,7 +27,7 @@ export default function PostVoteButtons({
   labels,
 }: PostVoteButtonsProps) {
   const [score, setScore] = useState(initialScore);
-  const [currentVote, setCurrentVote] = useState<1 | -1 | 0>(0);
+  const [currentVote, setCurrentVote] = useState<1 | 0>(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [currentUser, setCurrentUser] = useState<SessionUser | null>(null);
@@ -38,9 +36,7 @@ export default function PostVoteButtons({
     rateLoginRequired: labels?.rateLoginRequired ?? "評価するにはログインが必要です。",
     rateRevokeFailed: labels?.rateRevokeFailed ?? "評価の取り消しに失敗しました: ",
     rateFailed: labels?.rateFailed ?? "評価に失敗しました: ",
-    rateChangeFailed: labels?.rateChangeFailed ?? "評価変更に失敗しました: ",
     upvote: labels?.upvote ?? "高く評価",
-    downvote: labels?.downvote ?? "低く評価",
   };
 
   useEffect(() => {
@@ -64,8 +60,8 @@ export default function PostVoteButtons({
         .eq("user_id", session.user.id)
         .maybeSingle();
 
-      if (!error && data?.vote_type) {
-        setCurrentVote(data.vote_type as 1 | -1);
+      if (!error && data?.vote_type === 1) {
+        setCurrentVote(1);
       }
 
       setLoading(false);
@@ -74,7 +70,7 @@ export default function PostVoteButtons({
     loadVoteState();
   }, [postId]);
 
-  const applyVote = async (nextVote: 1 | -1) => {
+  const applyVote = async () => {
     if (!currentUser) {
       alert(t.rateLoginRequired);
       return;
@@ -84,7 +80,7 @@ export default function PostVoteButtons({
     setSubmitting(true);
 
     try {
-      if (currentVote === nextVote) {
+      if (currentVote === 1) {
         const { error } = await supabase
           .from("post_votes")
           .delete()
@@ -96,43 +92,26 @@ export default function PostVoteButtons({
           return;
         }
 
-        setScore((prev) => prev - currentVote);
+        setScore((prev) => prev - 1);
         setCurrentVote(0);
         return;
       }
 
-      if (currentVote === 0) {
-        const { error } = await supabase.from("post_votes").insert([
-          {
-            post_id: postId,
-            user_id: currentUser.id,
-            vote_type: nextVote,
-          },
-        ]);
-
-        if (error) {
-          alert(`${t.rateFailed}${error.message}`);
-          return;
-        }
-
-        setScore((prev) => prev + nextVote);
-        setCurrentVote(nextVote);
-        return;
-      }
-
-      const { error } = await supabase
-        .from("post_votes")
-        .update({ vote_type: nextVote })
-        .eq("post_id", postId)
-        .eq("user_id", currentUser.id);
+      const { error } = await supabase.from("post_votes").upsert([
+        {
+          post_id: postId,
+          user_id: currentUser.id,
+          vote_type: 1,
+        },
+      ]);
 
       if (error) {
-        alert(`${t.rateChangeFailed}${error.message}`);
+        alert(`${t.rateFailed}${error.message}`);
         return;
       }
 
-      setScore((prev) => prev - currentVote + nextVote);
-      setCurrentVote(nextVote);
+      setScore((prev) => prev + 1);
+      setCurrentVote(1);
     } finally {
       setSubmitting(false);
     }
@@ -172,7 +151,7 @@ export default function PostVoteButtons({
       <button
         type="button"
         disabled={disabled}
-        onClick={() => applyVote(1)}
+        onClick={() => applyVote()}
         title={t.upvote}
         aria-label={t.upvote}
         style={{
@@ -205,12 +184,7 @@ export default function PostVoteButtons({
         style={{
           minWidth: "28px",
           textAlign: "center",
-          color:
-            currentVote === 1
-              ? "#e05c6a"
-              : currentVote === -1
-              ? "#7a9fc2"
-              : "#c8b8b0",
+          color: currentVote === 1 ? "#e05c6a" : "#c8b8b0",
           fontWeight: 700,
           fontSize: "14px",
           userSelect: "none",
@@ -218,38 +192,6 @@ export default function PostVoteButtons({
       >
         {score}
       </span>
-
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => applyVote(-1)}
-        title={t.downvote}
-        aria-label={t.downvote}
-        style={{
-          width: "32px",
-          height: "32px",
-          borderRadius: "999px",
-          border: "none",
-          background: "transparent",
-          color: currentVote === -1 ? "#7a9fc2" : "#8a7870",
-          cursor: disabled ? "not-allowed" : "pointer",
-          opacity: disabled ? 0.6 : 1,
-          fontWeight: 700,
-          fontSize: "16px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "color 0.15s, background 0.15s",
-        }}
-        onMouseEnter={(e) => {
-          if (!disabled) (e.currentTarget as HTMLButtonElement).style.background = "rgba(122,159,194,0.12)";
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-        }}
-      >
-        ▼
-      </button>
     </div>
   );
 }

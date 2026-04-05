@@ -40,24 +40,16 @@
   color: #a49080;
 }
 
-.headerActions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+.backLink {
+  display: inline-block;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #c49090;
+  text-decoration: none;
 }
 
-.topLink {
-  min-height: 46px;
-  padding: 0 18px;
-  border-radius: 0;
-  border: 1px solid rgba(170, 108, 112, 0.32);
-  background: rgba(48, 18, 22, 0.78);
-  color: #f5f1eb;
-  font-weight: 700;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.backLink:hover {
+  text-decoration: underline;
 }
 
 .card {
