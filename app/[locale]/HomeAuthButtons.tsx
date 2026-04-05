@@ -56,44 +56,9 @@ export default function HomeAuthButtons({ locale }: Props) {
 
   if (loading) return <div style={{ minHeight: "36px" }} />;
 
+  // ログイン済み時はサイドバーに移行したため非表示
   if (loggedIn) {
-    return (
-      <div ref={menuRef} className={styles.userMenuWrapper}>
-        <button
-          type="button"
-          className={`${styles.topTextButton} ${styles.userMenuButton}`}
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-expanded={menuOpen}
-        >
-          {isAdmin ? "ADMIN" : "MENU"} ▾
-        </button>
-
-        {menuOpen && (
-          <div className={styles.userDropdown}>
-            <span className={styles.userDropdownStatus}>
-              {isAdmin ? "adminとしてログイン" : "ログイン中"}
-            </span>
-            {isAdmin && (
-              <Link
-                href={`/${locale}/admin`}
-                className={styles.userDropdownItem}
-                style={{ color: "#e8a0a0" }}
-                onClick={() => setMenuOpen(false)}
-              >
-                管理画面
-              </Link>
-            )}
-            <button
-              type="button"
-              className={styles.userDropdownItem}
-              onClick={handleLogout}
-            >
-              logout
-            </button>
-          </div>
-        )}
-      </div>
-    );
+    return null;
   }
 
   return (

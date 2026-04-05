@@ -1,0 +1,243 @@
+/* ═══════════════════════════════════════════════════════════
+   SIDEBAR DRAWER — X/Twitter風左スライドサイドバー
+   ═══════════════════════════════════════════════════════════ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+  transition: background 0.35s ease, backdrop-filter 0.35s ease;
+  pointer-events: none;
+}
+
+.overlayVisible {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  pointer-events: auto;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: min(300px, 80vw);
+  height: 100dvh;
+  z-index: 90;
+  background: #0e0507;
+  border-right: 1px solid rgba(161, 102, 108, 0.25);
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.drawerOpen {
+  transform: translateX(0);
+}
+
+/* ── ヘッダー（閉じるボタン） ── */
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 12px 16px;
+  flex-shrink: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #8a7870;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.closeBtn:hover {
+  color: #f5f1eb;
+  background: rgba(161, 102, 108, 0.15);
+}
+
+/* ── ユーザー情報 ── */
+
+.userSection {
+  padding: 8px 20px 20px;
+  border-bottom: 1px solid rgba(161, 102, 108, 0.15);
+}
+
+.userAvatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(200, 40, 50, 0.4);
+}
+
+.userAvatarPlaceholder {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #1a0a0c;
+  border: 2px solid rgba(200, 40, 50, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5a4848;
+  font-size: 24px;
+}
+
+.userDisplayName {
+  margin: 10px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #f5f1eb;
+  word-break: break-word;
+}
+
+.userUsername {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #8a7870;
+}
+
+/* ── メニューリンク ── */
+
+.menuList {
+  flex: 1;
+  padding: 8px 0;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 20px;
+  text-decoration: none;
+  color: #f5f1eb;
+  font-size: 15px;
+  font-weight: 500;
+  transition: background 0.15s;
+  border: none;
+  background: none;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+}
+
+.menuItem:hover {
+  background: rgba(161, 102, 108, 0.08);
+}
+
+.menuIcon {
+  font-size: 20px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+  color: #c8b8b0;
+}
+
+.menuLabel {
+  flex: 1;
+}
+
+.menuBadge {
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: #e53e3e;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  line-height: 1;
+}
+
+/* ── 区切り線 ── */
+
+.menuDivider {
+  height: 1px;
+  background: rgba(161, 102, 108, 0.12);
+  margin: 4px 0;
+}
+
+/* ── 未ログイン時 ── */
+
+.guestSection {
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.guestPrompt {
+  color: #8a7870;
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
+.guestActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guestBtn {
+  display: block;
+  padding: 10px 0;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.guestBtnLogin {
+  background: linear-gradient(135deg, #c82832, #8b0000);
+  color: #f5f1eb;
+}
+
+.guestBtnRegister {
+  background: transparent;
+  border: 1px solid rgba(200, 40, 50, 0.35);
+  color: #c8b8b0;
+}
+
+.guestBtn:hover {
+  opacity: 0.85;
+}
+
+/* ── フッター ── */
+
+.drawerFooter {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(161, 102, 108, 0.12);
+  flex-shrink: 0;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  color: #8a7870;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: color 0.2s;
+}
+
+.logoutBtn:hover {
+  color: #c82832;
+}

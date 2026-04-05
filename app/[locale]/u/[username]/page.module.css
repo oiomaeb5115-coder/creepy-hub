@@ -527,3 +527,91 @@
   overflow-y: auto;
   flex: 1;
 }
+
+/* ── メディアグリッド（9:16縦長カード） ── */
+
+.mediaGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.mediaCard {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0d0608;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.mediaCard:hover {
+  opacity: 0.85;
+}
+
+.mediaCardExpired {
+  opacity: 0.45;
+}
+
+.mediaCardExpired:hover {
+  opacity: 0.6;
+}
+
+.mediaThumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mediaVideoIcon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 10px;
+  color: #f5f1eb;
+  backdrop-filter: blur(4px);
+}
+
+.mediaExpiredBadge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: #8a7870;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.mediaCardFooter {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 6px;
+  background: linear-gradient(to top, rgba(5, 2, 4, 0.85), transparent);
+}
+
+.mediaDate {
+  font-size: 10px;
+  color: rgba(200, 185, 176, 0.7);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+@media (max-width: 480px) {
+  .mediaGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+
+  .mediaCard {
+    border-radius: 4px;
+  }
+}

@@ -1,0 +1,102 @@
+/* ═══════════════════════════════════════════════════════════
+   StoryMoreMenu — 三点メニュー（通報・ブロック）
+   ═══════════════════════════════════════════════════════════ */
+
+.wrapper {
+  position: absolute;
+  top: 16px;
+  right: 12px;
+  z-index: 10;
+}
+
+.moreBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(200, 40, 50, 0.2);
+  color: #f5f1eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s;
+}
+
+.moreBtn:hover {
+  background: rgba(200, 40, 50, 0.3);
+}
+
+/* 三点アイコン（縦） */
+.dotIcon {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #f5f1eb;
+}
+
+/* ドロップダウン */
+.dropdown {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  min-width: 160px;
+  background: rgba(20, 8, 10, 0.95);
+  border: 1px solid rgba(200, 40, 50, 0.25);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: #e05c6a;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.15s;
+}
+
+.deleteBtn:hover {
+  background: rgba(224, 92, 106, 0.12);
+}
+
+.deleteBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(200, 40, 50, 0.12);
+  margin: 4px 0;
+}
+
+@media (max-width: 600px) {
+  .moreBtn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .wrapper {
+    top: 12px;
+    right: 8px;
+  }
+}

@@ -13,7 +13,9 @@ export default function FloatingPostButton({ locale }: Props) {
   const hide =
     pathname.endsWith("/wiki/submit") ||
     /\/wiki\/[^/]+\/edit$/.test(pathname) ||
-    pathname.endsWith("/post/new");
+    pathname.endsWith("/post/new") ||
+    pathname.endsWith("/story/new") ||
+    pathname.endsWith("/stream");
 
   if (hide) return null;
 

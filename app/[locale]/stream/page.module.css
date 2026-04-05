@@ -1,0 +1,265 @@
+/* ═══════════════════════════════════════════════════════════
+   STREAM PAGE — YouTube Shorts 風縦スクロールフィード
+   ═══════════════════════════════════════════════════════════ */
+
+.streamPage {
+  background: #050204;
+  min-height: 100vh;
+}
+
+.streamContainer {
+  height: calc(100dvh - 80px);
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* ── 各ストリームアイテム ── */
+
+.streamItem {
+  height: calc(100dvh - 80px);
+  scroll-snap-align: start;
+  position: relative;
+  background: #050204;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.streamMedia {
+  display: block;
+  object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* ── 下部グラデーション ── */
+
+.streamGradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 240px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+  pointer-events: none;
+}
+
+/* ── テキストオーバーレイ ── */
+
+.textOverlay {
+  position: absolute;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 80%;
+  padding: 4px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+  transform-origin: center center;
+}
+
+/* ── 右サイドアクションバー ── */
+
+.actionBar {
+  position: absolute;
+  right: 12px;
+  bottom: 100px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.actionItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.actionBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(200, 40, 50, 0.15);
+  color: #f5f1eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.actionBtn:hover {
+  background: rgba(200, 40, 50, 0.3);
+}
+
+.actionBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.actionBtn:disabled:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.actionBtnActive {
+  color: #e05c6a;
+  border-color: rgba(224, 92, 106, 0.3);
+}
+
+.actionLabel {
+  font-size: 11px;
+  color: rgba(245, 241, 235, 0.7);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+}
+
+/* ── ユーザー情報（左下） ── */
+
+.streamUserInfo {
+  position: absolute;
+  bottom: 24px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 5;
+  max-width: calc(100% - 80px);
+}
+
+.streamUserAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(200, 40, 50, 0.5);
+  flex-shrink: 0;
+}
+
+.streamUserAvatarPlaceholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1a0a0c;
+  border: 2px solid rgba(200, 40, 50, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #5a4848;
+  flex-shrink: 0;
+}
+
+.streamUserName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f5f1eb;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+.streamUserTime {
+  font-size: 11px;
+  color: rgba(200, 185, 176, 0.7);
+  margin-left: 8px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* ── 空状態 ── */
+
+.emptyState {
+  height: calc(100dvh - 80px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8a7870;
+  gap: 12px;
+  padding: 20px;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: 16px;
+  text-align: center;
+}
+
+/* ── レスポンシブ ── */
+
+/* PC (> 600px) — 9:16 比率で中央表示 */
+@media (min-width: 601px) {
+  .streamMedia {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    aspect-ratio: 9 / 16;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 960px) {
+  .streamContainer {
+    height: calc(100dvh - 70px);
+  }
+
+  .streamItem {
+    height: calc(100dvh - 70px);
+  }
+
+  .emptyState {
+    height: calc(100dvh - 70px);
+  }
+
+  .actionBar {
+    gap: 14px;
+  }
+}
+
+/* スマホ (≤ 600px) — 画面全体に表示 */
+@media (max-width: 600px) {
+  .streamContainer {
+    height: calc(100dvh - 64px);
+  }
+
+  .streamItem {
+    height: calc(100dvh - 64px);
+  }
+
+  .streamMedia {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+  }
+
+  .emptyState {
+    height: calc(100dvh - 64px);
+  }
+
+  .actionBar {
+    right: 8px;
+    bottom: 80px;
+    gap: 12px;
+  }
+
+  .actionBtn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .actionLabel {
+    font-size: 10px;
+  }
+}

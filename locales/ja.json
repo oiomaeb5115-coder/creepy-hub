@@ -9,7 +9,8 @@
     "register": "新規登録",
     "logout": "ログアウト",
     "bookmark": "ブックマーク",
-    "settings": "設定"
+    "settings": "設定",
+    "stream": "ストリーム"
   },
   "home": {
     "storySearch": "CREEPY POST — 怪談検索",
@@ -378,6 +379,10 @@
     "noReportedPosts": "報告された投稿はありません",
     "reportedWikis": "報告された Wiki（{count}件）",
     "noReportedWikis": "報告された Wiki はありません",
+    "reportedStreams": "報告されたストリーム（{count}件）",
+    "noReportedStreams": "報告されたストリームはありません",
+    "dismissBtn": "報告を却下",
+    "dismissed": "却下済",
     "reportCountCol": "報告数",
     "viewBtn": "確認する →",
     "trash": "ゴミ箱（ソフトデリート済み）",
@@ -564,5 +569,47 @@
     "terms": "利用規約",
     "contact": "お問い合わせ",
     "rightsClaim": "権利侵害申立"
+  },
+  "sidebar": {
+    "profile": "プロフィール",
+    "settings": "設定",
+    "notifications": "通知",
+    "admin": "管理画面",
+    "logout": "ログアウト",
+    "loginPrompt": "ログインしてください",
+    "login": "ログイン",
+    "register": "新規登録"
+  },
+  "story": {
+    "addStory": "ストーリーを追加",
+    "yourStory": "あなたのストーリー",
+    "newStory": "ストーリーを作成",
+    "editStory": "ストーリーを編集",
+    "addText": "テキストを追加",
+    "publish": "投稿する",
+    "publishing": "投稿中...",
+    "back": "戻る",
+    "deleteConfirm": "このストーリーを削除しますか？",
+    "expired": "このストーリーは期限切れです",
+    "tapToUnmute": "タップでミュート解除",
+    "durationTooLong": "動画は2分以内にしてください",
+    "fileTooLarge": "ファイルサイズが大きすぎます",
+    "invalidFormat": "対応していないファイル形式です",
+    "uploadPrompt": "タップして画像・動画を選択",
+    "uploadHint": "画像: JPEG/PNG/WebP/GIF (5MB) | 動画: MP4/WebM (2分以内, 50MB)",
+    "textPlaceholder": "テキストを入力...",
+    "cancel": "キャンセル",
+    "font": "フォント",
+    "size": "サイズ",
+    "color": "色",
+    "delete": "削除",
+    "adjustImage": "画像を調整",
+    "adjustDone": "完了",
+    "dragToAdjust": "ドラッグで位置を調整",
+    "zoom": "ズーム",
+    "reset": "リセット",
+    "bold": "太字",
+    "italic": "斜体",
+    "stroke": "縁取り"
   }
 }

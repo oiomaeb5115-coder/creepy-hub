@@ -7,6 +7,7 @@ import styles from "./page.module.css";
 import HomeAuthButtons from "./HomeAuthButtons";
 import AdminPendingSection from "@/components/AdminPendingSection";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
+import StoriesRow from "@/components/StoriesRow";
 
 export const revalidate = 60;
 
@@ -320,6 +321,9 @@ export default async function HomePage({ params }: HomePageProps) {
 
           </div>
         </section>
+
+        {/* ── STORIES ── */}
+        <StoriesRow locale={locale} />
 
         {/* ── TWO-COLUMN LAYOUT ── */}
         <div className={styles.twoColLayout}>

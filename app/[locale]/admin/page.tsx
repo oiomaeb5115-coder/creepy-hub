@@ -34,6 +34,7 @@ type TrashWiki = { slug: string; title: string; deleted_at: string };
 type TrashCategory = { id: number; name: string; slug: string; deleted_at: string };
 type ReportedPost = { id: number; title: string | null; reported_count: number };
 type ReportedWiki = { id: number; slug: string; title: string; reported_count: number };
+type ReportedStream = { id: string; media_url: string; user_id: string; username: string | null; report_count: number; created_at: string };
 
 type TranslateStatus = "idle" | "loading" | "done" | "error" | "exists";
 type ApproveStatus = "idle" | "loading" | "done" | "error";
@@ -78,6 +79,9 @@ export default function AdminPage() {
   const [reportedWikis, setReportedWikis] = useState<ReportedWiki[]>([]);
   const [reportedPostDeleteStatus, setReportedPostDeleteStatus] = useState<Record<number, DeleteStatus>>({});
   const [reportedWikiDeleteStatus, setReportedWikiDeleteStatus] = useState<Record<number, DeleteStatus>>({});
+  const [reportedStreams, setReportedStreams] = useState<ReportedStream[]>([]);
+  const [reportedStreamStatus, setReportedStreamStatus] = useState<Record<string, DeleteStatus>>({});
+  const [dismissStreamStatus, setDismissStreamStatus] = useState<Record<string, DeleteStatus>>({});
 
   // プロフィール編集
   const [profile, setProfile] = useState<ProfileRow | null>(null);
@@ -199,6 +203,41 @@ export default function AdminPage() {
         .gte("reported_count", 1)
         .order("reported_count", { ascending: false });
       setReportedWikis((repWikisData ?? []) as ReportedWiki[]);
+
+      // 報告されたストリームを取得
+      const { data: storyReportsData } = await supabase
+        .from("story_reports")
+        .select("story_id");
+      if (storyReportsData && storyReportsData.length > 0) {
+        // story_id ごとに報告数を集計
+        const countMap = new Map<string, number>();
+        for (const r of storyReportsData) {
+          countMap.set(r.story_id, (countMap.get(r.story_id) ?? 0) + 1);
+        }
+        const reportedStoryIds = [...countMap.keys()];
+        const { data: storiesData } = await supabase
+          .from("user_stories")
+          .select("id, media_url, user_id, created_at")
+          .in("id", reportedStoryIds);
+        if (storiesData) {
+          const userIds = [...new Set(storiesData.map((s) => s.user_id))];
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("id, username")
+            .in("id", userIds);
+          const profileMap = new Map((profiles ?? []).map((p) => [p.id, p.username]));
+          const streams: ReportedStream[] = storiesData.map((s) => ({
+            id: s.id,
+            media_url: s.media_url,
+            user_id: s.user_id,
+            username: profileMap.get(s.user_id) ?? null,
+            report_count: countMap.get(s.id) ?? 0,
+            created_at: s.created_at,
+          }));
+          streams.sort((a, b) => b.report_count - a.report_count);
+          setReportedStreams(streams);
+        }
+      }
 
       // ゴミ箱: ソフトデリートされた投稿
       const { data: tStories } = await supabase
@@ -493,6 +532,48 @@ export default function AdminPage() {
       }
     } catch {
       setReportedWikiDeleteStatus((prev) => ({ ...prev, [wiki.id]: "error" }));
+    }
+  };
+
+  // 報告されたストリーム: 削除
+  const deleteReportedStream = async (streamId: string) => {
+    if (!window.confirm("このストリームを削除しますか？")) return;
+    setReportedStreamStatus((prev) => ({ ...prev, [streamId]: "loading" }));
+    try {
+      const token = await getAccessToken();
+      const res = await fetch(`/api/story/${streamId}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setReportedStreamStatus((prev) => ({ ...prev, [streamId]: "done" }));
+        setReportedStreams((prev) => prev.filter((s) => s.id !== streamId));
+      } else {
+        setReportedStreamStatus((prev) => ({ ...prev, [streamId]: "error" }));
+      }
+    } catch {
+      setReportedStreamStatus((prev) => ({ ...prev, [streamId]: "error" }));
+    }
+  };
+
+  // 報告されたストリーム: 報告を却下（report レコードを削除）
+  const dismissStreamReports = async (streamId: string) => {
+    if (!window.confirm("このストリームの報告をすべて却下しますか？")) return;
+    setDismissStreamStatus((prev) => ({ ...prev, [streamId]: "loading" }));
+    try {
+      const token = await getAccessToken();
+      const res = await fetch(`/api/story/${streamId}/report`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setDismissStreamStatus((prev) => ({ ...prev, [streamId]: "done" }));
+        setReportedStreams((prev) => prev.filter((s) => s.id !== streamId));
+      } else {
+        setDismissStreamStatus((prev) => ({ ...prev, [streamId]: "error" }));
+      }
+    } catch {
+      setDismissStreamStatus((prev) => ({ ...prev, [streamId]: "error" }));
     }
   };
 
@@ -1152,6 +1233,86 @@ export default function AdminPage() {
                           onClick={() => deleteReportedWiki(wiki)}
                         >
                           {dst === "loading" ? dict.admin.deleting : dst === "done" ? dict.common.deleted : dst === "error" ? dict.common.retry : dict.admin.deleteBtn}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </section>
+
+        {/* 報告されたストリーム */}
+        <section style={sectionStyle}>
+          <h2 style={sectionTitleStyle}>
+            {dict.admin.reportedStreams.replace("{count}", String(reportedStreams.length))}
+          </h2>
+          {reportedStreams.length === 0 ? (
+            <p style={emptyStyle}>{dict.admin.noReportedStreams}</p>
+          ) : (
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>Stream</th>
+                  <th style={thStyle}>{dict.admin.reportCountCol}</th>
+                  <th style={thStyle}>{dict.admin.actionCol}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reportedStreams.map((stream) => {
+                  const dst = reportedStreamStatus[stream.id] ?? "idle";
+                  const dmst = dismissStreamStatus[stream.id] ?? "idle";
+                  return (
+                    <tr key={stream.id} style={trStyle}>
+                      <td style={tdStyle}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          {stream.media_url && (
+                            <img
+                              src={stream.media_url}
+                              alt=""
+                              style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6 }}
+                            />
+                          )}
+                          <span style={{ color: "#c8b8b0", fontSize: 13 }}>
+                            @{stream.username ?? "unknown"}
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
+                        {stream.report_count}
+                      </td>
+                      <td style={{ ...tdStyle, display: "flex", gap: 8, alignItems: "center" }}>
+                        <Link
+                          href={`/${locale}/stream`}
+                          style={linkStyle}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {dict.admin.viewBtn}
+                        </Link>
+                        <button
+                          style={deleteButtonStyle(dst)}
+                          disabled={dst === "loading" || dst === "done"}
+                          onClick={() => deleteReportedStream(stream.id)}
+                        >
+                          {dst === "loading" ? dict.admin.deleting : dst === "done" ? dict.common.deleted : dst === "error" ? dict.common.retry : dict.admin.deleteBtn}
+                        </button>
+                        <button
+                          style={{
+                            ...linkStyle,
+                            cursor: dmst === "loading" || dmst === "done" ? "not-allowed" : "pointer",
+                            opacity: dmst === "done" ? 0.5 : 1,
+                            background: "none",
+                            border: "1px solid rgba(161,102,108,0.3)",
+                            borderRadius: 4,
+                            padding: "4px 10px",
+                            fontSize: 12,
+                          }}
+                          disabled={dmst === "loading" || dmst === "done"}
+                          onClick={() => dismissStreamReports(stream.id)}
+                        >
+                          {dmst === "loading" ? dict.admin.processing : dmst === "done" ? dict.admin.dismissed : dmst === "error" ? dict.common.retry : dict.admin.dismissBtn}
                         </button>
                       </td>
                     </tr>

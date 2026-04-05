@@ -1,0 +1,305 @@
+/* ── ストーリー行: 9:16縦長カードの横スクロール ── */
+
+.storiesSection {
+  width: 100%;
+  padding: 16px 0 12px;
+  margin-bottom: 4px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px 10px;
+}
+
+.sectionTitleWrap {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.sectionTitleEn {
+  font-family: Impact, "Anton", sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  color: #f5f1eb;
+  text-transform: uppercase;
+}
+
+.sectionTitleJa {
+  font-size: 12px;
+  color: #8a7870;
+}
+
+.seeAllLink {
+  font-size: 13px;
+  color: #c49090;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.seeAllLink:hover {
+  color: #f5f1eb;
+}
+
+.storiesScroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  padding: 0 16px 10px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.storiesScroll::-webkit-scrollbar {
+  height: 3px;
+}
+
+.storiesScroll::-webkit-scrollbar-track {
+  background: rgba(200, 40, 50, 0.05);
+}
+
+.storiesScroll::-webkit-scrollbar-thumb {
+  background: rgba(200, 40, 50, 0.25);
+  border-radius: 2px;
+}
+
+/* ── 各ストーリーカード (9:16比率) ── */
+
+.storyCard {
+  position: relative;
+  flex: 0 0 140px;
+  aspect-ratio: 9 / 16;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  scroll-snap-align: start;
+  background: #0d0608;
+  border: 1px solid rgba(200, 40, 50, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.storyCard:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(200, 40, 50, 0.2);
+  border-color: rgba(200, 40, 50, 0.4);
+}
+
+.storyCardViewed {
+  opacity: 0.7;
+  border-color: rgba(60, 50, 55, 0.3);
+}
+
+.storyCardViewed:hover {
+  opacity: 1;
+}
+
+/* メディアサムネイル */
+
+.cardMedia {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 動画アイコン */
+
+.videoIndicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  color: #f5f1eb;
+  z-index: 3;
+  backdrop-filter: blur(4px);
+}
+
+/* グラデーションオーバーレイ（下部） */
+
+.cardGradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to top, rgba(5, 2, 4, 0.9), transparent);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* 未閲覧リング（上部） */
+
+.cardUnreadBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #c82832, #8b0000);
+  z-index: 3;
+}
+
+/* ユーザー情報（下部） */
+
+.cardUserInfo {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(200, 40, 50, 0.5);
+}
+
+.cardAvatarPlaceholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(13, 6, 8, 0.8);
+  border: 2px solid rgba(200, 40, 50, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #8a7870;
+}
+
+.cardUsername {
+  font-size: 11px;
+  color: #f5f1eb;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  font-family: "Noto Sans JP", sans-serif;
+}
+
+.cardTime {
+  font-size: 10px;
+  color: rgba(200, 185, 176, 0.7);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* テキストオーバーレイプレビュー */
+
+.cardTextPreview {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  font-size: 11px;
+  color: #f5f1eb;
+  text-align: center;
+  max-width: 80%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+
+/* ── 追加ボタン（9:16カード） ── */
+
+.addStoryCard {
+  position: relative;
+  flex: 0 0 140px;
+  aspect-ratio: 9 / 16;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(13, 6, 8, 0.6);
+  border: 2px dashed rgba(200, 40, 50, 0.3);
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.addStoryCard:hover {
+  border-color: rgba(200, 40, 50, 0.6);
+  background: rgba(200, 40, 50, 0.05);
+  transform: translateY(-3px);
+}
+
+.addIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(200, 40, 50, 0.15);
+  border: 2px solid rgba(200, 40, 50, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: rgba(200, 40, 50, 0.7);
+  transition: background 0.2s;
+}
+
+.addStoryCard:hover .addIcon {
+  background: rgba(200, 40, 50, 0.25);
+}
+
+.addLabel {
+  font-size: 12px;
+  color: rgba(200, 40, 50, 0.6);
+  font-family: "Noto Sans JP", sans-serif;
+}
+
+/* ── ストーリー数バッジ ── */
+
+.storyCountBadge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(200, 40, 50, 0.8);
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 10px;
+  color: #f5f1eb;
+  z-index: 3;
+  font-weight: 600;
+}
+
+/* ── レスポンシブ ── */
+
+@media (min-width: 768px) {
+  .storyCard,
+  .addStoryCard {
+    flex: 0 0 160px;
+  }
+
+  .sectionTitleEn {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .storyCard,
+  .addStoryCard {
+    flex: 0 0 175px;
+  }
+}

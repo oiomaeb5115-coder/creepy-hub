@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -9,14 +9,38 @@ import { generateSlug, sanitizeSlug } from "@/lib/slug";
 import { postUrl } from "@/lib/postUrl";
 import { uploadImage } from "@/lib/uploadImage";
 import BackButton from "@/components/BackButton";
+import StoryCreator from "@/components/StoryCreator";
 import { getDictionary } from "@/lib/getDictionary";
 import type { Dictionary } from "@/lib/getDictionary";
+import tabStyles from "./page.module.css";
 
 export default function PostNewPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
   const router = useRouter();
 
+  // ── タブ管理 ──
+  const [activeTab, setActiveTab] = useState<0 | 1>(0); // 0=POST, 1=STREAM
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // スクロール位置からアクティブタブを検知
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const ratio = el.scrollLeft / el.clientWidth;
+    const idx = ratio > 0.5 ? 1 : 0;
+    setActiveTab(idx as 0 | 1);
+  }, []);
+
+  // タブクリック → スクロール
+  const scrollToTab = useCallback((idx: 0 | 1) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ left: idx * el.clientWidth, behavior: "smooth" });
+    setActiveTab(idx);
+  }, []);
+
+  // ── POST フォーム state ──
   const [labels, setLabels] = useState<Dictionary["postDrawer"] | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -31,7 +55,6 @@ export default function PostNewPage() {
   const [draftRestored, setDraftRestored] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
-  // 画像関連 state
   const [imageUrl1, setImageUrl1] = useState<string | null>(null);
   const [imageUrl2, setImageUrl2] = useState<string | null>(null);
   const [imageUrl3, setImageUrl3] = useState<string | null>(null);
@@ -186,193 +209,233 @@ export default function PostNewPage() {
     { label: labels?.image3 ?? "画像 3", url: imageUrl3, newFile: newImage3, setUrl: setImageUrl3, setFile: setNewImage3 },
   ];
 
+  // ── ローディング中 ──
   if (!authChecked || !labels) {
     return (
-      <main style={pageStyle}>
+      <div className={tabStyles.pageWrap}>
         <div style={{ padding: 40, textAlign: "center", color: "#8a7870" }}>
           {labels?.checkingAuth ?? "読み込み中..."}
         </div>
-      </main>
+      </div>
     );
   }
 
+  // ── 未ログイン ──
   if (!isLoggedIn) {
     return (
-      <main style={pageStyle}>
-        <div style={shellStyle}>
-          <div style={{ padding: 60, textAlign: "center" }}>
-            <p style={{ color: "rgba(200,150,140,0.4)", fontFamily: '"装甲明朝","Soukou Mincho",serif' }}>
-              {labels.loginRequired}
-            </p>
-            <Link
-              href={`/${locale}?modal=login`}
-              style={{ ...linkStyle, display: "inline-block", marginTop: 20 }}
-            >
-              {labels.loginLink}
-            </Link>
-          </div>
+      <div className={tabStyles.pageWrap}>
+        <div style={{ maxWidth: 800, margin: "0 auto", paddingTop: 60, textAlign: "center" }}>
+          <p style={{ color: "rgba(200,150,140,0.4)", fontFamily: '"装甲明朝","Soukou Mincho",serif' }}>
+            {labels.loginRequired}
+          </p>
+          <Link
+            href={`/${locale}?modal=login`}
+            style={{ ...linkStyle, display: "inline-block", marginTop: 20 }}
+          >
+            {labels.loginLink}
+          </Link>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main style={pageStyle}>
-      <div style={shellStyle}>
-        <BackButton />
-        <header style={headerStyle}>
-          <div>
-            <p style={breadcrumbStyle}>ARCHIVE / STORY / NEW POST</p>
-            <h1 style={titleFontStyle}>{locale === "en" ? "New Post" : "新規投稿"}</h1>
-          </div>
-          <Link href={`/${locale}/post`} style={linkStyle}>
-            {locale === "en" ? "Cancel" : "キャンセル"}
-          </Link>
-        </header>
-
-        <section style={cardStyle}>
-          <form onSubmit={handleSubmit} style={formStyle}>
-            <p style={{ fontSize: 10, color: "rgba(200,150,140,0.3)", letterSpacing: "0.1em", margin: 0 }}>
-              {labels.postedAs}
-            </p>
-
-            <div style={draftNoticeStyle}>{labels.draftNotice}</div>
-
-            {/* カテゴリー */}
-            <div style={groupStyle}>
-              <label style={labelStyle}>{labels.genre}</label>
-              <select style={controlStyle} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-                <option value="">{labels.selectGenre}</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {locale === "en" ? (cat.name_en ?? cat.name) : cat.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* タイトル */}
-            <div style={groupStyle}>
-              <label style={labelStyle}>{labels.titleLabel}</label>
-              <input
-                style={controlStyle}
-                type="text"
-                value={title}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setTitle(val);
-                  if (!slugManuallyEdited) {
-                    const auto = generateSlug(val);
-                    setSlugInput(auto ?? "");
-                  }
-                }}
-              />
-            </div>
-
-            {/* スラッグ */}
-            <div style={groupStyle}>
-              <label style={labelStyle}>{labels.slugLabel}</label>
-              <input
-                style={controlStyle}
-                type="text"
-                value={slugInput}
-                onChange={(e) => {
-                  const v = e.target.value
-                    .toLowerCase()
-                    .replace(/[^a-z0-9\s-]/g, "")
-                    .replace(/\s+/g, "-")
-                    .replace(/-+/g, "-");
-                  setSlugInput(v);
-                  setSlugManuallyEdited(true);
-                }}
-                placeholder="e.g. shisaki-eiko"
-              />
-              <small style={slugHintStyle}>{labels.slugHint}</small>
-            </div>
-
-            {/* 画像 */}
-            <div style={groupStyle}>
-              <label style={labelStyle}>{locale === "en" ? "Images (up to 3)" : "画像（最大3枚）"}</label>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                {imageSlots.map((slot, idx) => (
-                  <div key={idx} style={imageSlotStyle}>
-                    {(slot.newFile || slot.url) ? (
-                      <div style={{ position: "relative" }}>
-                        <img
-                          src={slot.newFile ? URL.createObjectURL(slot.newFile) : slot.url!}
-                          alt={slot.label}
-                          style={imagePreviewStyle}
-                        />
-                        <button
-                          type="button"
-                          style={imageRemoveBtn}
-                          onClick={() => { slot.setUrl(null); slot.setFile(null); }}
-                          title={locale === "en" ? "Remove image" : "画像を削除"}
-                        >
-                          &times;
-                        </button>
-                      </div>
-                    ) : (
-                      <label style={imageAddLabel}>
-                        <span style={{ fontSize: 24, lineHeight: 1 }}>+</span>
-                        <span style={{ fontSize: 11 }}>{slot.label}</span>
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp,image/gif"
-                          style={{ display: "none" }}
-                          onChange={(e) => {
-                            const f = e.target.files?.[0] ?? null;
-                            if (f) slot.setFile(f);
-                          }}
-                        />
-                      </label>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 本文 */}
-            <div style={groupStyle}>
-              <label style={labelStyle}>{labels.bodyLabel}</label>
-              <textarea
-                style={{ ...controlStyle, minHeight: 200, resize: "vertical" }}
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder="..."
-              />
-            </div>
-
-            {/* ボタン行 */}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
-              <button type="button" style={secondaryBtn} onClick={saveDraftManually} disabled={isSubmitting}>
-                {isSaved ? labels.draftSaved : labels.saveDraft}
-              </button>
-              <button type="submit" style={primaryBtn} disabled={isSubmitting}>
-                {isSubmitting ? labels.posting : labels.publish}
-              </button>
-            </div>
-
-            {/* 下書き復元通知 */}
-            {draftRestored && (
-              <div style={draftRestoredRowStyle}>
-                <span style={{ fontSize: 9, color: "rgba(100,180,120,0.5)", letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
-                  {labels.draftRestored}
-                </span>
-                <button type="button" style={draftDeleteBtnStyle} onClick={deleteDraft}>
-                  {labels.deleteDraft}
-                </button>
-              </div>
-            )}
-          </form>
-        </section>
+    <div className={tabStyles.pageWrap}>
+      {/* ── タブバー ── */}
+      <div className={tabStyles.tabBar}>
+        <button
+          className={`${tabStyles.tabItem} ${activeTab === 0 ? tabStyles.tabItemActive : ""}`}
+          onClick={() => scrollToTab(0)}
+          type="button"
+        >
+          <span className={tabStyles.tabLabelEn}>POST</span>
+          <span className={tabStyles.tabLabelJa}>
+            {locale === "en" ? "Article" : "記事投稿"}
+          </span>
+          <span className={tabStyles.tabIndicator} />
+        </button>
+        <button
+          className={`${tabStyles.tabItem} ${activeTab === 1 ? tabStyles.tabItemActive : ""}`}
+          onClick={() => scrollToTab(1)}
+          type="button"
+        >
+          <span className={tabStyles.tabLabelEn}>STREAM</span>
+          <span className={tabStyles.tabLabelJa}>
+            {locale === "en" ? "Short video" : "ショート動画"}
+          </span>
+          <span className={tabStyles.tabIndicator} />
+        </button>
       </div>
-    </main>
+
+      {/* ── 横スクロールコンテナ ── */}
+      <div
+        ref={scrollRef}
+        className={tabStyles.scrollContainer}
+        onScroll={handleScroll}
+      >
+        {/* ── パネル 1: POST フォーム ── */}
+        <div className={`${tabStyles.panel} ${tabStyles.postPanel}`}>
+          <div style={shellStyle}>
+            <BackButton />
+            <header style={headerStyle}>
+              <div>
+                <p style={breadcrumbStyle}>ARCHIVE / STORY / NEW POST</p>
+                <h1 style={titleFontStyle}>{locale === "en" ? "New Post" : "新規投稿"}</h1>
+              </div>
+              <Link href={`/${locale}/post`} style={linkStyle}>
+                {locale === "en" ? "Cancel" : "キャンセル"}
+              </Link>
+            </header>
+
+            <section style={cardStyle}>
+              <form onSubmit={handleSubmit} style={formStyle}>
+                <p style={{ fontSize: 10, color: "rgba(200,150,140,0.3)", letterSpacing: "0.1em", margin: 0 }}>
+                  {labels.postedAs}
+                </p>
+
+                <div style={draftNoticeStyle}>{labels.draftNotice}</div>
+
+                {/* カテゴリー */}
+                <div style={groupStyle}>
+                  <label style={labelStyle}>{labels.genre}</label>
+                  <select style={controlStyle} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+                    <option value="">{labels.selectGenre}</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {locale === "en" ? (cat.name_en ?? cat.name) : cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* タイトル */}
+                <div style={groupStyle}>
+                  <label style={labelStyle}>{labels.titleLabel}</label>
+                  <input
+                    style={controlStyle}
+                    type="text"
+                    value={title}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setTitle(val);
+                      if (!slugManuallyEdited) {
+                        const auto = generateSlug(val);
+                        setSlugInput(auto ?? "");
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* スラッグ */}
+                <div style={groupStyle}>
+                  <label style={labelStyle}>{labels.slugLabel}</label>
+                  <input
+                    style={controlStyle}
+                    type="text"
+                    value={slugInput}
+                    onChange={(e) => {
+                      const v = e.target.value
+                        .toLowerCase()
+                        .replace(/[^a-z0-9\s-]/g, "")
+                        .replace(/\s+/g, "-")
+                        .replace(/-+/g, "-");
+                      setSlugInput(v);
+                      setSlugManuallyEdited(true);
+                    }}
+                    placeholder="e.g. shisaki-eiko"
+                  />
+                  <small style={slugHintStyle}>{labels.slugHint}</small>
+                </div>
+
+                {/* 画像 */}
+                <div style={groupStyle}>
+                  <label style={labelStyle}>{locale === "en" ? "Images (up to 3)" : "画像（最大3枚）"}</label>
+                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                    {imageSlots.map((slot, idx) => (
+                      <div key={idx} style={imageSlotStyle}>
+                        {(slot.newFile || slot.url) ? (
+                          <div style={{ position: "relative" }}>
+                            <img
+                              src={slot.newFile ? URL.createObjectURL(slot.newFile) : slot.url!}
+                              alt={slot.label}
+                              style={imagePreviewStyle}
+                            />
+                            <button
+                              type="button"
+                              style={imageRemoveBtn}
+                              onClick={() => { slot.setUrl(null); slot.setFile(null); }}
+                              title={locale === "en" ? "Remove image" : "画像を削除"}
+                            >
+                              &times;
+                            </button>
+                          </div>
+                        ) : (
+                          <label style={imageAddLabel}>
+                            <span style={{ fontSize: 24, lineHeight: 1 }}>+</span>
+                            <span style={{ fontSize: 11 }}>{slot.label}</span>
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp,image/gif"
+                              style={{ display: "none" }}
+                              onChange={(e) => {
+                                const f = e.target.files?.[0] ?? null;
+                                if (f) slot.setFile(f);
+                              }}
+                            />
+                          </label>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 本文 */}
+                <div style={groupStyle}>
+                  <label style={labelStyle}>{labels.bodyLabel}</label>
+                  <textarea
+                    style={{ ...controlStyle, minHeight: 200, resize: "vertical" }}
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                    placeholder="..."
+                  />
+                </div>
+
+                {/* ボタン行 */}
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+                  <button type="button" style={secondaryBtn} onClick={saveDraftManually} disabled={isSubmitting}>
+                    {isSaved ? labels.draftSaved : labels.saveDraft}
+                  </button>
+                  <button type="submit" style={primaryBtn} disabled={isSubmitting}>
+                    {isSubmitting ? labels.posting : labels.publish}
+                  </button>
+                </div>
+
+                {/* 下書き復元通知 */}
+                {draftRestored && (
+                  <div style={draftRestoredRowStyle}>
+                    <span style={{ fontSize: 9, color: "rgba(100,180,120,0.5)", letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
+                      {labels.draftRestored}
+                    </span>
+                    <button type="button" style={draftDeleteBtnStyle} onClick={deleteDraft}>
+                      {labels.deleteDraft}
+                    </button>
+                  </div>
+                )}
+              </form>
+            </section>
+          </div>
+        </div>
+
+        {/* ── パネル 2: STREAM (StoryCreator) ── */}
+        <div className={`${tabStyles.panel} ${tabStyles.streamPanel}`}>
+          <StoryCreator locale={locale} embedded />
+        </div>
+      </div>
+    </div>
   );
 }
 
 // ── Styles (matching edit page) ──────────────────────────────
-const pageStyle: React.CSSProperties = { minHeight: "100vh", background: "#0d0808", color: "#c8b8b0", padding: "0 16px 80px" };
 const shellStyle: React.CSSProperties = { maxWidth: 800, margin: "0 auto", paddingTop: 24 };
 const headerStyle: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid rgba(180,100,110,0.25)", paddingBottom: 20, marginBottom: 32 };
 const breadcrumbStyle: React.CSSProperties = { fontSize: 11, letterSpacing: "0.15em", color: "#7a6a60", marginBottom: 4 };

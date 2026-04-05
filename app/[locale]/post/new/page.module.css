@@ -1,0 +1,126 @@
+/* ═══════════════════════════════════════════════════════════
+   POST/NEW — POST | STREAM 横スワイプタブ
+   ═══════════════════════════════════════════════════════════ */
+
+.pageWrap {
+  min-height: 100vh;
+  background: #0d0808;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── タブインジケーター ── */
+
+.tabBar {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid rgba(200, 40, 50, 0.12);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: #0d0808;
+}
+
+.tabItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0 10px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #6a5858;
+  transition: color 0.25s;
+  position: relative;
+  gap: 2px;
+}
+
+.tabItem:hover {
+  color: #c8b8b0;
+}
+
+.tabItemActive {
+  color: #f5f1eb;
+}
+
+.tabLabelEn {
+  font-family: Impact, "Anton", sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.tabLabelJa {
+  font-size: 10px;
+  color: inherit;
+  opacity: 0.6;
+}
+
+/* アクティブインジケーターライン */
+.tabIndicator {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #c82832, #8b0000);
+  border-radius: 1px;
+  transition: width 0.25s ease;
+}
+
+.tabItemActive .tabIndicator {
+  width: 60%;
+}
+
+/* ── 横スクロールコンテナ ── */
+
+.scrollContainer {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* スクロールバー非表示 */
+.scrollContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollContainer {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── 各パネル ── */
+
+.panel {
+  flex: 0 0 100%;
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  scroll-snap-align: start;
+  overflow-y: auto;
+}
+
+/* POST パネル */
+.postPanel {
+  color: #c8b8b0;
+  padding: 0 16px 80px;
+}
+
+/* STREAM パネル — StoryCreatorを内包 */
+.streamPanel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* StoryCreator の min-height をリセット */
+.streamPanel > div {
+  min-height: 0;
+  flex: 1;
+}

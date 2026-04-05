@@ -1,0 +1,489 @@
+/* ── StoryCreator: ストーリー作成・テキスト編集画面 ── */
+
+.creator {
+  min-height: 100vh;
+  background: #050204;
+  color: #f5f1eb;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── ヘッダー ── */
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(200, 40, 50, 0.1);
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: #8a7870;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+.backBtn:hover {
+  color: #f5f1eb;
+}
+
+.topTitle {
+  font-size: 15px;
+  color: #c8b8b0;
+  font-weight: 500;
+}
+
+.publishBtn {
+  background: linear-gradient(135deg, #c82832, #8b0000);
+  border: none;
+  color: #f5f1eb;
+  font-size: 14px;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  font-weight: 600;
+}
+
+.publishBtn:hover {
+  opacity: 0.9;
+}
+
+.publishBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Phase 1: メディア選択 ── */
+
+.uploadArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 20px;
+}
+
+.uploadDropzone {
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 9 / 16;
+  border: 2px dashed rgba(200, 40, 50, 0.3);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: rgba(13, 6, 8, 0.5);
+}
+
+.uploadDropzone:hover {
+  border-color: rgba(200, 40, 50, 0.6);
+  background: rgba(200, 40, 50, 0.05);
+}
+
+.uploadIcon {
+  font-size: 48px;
+  color: rgba(200, 40, 50, 0.5);
+}
+
+.uploadText {
+  color: #8a7870;
+  font-size: 14px;
+  text-align: center;
+}
+
+.uploadHint {
+  color: #5a4a45;
+  font-size: 12px;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+/* ── Phase 2: エディター ── */
+
+.editorArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.previewContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 9 / 16;
+  margin: 0 auto;
+  overflow: hidden;
+  touch-action: none;
+  border-radius: 12px;
+}
+
+.previewAdjustMode {
+  border: 2px solid rgba(200, 40, 50, 0.4);
+}
+
+/* ── 位置調整可能な画像 ── */
+
+.previewImageAdjustable {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center center;
+  pointer-events: none;
+  user-select: none;
+  max-width: none;
+}
+
+.previewVideo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* ── 位置調整ヒント ── */
+
+.adjustHint {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: #c8b8b0;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 15;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+}
+
+/* ── ドラッグ可能なテキストオーバーレイ ── */
+
+.overlayElement {
+  position: absolute;
+  cursor: grab;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 80%;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+  user-select: none;
+  transform-origin: center center;
+  z-index: 10;
+  transition: opacity 0.15s;
+}
+
+.overlayElement:active {
+  cursor: grabbing;
+}
+
+.overlaySelected {
+  outline: 2px solid rgba(200, 40, 50, 0.7);
+  outline-offset: 2px;
+}
+
+.overlayDimmed {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ── テキスト入力モーダル ── */
+
+.textInputOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.textInputBox {
+  background: rgba(13, 6, 8, 0.95);
+  border: 1px solid rgba(200, 40, 50, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  width: 90%;
+  max-width: 320px;
+}
+
+.textInputField {
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgba(200, 40, 50, 0.2);
+  border-radius: 6px;
+  color: #f5f1eb;
+  padding: 10px;
+  font-size: 16px;
+  resize: none;
+  min-height: 60px;
+  font-family: inherit;
+}
+
+.textInputField::placeholder {
+  color: #5a4a45;
+}
+
+.textInputActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.textInputCancel {
+  background: none;
+  border: 1px solid rgba(200, 40, 50, 0.2);
+  color: #8a7870;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.textInputOk {
+  background: rgba(200, 40, 50, 0.3);
+  border: 1px solid rgba(200, 40, 50, 0.4);
+  color: #f5f1eb;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* ── ツールバー ── */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid rgba(200, 40, 50, 0.1);
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+
+.toolBtn {
+  background: rgba(200, 40, 50, 0.15);
+  border: 1px solid rgba(200, 40, 50, 0.2);
+  color: #c8b8b0;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.toolBtn:hover {
+  background: rgba(200, 40, 50, 0.25);
+}
+
+.toolBtnActive {
+  background: rgba(200, 40, 50, 0.35);
+  border-color: rgba(200, 40, 50, 0.5);
+  color: #f5f1eb;
+}
+
+.toolDivider {
+  width: 1px;
+  height: 24px;
+  background: rgba(200, 40, 50, 0.15);
+  flex-shrink: 0;
+}
+
+/* ── ズームスライダー行 (画像位置調整) ── */
+
+.zoomRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-top: 1px solid rgba(200, 40, 50, 0.08);
+}
+
+.zoomLabel {
+  font-size: 16px;
+  color: #8a7870;
+  user-select: none;
+}
+
+.zoomSlider {
+  flex: 1;
+  accent-color: #c82832;
+  height: 4px;
+}
+
+.zoomResetBtn {
+  background: none;
+  border: 1px solid rgba(200, 40, 50, 0.2);
+  color: #8a7870;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.zoomResetBtn:hover {
+  color: #f5f1eb;
+  border-color: rgba(200, 40, 50, 0.4);
+}
+
+/* ── スタイルコントロール（選択時） ── */
+
+.styleControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid rgba(200, 40, 50, 0.08);
+  flex-wrap: wrap;
+}
+
+.styleLabel {
+  font-size: 11px;
+  color: #6a5858;
+  margin-right: 2px;
+}
+
+.fontSelect {
+  background: rgba(13, 6, 8, 0.9);
+  border: 1px solid rgba(200, 40, 50, 0.2);
+  color: #c8b8b0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.sizeSlider {
+  width: 80px;
+  accent-color: #c82832;
+}
+
+/* ── カラーパレット行 ── */
+
+.colorRow {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.colorSwatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.colorSwatch:hover {
+  transform: scale(1.15);
+}
+
+.colorSwatchActive {
+  border-color: #f5f1eb;
+}
+
+/* ── スタイルトグルボタン (B / I / S) ── */
+
+.styleToggle {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(200, 40, 50, 0.1);
+  border: 1px solid rgba(200, 40, 50, 0.2);
+  color: #8a7870;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.styleToggle:hover {
+  background: rgba(200, 40, 50, 0.2);
+  color: #c8b8b0;
+}
+
+.styleToggleActive {
+  background: rgba(200, 40, 50, 0.35);
+  border-color: rgba(200, 40, 50, 0.5);
+  color: #f5f1eb;
+}
+
+.bgToggle {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(200, 40, 50, 0.2);
+  color: #8a7870;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.bgToggleActive {
+  background: rgba(0, 0, 0, 0.7);
+  color: #f5f1eb;
+  border-color: rgba(200, 40, 50, 0.4);
+}
+
+.deleteOverlayBtn {
+  background: none;
+  border: 1px solid rgba(200, 40, 50, 0.3);
+  color: #c82832;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+/* ── エラー/ローディング ── */
+
+.errorText {
+  color: #c82832;
+  font-size: 13px;
+  padding: 8px 16px;
+  text-align: center;
+}
+
+.loadingOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 2, 4, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+}
+
+.loadingText {
+  color: #c8b8b0;
+  font-size: 16px;
+}

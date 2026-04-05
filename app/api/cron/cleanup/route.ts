@@ -57,8 +57,53 @@ export async function GET(req: NextRequest) {
     console.error("[cron/cleanup] story_categories error:", catsError.message);
   }
 
+  // ── 期限切れストーリーのパージ ──
+  let storiesCount = 0;
+  const now = new Date().toISOString();
+
+  // 1. 期限切れストーリーのメディアURLを取得
+  const { data: expiredStories } = await supabase
+    .from("user_stories")
+    .select("id, media_url")
+    .lt("expires_at", now);
+
+  if (expiredStories && expiredStories.length > 0) {
+    // 2. Storage からファイル削除
+    const filePaths = expiredStories
+      .map((s) => {
+        try {
+          const url = new URL(s.media_url);
+          const match = url.pathname.match(/\/story-media\/(.+)$/);
+          return match ? match[1] : null;
+        } catch {
+          return null;
+        }
+      })
+      .filter((p): p is string => p !== null);
+
+    if (filePaths.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from("story-media")
+        .remove(filePaths);
+      if (storageError) {
+        console.error("[cron/cleanup] story-media storage error:", storageError.message);
+      }
+    }
+
+    // 3. DBレコード削除
+    const { count, error: storiesError } = await supabase
+      .from("user_stories")
+      .delete({ count: "exact" })
+      .lt("expires_at", now);
+
+    if (storiesError) {
+      console.error("[cron/cleanup] user_stories error:", storiesError.message);
+    }
+    storiesCount = count ?? 0;
+  }
+
   console.log(
-    `[cron/cleanup] purged: posts=${postsCount ?? 0}, wikis=${wikisCount ?? 0}, categories=${catsCount ?? 0}`
+    `[cron/cleanup] purged: posts=${postsCount ?? 0}, wikis=${wikisCount ?? 0}, categories=${catsCount ?? 0}, stories=${storiesCount}`
   );
 
   return NextResponse.json({
@@ -66,6 +111,7 @@ export async function GET(req: NextRequest) {
       posts: postsCount ?? 0,
       wikis: wikisCount ?? 0,
       categories: catsCount ?? 0,
+      stories: storiesCount,
     },
   });
 }

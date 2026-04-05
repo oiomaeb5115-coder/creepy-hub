@@ -9,7 +9,8 @@
     "register": "Sign Up",
     "logout": "Logout",
     "bookmark": "Bookmarks",
-    "settings": "Settings"
+    "settings": "Settings",
+    "stream": "Stream"
   },
   "home": {
     "storySearch": "CREEPY POST — Search Stories",
@@ -378,6 +379,10 @@
     "noReportedPosts": "No reported posts.",
     "reportedWikis": "Reported Wikis ({count})",
     "noReportedWikis": "No reported wikis.",
+    "reportedStreams": "Reported Streams ({count})",
+    "noReportedStreams": "No reported streams.",
+    "dismissBtn": "Dismiss",
+    "dismissed": "Dismissed",
     "reportCountCol": "Reports",
     "viewBtn": "View →",
     "trash": "Trash (Soft-deleted)",
@@ -564,5 +569,47 @@
     "terms": "Terms of Service",
     "contact": "Contact",
     "rightsClaim": "Rights Claim"
+  },
+  "sidebar": {
+    "profile": "Profile",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "admin": "Admin",
+    "logout": "Logout",
+    "loginPrompt": "Please log in",
+    "login": "Login",
+    "register": "Sign Up"
+  },
+  "story": {
+    "addStory": "Add Story",
+    "yourStory": "Your Story",
+    "newStory": "New Story",
+    "editStory": "Edit Story",
+    "addText": "Add Text",
+    "publish": "Post",
+    "publishing": "Posting...",
+    "back": "Back",
+    "deleteConfirm": "Delete this story?",
+    "expired": "This story has expired",
+    "tapToUnmute": "Tap to unmute",
+    "durationTooLong": "Video must be under 2 minutes",
+    "fileTooLarge": "File is too large",
+    "invalidFormat": "Unsupported file format",
+    "uploadPrompt": "Tap to select an image or video",
+    "uploadHint": "Image: JPEG/PNG/WebP/GIF (5MB) | Video: MP4/WebM (2min, 50MB)",
+    "textPlaceholder": "Enter text...",
+    "cancel": "Cancel",
+    "font": "Font",
+    "size": "Size",
+    "color": "Color",
+    "delete": "Delete",
+    "adjustImage": "Adjust Image",
+    "adjustDone": "Done",
+    "dragToAdjust": "Drag to adjust position",
+    "zoom": "Zoom",
+    "reset": "Reset",
+    "bold": "Bold",
+    "italic": "Italic",
+    "stroke": "Stroke"
   }
 }

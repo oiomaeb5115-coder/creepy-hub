@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { getDictionary } from "@/lib/getDictionary";
-import BottomNavProfileLink from "./BottomNavProfileLink";
+import SidebarWrapper from "./SidebarWrapper";
 import PageTransition from "./PageTransition";
 import FloatingPostButton from "./FloatingPostButton";
 import AuthDrawer from "./AuthDrawer";
@@ -89,7 +89,12 @@ export default async function LocaleLayout({
           </span>
         </Link>
 
-        <BottomNavProfileLink locale={locale} />
+        <Link href={`/${locale}/stream`} className={styles.bottomNavItem}>
+          <span className={styles.bottomNavLabel}>
+            <span className={styles.bottomNavLabelEn}>STREAM</span>
+            <span className={styles.bottomNavLabelJa}>{dict.nav.stream}</span>
+          </span>
+        </Link>
       </nav>
 
       <Footer
@@ -100,6 +105,7 @@ export default async function LocaleLayout({
         rightsClaimLabel={dict.footer.rightsClaim}
       />
 
+      <SidebarWrapper locale={locale} labels={dict.sidebar} />
       <FloatingPostButton locale={locale} />
       <AuthDrawer locale={locale} labels={dict.authDrawer} />
       <WelcomeVideoModal videoSrc="/welcome.webm/welcome-1.webm" />

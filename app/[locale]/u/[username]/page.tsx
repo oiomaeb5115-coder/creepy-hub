@@ -64,7 +64,16 @@ type UserRow = {
 type FollowerRow = { follower_id: string; profile: UserRow | null };
 type FollowingRow = { following_id: string; profile: UserRow | null };
 
-type TabKey = "posts" | "replies" | "wiki" | "bookmarks";
+type StoryMediaRow = {
+  id: string;
+  media_url: string;
+  media_type: "image" | "video";
+  duration_ms: number | null;
+  created_at: string;
+  expires_at: string;
+};
+
+type TabKey = "posts" | "replies" | "wiki" | "media" | "bookmarks";
 type ModalKey = "following" | "followers" | null;
 
 export default function UserProfilePage() {
@@ -91,6 +100,10 @@ export default function UserProfilePage() {
   const [followingUsers, setFollowingUsers] = useState<UserRow[]>([]);
   const [followersLoaded, setFollowersLoaded] = useState(false);
   const [followingLoaded, setFollowingLoaded] = useState(false);
+
+  // メディア（ストーリー）
+  const [storyMedia, setStoryMedia] = useState<StoryMediaRow[]>([]);
+  const [mediaLoaded, setMediaLoaded] = useState(false);
 
   // 遅延読み込みフラグ
   const [commentsLoaded, setCommentsLoaded] = useState(false);
@@ -198,6 +211,26 @@ export default function UserProfilePage() {
 
     loadWiki();
   }, [activeTab, wikiLoaded, profile]);
+
+  // メディアタブ: ストーリー画像/動画取得（遅延読み込み、API経由でRLSバイパス）
+  useEffect(() => {
+    if (activeTab !== "media" || mediaLoaded || !profile) return;
+
+    const loadMedia = async () => {
+      try {
+        const res = await fetch(`/api/stories/user/${profile.id}`);
+        const json = await res.json();
+        if (json.stories) {
+          setStoryMedia(json.stories as StoryMediaRow[]);
+        }
+      } catch (e) {
+        console.error("Failed to load media:", e);
+      }
+      setMediaLoaded(true);
+    };
+
+    loadMedia();
+  }, [activeTab, mediaLoaded, profile]);
 
   // ブックマーク取得（本人のプロフィール閲覧時のみ）
   useEffect(() => {
@@ -453,6 +486,56 @@ export default function UserProfilePage() {
     </>
   );
 
+  const renderMediaGrid = () => (
+    <>
+      {storyMedia.length === 0 && (
+        <p className={styles.empty}>
+          {locale === "en" ? "No media yet." : "まだメディアはありません。"}
+        </p>
+      )}
+      <div className={styles.mediaGrid}>
+        {storyMedia.map((m) => {
+          const isExpired = new Date(m.expires_at) < new Date();
+          return (
+            <div key={m.id} className={`${styles.mediaCard} ${isExpired ? styles.mediaCardExpired : ""}`}>
+              {m.media_type === "image" ? (
+                <img
+                  src={m.media_url}
+                  alt=""
+                  className={styles.mediaThumb}
+                  loading="lazy"
+                />
+              ) : (
+                <video
+                  src={m.media_url}
+                  className={styles.mediaThumb}
+                  muted
+                  playsInline
+                  preload="metadata"
+                />
+              )}
+              {m.media_type === "video" && (
+                <span className={styles.mediaVideoIcon}>▶</span>
+              )}
+              {isExpired && (
+                <span className={styles.mediaExpiredBadge}>
+                  {locale === "en" ? "Expired" : "期限切れ"}
+                </span>
+              )}
+              <div className={styles.mediaCardFooter}>
+                <span className={styles.mediaDate}>
+                  {m.created_at
+                    ? new Date(m.created_at).toLocaleDateString(locale === "en" ? "en-US" : "ja-JP")
+                    : ""}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+
   const renderUserList = (users: UserRow[], emptyMsg: string) => (
     <>
       {users.length === 0 && (
@@ -662,6 +745,12 @@ export default function UserProfilePage() {
           >
             Wiki
           </button>
+          <button
+            className={`${styles.tab} ${activeTab === "media" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("media")}
+          >
+            {locale === "en" ? "Media" : "メディア"}
+          </button>
         </div>
 
         <section className={styles.section}>
@@ -669,6 +758,7 @@ export default function UserProfilePage() {
           {activeTab === "bookmarks" && renderPostList(bookmarks, dict.profile.noBookmarks)}
           {activeTab === "replies" && renderCommentList()}
           {activeTab === "wiki" && renderWikiList()}
+          {activeTab === "media" && renderMediaGrid()}
         </section>
 
         <div className={styles.back}>
