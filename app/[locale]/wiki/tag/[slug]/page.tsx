@@ -5,6 +5,8 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import styles from "../../wiki.module.css";
 import BackButton from "@/components/BackButton";
 
+export const revalidate = 300;
+
 type WikiTagPageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };

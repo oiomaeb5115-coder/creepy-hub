@@ -5,6 +5,8 @@ import { getDictionary } from "@/lib/getDictionary";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
 
+export const revalidate = 300;
+
 type TagPageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };

@@ -10,6 +10,8 @@ import WikiCategoryReportButton from "@/components/WikiCategoryReportButton";
 import CategoryDeleteButton from "@/components/CategoryDeleteButton";
 import FavoriteCategoryButton from "@/components/FavoriteCategoryButton";
 
+export const revalidate = 300;
+
 type WikiCategoryPageProps = {
   params: Promise<{ locale: string; slug: string }>;
   searchParams: Promise<{ sort?: string }>;

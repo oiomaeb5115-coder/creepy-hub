@@ -12,6 +12,8 @@ import CategoryDeleteButton from "@/components/CategoryDeleteButton";
 import FavoriteCategoryButton from "@/components/FavoriteCategoryButton";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
 
+export const revalidate = 300;
+
 type StoryCategoryPageProps = {
   params: Promise<{ locale: string; slug: string }>;
   searchParams: Promise<{ sort?: string }>;

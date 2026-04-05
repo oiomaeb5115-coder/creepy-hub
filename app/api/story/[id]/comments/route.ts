@@ -67,7 +67,9 @@ export async function GET(
     };
   });
 
-  return NextResponse.json({ comments });
+  const res = NextResponse.json({ comments });
+  res.headers.set("Cache-Control", "public, s-maxage=30, stale-while-revalidate=60");
+  return res;
 }
 
 /** POST /api/story/[id]/comments — コメント投稿 */

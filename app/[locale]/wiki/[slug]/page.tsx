@@ -13,6 +13,8 @@ import WikiRandomButton from "@/components/WikiRandomButton";
 import WikiReadTracker from "@/components/WikiReadTracker";
 import ReportButton from "@/components/ReportButton";
 
+export const revalidate = 300;
+
 const BASE_URL = "https://creepyhub.com";
 
 type WikiDetailPageProps = {

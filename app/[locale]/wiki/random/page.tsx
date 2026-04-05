@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
+export const revalidate = 300;
+
 type WikiRandomPageProps = {
   params: Promise<{ locale: string }>;
 };

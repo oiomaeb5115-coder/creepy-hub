@@ -31,5 +31,7 @@ export async function GET(
     return NextResponse.json({ error: "サーバーエラー" }, { status: 500 });
   }
 
-  return NextResponse.json({ stories: data ?? [] });
+  const res = NextResponse.json({ stories: data ?? [] });
+  res.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=120");
+  return res;
 }

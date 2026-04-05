@@ -7,6 +7,8 @@ import BackButton from "@/components/BackButton";
 import CategorySidebar from "@/components/CategorySidebar";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
 
+export const revalidate = 300;
+
 type WikiIndexPageProps = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ sort?: string }>;

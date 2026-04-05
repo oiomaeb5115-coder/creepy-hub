@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { postUrl } from "@/lib/postUrl";
 
+export const revalidate = 300;
+
 type PostRandomPageProps = {
   params: Promise<{ locale: string }>;
 };
