@@ -9,7 +9,7 @@ import styles from "./layout.module.css";
 type Props = { locale: string };
 
 export default function BottomNavProfileLink({ locale }: Props) {
-  const [href, setHref] = useState(`/${locale}/account`);
+  const [href, setHref] = useState(`/${locale}/account/settings`);
   const [badgeCount, setBadgeCount] = useState(0);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function BottomNavProfileLink({ locale }: Props) {
         .eq("id", session.user.id)
         .single();
       const username = (data as { username: string | null } | null)?.username;
-      const profileHref = username ? `/${locale}/u/${username}` : `/${locale}/account`;
+      const profileHref = username ? `/${locale}/u/${username}` : `/${locale}/account/settings`;
 
       // Get notification + pending category count
       try {

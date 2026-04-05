@@ -217,7 +217,10 @@ export default function AccountSettingsPage() {
       }
 
       setSaveSuccess(true);
-      setTimeout(() => router.push(`/${locale}/account`), 1000);
+      setTimeout(() => {
+        const un = username.trim();
+        router.push(un ? `/${locale}/u/${un}` : `/${locale}/account/settings`);
+      }, 1000);
     } finally {
       setSaving(false);
     }
@@ -269,7 +272,10 @@ export default function AccountSettingsPage() {
   return (
     <main className={styles.settingsPage}>
       <div className={styles.settingsShell}>
-        <Link href={`/${locale}/account`} className={styles.backLink}>
+        <Link
+          href={username ? `/${locale}/u/${username}` : `/${locale}/account`}
+          className={styles.backLink}
+        >
           ← {dict.account.backToProfile}
         </Link>
         <header className={styles.settingsHeader}>
@@ -347,17 +353,6 @@ export default function AccountSettingsPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="avatarUrl">{dict.account.avatarUrlLabel}</label>
-              <input
-                id="avatarUrl"
-                className={styles.formControl}
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-                placeholder="https://..."
-              />
-            </div>
-
-            <div className={styles.formGroup}>
               <label htmlFor="bannerFile">{dict.account.uploadBanner}</label>
               <input
                 id="bannerFile"
@@ -369,17 +364,6 @@ export default function AccountSettingsPage() {
               <p className={styles.helpText}>
                 {uploadingBanner ? dict.account.uploading : dict.account.uploadHint}
               </p>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="bannerUrl">{dict.account.bannerUrlLabel}</label>
-              <input
-                id="bannerUrl"
-                className={styles.formControl}
-                value={bannerUrl}
-                onChange={(e) => setBannerUrl(e.target.value)}
-                placeholder="https://..."
-              />
             </div>
 
             <div className={styles.formGroup}>
