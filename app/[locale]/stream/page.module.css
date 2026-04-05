@@ -51,9 +51,7 @@
 
 .textOverlay {
   position: absolute;
-  white-space: pre-wrap;
-  word-break: break-word;
-  max-width: 80%;
+  white-space: pre;
   padding: 4px 8px;
   border-radius: 4px;
   pointer-events: none;

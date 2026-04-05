@@ -15,6 +15,7 @@ type TextOverlay = {
   x: number;
   y: number;
   fontSize: number;
+  scale: number;
   fontFamily: string;
   color: string;
   backgroundColor: string | null;
@@ -308,7 +309,8 @@ export default function StoryCreator({ locale, embedded }: Props) {
         text: editText.trim(),
         x: 50,
         y: 50,
-        fontSize: 24,
+        fontSize: 20,
+        scale: 1,
         fontFamily: FONT_OPTIONS[0].value,
         color: "#FFFFFF",
         backgroundColor: null,
@@ -421,7 +423,10 @@ export default function StoryCreator({ locale, embedded }: Props) {
         media_url: mediaUrl,
         media_type: mediaType,
         text_overlays: overlays.map(
-          ({ id, ...rest }) => rest
+          ({ id, scale, fontSize, ...rest }) => ({
+            ...rest,
+            fontSize: Math.round(fontSize * scale),
+          })
         ),
       };
       if (mediaType === "video") {
@@ -611,7 +616,7 @@ export default function StoryCreator({ locale, embedded }: Props) {
                 fontFamily: overlay.fontFamily,
                 color: overlay.color,
                 backgroundColor: overlay.backgroundColor || "transparent",
-                transform: `translate(-50%, -50%) rotate(${overlay.rotation}deg)`,
+                transform: `translate(-50%, -50%) rotate(${overlay.rotation}deg) scale(${overlay.scale})`,
                 fontWeight: overlay.fontWeight,
                 fontStyle: overlay.fontStyle,
                 WebkitTextStroke: overlay.stroke
@@ -772,12 +777,13 @@ export default function StoryCreator({ locale, embedded }: Props) {
             <input
               type="range"
               className={styles.sizeSlider}
-              min={12}
-              max={72}
-              value={selectedOverlay.fontSize}
+              min={0.5}
+              max={4}
+              step={0.05}
+              value={selectedOverlay.scale}
               onChange={(e) =>
                 updateOverlay(selectedOverlay.id, {
-                  fontSize: Number(e.target.value),
+                  scale: Number(e.target.value),
                 })
               }
             />

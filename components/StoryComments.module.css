@@ -12,7 +12,7 @@
 
 .sheet {
   position: fixed;
-  bottom: 0;
+  bottom: 80px;
   left: 0;
   right: 0;
   height: 55vh;
@@ -228,6 +228,19 @@
   .sheet {
     height: 60vh;
     max-height: none;
+    bottom: 64px;
+  }
+}
+
+@media (max-width: 960px) and (min-width: 601px) {
+  .sheet {
+    bottom: 70px;
+  }
+}
+
+@media (min-width: 961px) {
+  .sheet {
+    bottom: 80px;
   }
 }
 

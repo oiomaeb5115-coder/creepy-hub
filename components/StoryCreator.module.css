@@ -181,9 +181,7 @@
 .overlayElement {
   position: absolute;
   cursor: grab;
-  white-space: pre-wrap;
-  word-break: break-word;
-  max-width: 80%;
+  white-space: pre;
   padding: 4px 8px;
   border-radius: 4px;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
@@ -486,4 +484,108 @@
 .loadingText {
   color: #c8b8b0;
   font-size: 16px;
+}
+
+/* ── レスポンシブ: モバイル ── */
+
+@media (max-width: 600px) {
+  .creator {
+    min-height: calc(100dvh - 64px);
+  }
+
+  .topBar {
+    padding: 8px 12px;
+  }
+
+  .backBtn {
+    font-size: 14px;
+    padding: 4px 4px;
+  }
+
+  .topTitle {
+    font-size: 13px;
+  }
+
+  .publishBtn {
+    font-size: 13px;
+    padding: 7px 14px;
+  }
+
+  .uploadArea {
+    padding: 20px 12px;
+  }
+
+  .uploadDropzone {
+    max-width: 100%;
+    aspect-ratio: 9 / 16;
+    border-radius: 8px;
+  }
+
+  .uploadHint {
+    font-size: 11px;
+    text-align: center;
+    padding: 0 8px;
+  }
+
+  .previewContainer {
+    max-width: 100%;
+    border-radius: 0;
+    flex: 1;
+  }
+
+  .editorArea {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .toolbar {
+    padding: 8px 8px;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .toolBtn {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .zoomRow {
+    padding: 6px 12px;
+  }
+
+  .styleControls {
+    padding: 6px 8px;
+    gap: 6px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .fontSelect {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+
+  .sizeSlider {
+    width: 60px;
+  }
+
+  .colorSwatch {
+    width: 20px;
+    height: 20px;
+  }
+
+  .styleToggle {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+
+  .textInputBox {
+    width: 95%;
+  }
+
+  .textInputField {
+    font-size: 16px;
+  }
 }
