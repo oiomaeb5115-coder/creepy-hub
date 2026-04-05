@@ -89,7 +89,7 @@ export default function NotificationsPage() {
       setNotifications(dedupedNotifs);
 
       // Batch fetch actor usernames
-      const actorIds = [...new Set(notifs.map((n) => n.actor_id).filter(Boolean) as string[])];
+      const actorIds = [...new Set(dedupedNotifs.map((n) => n.actor_id).filter(Boolean) as string[])];
       if (actorIds.length > 0) {
         const { data: profiles } = await supabase
           .from("profiles")
@@ -103,7 +103,7 @@ export default function NotificationsPage() {
       }
 
       // Batch fetch post titles
-      const postIds = [...new Set(notifs.map((n) => n.post_id).filter(Boolean) as number[])];
+      const postIds = [...new Set(dedupedNotifs.map((n) => n.post_id).filter(Boolean) as number[])];
       if (postIds.length > 0) {
         const { data: posts } = await supabase
           .from("post")
