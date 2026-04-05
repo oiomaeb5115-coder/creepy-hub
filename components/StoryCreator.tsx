@@ -47,8 +47,8 @@ const COLOR_PRESETS = [
   "#2ECC71",
 ];
 
-const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const VIDEO_TYPES = ["video/mp4", "video/webm"];
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"];
+const VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 const MAX_VIDEO_DURATION_MS = 120000;
 
 // 出力解像度 (9:16)
@@ -82,6 +82,12 @@ export default function StoryCreator({ locale, embedded }: Props) {
   const imgDragStart = useRef({ x: 0, y: 0 });
   const imgOffsetStart = useRef({ x: 0, y: 0 });
   const imgElRef = useRef<HTMLImageElement | null>(null);
+
+  // ピンチズーム用
+  const activePointers = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const pinchStartDist = useRef(0);
+  const pinchStartZoom = useRef(1);
+  const isPinching = useRef(false);
 
   // テキストオーバーレイ
   const [overlays, setOverlays] = useState<TextOverlay[]>([]);
@@ -145,10 +151,18 @@ export default function StoryCreator({ locale, embedded }: Props) {
     if (!file) return;
     setError("");
 
-    const isImage = IMAGE_TYPES.includes(file.type);
-    const isVideo = VIDEO_TYPES.includes(file.type);
+    const isImage = IMAGE_TYPES.includes(file.type) || file.type.startsWith("image/");
+    const isVideo = VIDEO_TYPES.includes(file.type) || file.type.startsWith("video/");
 
-    if (!isImage && !isVideo) {
+    // file.type が空の場合は拡張子で判定
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    const isImageByExt = ["jpg", "jpeg", "png", "webp", "gif", "heic", "heif"].includes(ext);
+    const isVideoByExt = ["mp4", "webm", "mov"].includes(ext);
+
+    const finalIsImage = isImage || (!isVideo && isImageByExt);
+    const finalIsVideo = isVideo || (!isImage && isVideoByExt);
+
+    if (!finalIsImage && !finalIsVideo) {
       setError(
         locale === "en"
           ? "Unsupported file format (JPEG/PNG/WebP/GIF/MP4/WebM)"
@@ -158,27 +172,35 @@ export default function StoryCreator({ locale, embedded }: Props) {
     }
 
     try {
-      if (isImage) {
-        const valid = await validateImageFile(file);
-        if (!valid) {
-          setError(
-            locale === "en"
-              ? "File content does not match image format"
-              : "ファイルの内容が画像形式と一致しません"
-          );
-          return;
+      if (finalIsImage) {
+        // HEIC/HEIFやMIME不明の場合はmagic bytes検証をスキップ
+        const knownImageType = IMAGE_TYPES.slice(0, 4).includes(file.type);
+        if (knownImageType) {
+          const valid = await validateImageFile(file);
+          if (!valid) {
+            setError(
+              locale === "en"
+                ? "File content does not match image format"
+                : "ファイルの内容が画像形式と一致しません"
+            );
+            return;
+          }
         }
         setMediaType("image");
         setAdjustMode(true); // 画像は最初に位置調整モード
       } else {
-        const valid = await validateVideoFile(file);
-        if (!valid) {
-          setError(
-            locale === "en"
-              ? "File content does not match video format"
-              : "ファイルの内容が動画形式と一致しません"
-          );
-          return;
+        // 既知の動画形式のみmagic bytes検証
+        const knownVideoType = ["video/mp4", "video/webm"].includes(file.type);
+        if (knownVideoType) {
+          const valid = await validateVideoFile(file);
+          if (!valid) {
+            setError(
+              locale === "en"
+                ? "File content does not match video format"
+                : "ファイルの内容が動画形式と一致しません"
+            );
+            return;
+          }
         }
         const duration = await getVideoDuration(file);
         if (duration > MAX_VIDEO_DURATION_MS) {
@@ -204,26 +226,83 @@ export default function StoryCreator({ locale, embedded }: Props) {
     }
   };
 
-  // ── 画像ドラッグ操作（位置調整モード） ──
+  // ── 2点間距離計算 ──
+  const getPointerDist = () => {
+    const pts = [...activePointers.current.values()];
+    if (pts.length < 2) return 0;
+    const dx = pts[1].x - pts[0].x;
+    const dy = pts[1].y - pts[0].y;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  // ── 画像ドラッグ・ピンチ操作（位置調整モード） ──
   const handleImgPointerDown = (e: React.PointerEvent) => {
     if (!adjustMode || mediaType !== "image") return;
     e.preventDefault();
     e.stopPropagation();
-    setImgDragging(true);
-    imgDragStart.current = { x: e.clientX, y: e.clientY };
-    imgOffsetStart.current = { ...imgOffset };
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+
+    activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (activePointers.current.size === 2) {
+      // ピンチ開始: ドラッグ停止、ピンチモードへ
+      setImgDragging(false);
+      isPinching.current = true;
+      pinchStartDist.current = getPointerDist();
+      pinchStartZoom.current = imgZoom;
+    } else if (activePointers.current.size === 1) {
+      // 1本指: ドラッグ開始
+      isPinching.current = false;
+      setImgDragging(true);
+      imgDragStart.current = { x: e.clientX, y: e.clientY };
+      imgOffsetStart.current = { ...imgOffset };
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    }
   };
 
   const handleImgPointerMove = (e: React.PointerEvent) => {
-    if (!imgDragging) return;
-    setImgOffset({
-      x: imgOffsetStart.current.x + (e.clientX - imgDragStart.current.x),
-      y: imgOffsetStart.current.y + (e.clientY - imgDragStart.current.y),
-    });
+    if (!adjustMode || mediaType !== "image") return;
+
+    // ポインター座標を更新
+    if (activePointers.current.has(e.pointerId)) {
+      activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+
+    if (isPinching.current && activePointers.current.size === 2) {
+      // ピンチズーム
+      const currentDist = getPointerDist();
+      if (pinchStartDist.current > 0) {
+        const ratio = currentDist / pinchStartDist.current;
+        const newZoom = Math.max(0.5, Math.min(5, pinchStartZoom.current * ratio));
+        setImgZoom(newZoom);
+      }
+    } else if (imgDragging && activePointers.current.size === 1) {
+      // 1本指ドラッグ
+      setImgOffset({
+        x: imgOffsetStart.current.x + (e.clientX - imgDragStart.current.x),
+        y: imgOffsetStart.current.y + (e.clientY - imgDragStart.current.y),
+      });
+    }
   };
 
-  const handleImgPointerUp = () => setImgDragging(false);
+  const handleImgPointerUp = (e: React.PointerEvent) => {
+    activePointers.current.delete(e.pointerId);
+    if (activePointers.current.size < 2) {
+      isPinching.current = false;
+    }
+    if (activePointers.current.size === 0) {
+      setImgDragging(false);
+    }
+  };
+
+  const handleImgPointerCancel = (e: React.PointerEvent) => {
+    activePointers.current.delete(e.pointerId);
+    if (activePointers.current.size < 2) {
+      isPinching.current = false;
+    }
+    if (activePointers.current.size === 0) {
+      setImgDragging(false);
+    }
+  };
 
   // ── ホイールズーム（位置調整モード） ──
   const handleImgWheel = (e: React.WheelEvent) => {
@@ -483,10 +562,7 @@ export default function StoryCreator({ locale, embedded }: Props) {
         </div>
 
         <div className={styles.uploadArea}>
-          <div
-            className={styles.uploadDropzone}
-            onClick={() => fileInputRef.current?.click()}
-          >
+          <label className={styles.uploadDropzone}>
             <div className={styles.uploadIcon}>📷</div>
             <p className={styles.uploadText}>
               {locale === "en"
@@ -498,14 +574,14 @@ export default function StoryCreator({ locale, embedded }: Props) {
                 ? "Image: JPEG/PNG/WebP/GIF (5MB) | Video: MP4/WebM (2min, 50MB)"
                 : "画像: JPEG/PNG/WebP/GIF (5MB) | 動画: MP4/WebM (2分以内, 50MB)"}
             </p>
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            className={styles.hiddenInput}
-            accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
-            onChange={handleFileSelect}
-          />
+            <input
+              ref={fileInputRef}
+              type="file"
+              className={styles.hiddenInput}
+              accept="image/*,video/*"
+              onChange={handleFileSelect}
+            />
+          </label>
           {error && <p className={styles.errorText}>{error}</p>}
         </div>
       </div>
@@ -565,6 +641,7 @@ export default function StoryCreator({ locale, embedded }: Props) {
           onPointerDown={adjustMode ? handleImgPointerDown : undefined}
           onPointerMove={adjustMode ? handleImgPointerMove : undefined}
           onPointerUp={adjustMode ? handleImgPointerUp : undefined}
+          onPointerCancel={adjustMode ? handleImgPointerCancel : undefined}
           onWheel={handleImgWheel}
         >
           {mediaType === "image" ? (
