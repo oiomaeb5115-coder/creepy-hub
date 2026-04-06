@@ -366,7 +366,7 @@ export default function StoryEditPage() {
 }
 
 const pageStyle: React.CSSProperties = { minHeight: "100vh", background: "#0d0808", color: "#c8b8b0", padding: "0 16px 80px" };
-const shellStyle: React.CSSProperties = { maxWidth: 800, margin: "0 auto", paddingTop: 24 };
+const shellStyle: React.CSSProperties = { maxWidth: 800, margin: "0 auto", paddingTop: 110 };
 const headerStyle: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid rgba(180,100,110,0.25)", paddingBottom: 20, marginBottom: 32 };
 const breadcrumbStyle: React.CSSProperties = { fontSize: 11, letterSpacing: "0.15em", color: "#7a6a60", marginBottom: 4 };
 const titleStyle: React.CSSProperties = { fontSize: 22, fontWeight: 600, color: "#e8d8d0", margin: 0 };

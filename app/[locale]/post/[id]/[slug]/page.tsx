@@ -15,6 +15,7 @@ import PostReadTracker from "@/components/PostReadTracker";
 import ReportButton from "@/components/ReportButton";
 import { escapeHtml, linkifyUrls } from "@/lib/linkify-urls";
 import AutoLinkedWikiContent from "@/components/AutoLinkedwikiContent";
+import PersonIcon from "@/components/icons/PersonIcon";
 
 export const revalidate = 300;
 
@@ -302,7 +303,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                 />
               </Link>
             ) : (
-              <div className={styles.authorAvatarPlaceholder}>👤</div>
+              <div className={styles.authorAvatarPlaceholder}><PersonIcon size={22} /></div>
             )}
 
             <div className={styles.authorInfo}>

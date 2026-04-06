@@ -1,6 +1,7 @@
 "use client";
 
 import styles from "./user-avatar-button.module.css";
+import PersonIcon from "@/components/icons/PersonIcon";
 
 type Props = {
   avatarUrl: string | null;
@@ -20,7 +21,7 @@ export default function UserAvatarButton({ avatarUrl, badgeCount, onClick }: Pro
         {avatarUrl ? (
           <img src={avatarUrl} alt="" className={styles.avatarImage} />
         ) : (
-          <div className={styles.avatarPlaceholder}>👤</div>
+          <div className={styles.avatarPlaceholder}><PersonIcon size={24} /></div>
         )}
       </button>
       {badgeCount > 0 && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -12,7 +12,6 @@ import { uploadPostVideo } from "@/lib/uploadPostVideo";
 import { validateVideoFile } from "@/lib/validateVideoFile";
 import { getVideoDuration } from "@/lib/getVideoDuration";
 import BackButton from "@/components/BackButton";
-import StoryCreator from "@/components/StoryCreator";
 import { getDictionary } from "@/lib/getDictionary";
 import type { Dictionary } from "@/lib/getDictionary";
 import tabStyles from "./page.module.css";
@@ -21,27 +20,6 @@ export default function PostNewPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
   const router = useRouter();
-
-  // ── タブ管理 ──
-  const [activeTab, setActiveTab] = useState<0 | 1>(0); // 0=POST, 1=STREAM
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // スクロール位置からアクティブタブを検知
-  const handleScroll = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const ratio = el.scrollLeft / el.clientWidth;
-    const idx = ratio > 0.5 ? 1 : 0;
-    setActiveTab(idx as 0 | 1);
-  }, []);
-
-  // タブクリック → スクロール
-  const scrollToTab = useCallback((idx: 0 | 1) => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.scrollTo({ left: idx * el.clientWidth, behavior: "smooth" });
-    setActiveTab(idx);
-  }, []);
 
   // ── POST フォーム state ──
   const [labels, setLabels] = useState<Dictionary["postDrawer"] | null>(null);
@@ -228,7 +206,7 @@ export default function PostNewPage() {
   // ── ローディング中 ──
   if (!authChecked || !labels) {
     return (
-      <div className={tabStyles.pageWrap}>
+      <div className={tabStyles.postPanel}>
         <div style={{ padding: 40, textAlign: "center", color: "#8a7870" }}>
           {labels?.checkingAuth ?? "読み込み中..."}
         </div>
@@ -239,7 +217,7 @@ export default function PostNewPage() {
   // ── 未ログイン ──
   if (!isLoggedIn) {
     return (
-      <div className={tabStyles.pageWrap}>
+      <div className={tabStyles.postPanel}>
         <div style={{ maxWidth: 800, margin: "0 auto", paddingTop: 60, textAlign: "center" }}>
           <p style={{ color: "rgba(200,150,140,0.4)", fontFamily: '"装甲明朝","Soukou Mincho",serif' }}>
             {labels.loginRequired}
@@ -256,41 +234,7 @@ export default function PostNewPage() {
   }
 
   return (
-    <div className={tabStyles.pageWrap}>
-      {/* ── タブバー ── */}
-      <div className={tabStyles.tabBar}>
-        <button
-          className={`${tabStyles.tabItem} ${activeTab === 0 ? tabStyles.tabItemActive : ""}`}
-          onClick={() => scrollToTab(0)}
-          type="button"
-        >
-          <span className={tabStyles.tabLabelEn}>POST</span>
-          <span className={tabStyles.tabLabelJa}>
-            {locale === "en" ? "Article" : "記事投稿"}
-          </span>
-          <span className={tabStyles.tabIndicator} />
-        </button>
-        <button
-          className={`${tabStyles.tabItem} ${activeTab === 1 ? tabStyles.tabItemActive : ""}`}
-          onClick={() => scrollToTab(1)}
-          type="button"
-        >
-          <span className={tabStyles.tabLabelEn}>STREAM</span>
-          <span className={tabStyles.tabLabelJa}>
-            {locale === "en" ? "Short video" : "ショート動画"}
-          </span>
-          <span className={tabStyles.tabIndicator} />
-        </button>
-      </div>
-
-      {/* ── 横スクロールコンテナ ── */}
-      <div
-        ref={scrollRef}
-        className={tabStyles.scrollContainer}
-        onScroll={handleScroll}
-      >
-        {/* ── パネル 1: POST フォーム ── */}
-        <div className={`${tabStyles.panel} ${tabStyles.postPanel}`}>
+    <div>
           <div style={shellStyle}>
             <BackButton />
             <header style={headerStyle}>
@@ -494,19 +438,12 @@ export default function PostNewPage() {
               </form>
             </section>
           </div>
-        </div>
-
-        {/* ── パネル 2: STREAM (StoryCreator) ── */}
-        <div className={`${tabStyles.panel} ${tabStyles.streamPanel}`}>
-          <StoryCreator locale={locale} embedded />
-        </div>
-      </div>
     </div>
   );
 }
 
 // ── Styles (matching edit page) ──────────────────────────────
-const shellStyle: React.CSSProperties = { maxWidth: 800, margin: "0 auto", paddingTop: 24 };
+const shellStyle: React.CSSProperties = { maxWidth: 800, margin: "0 auto", paddingTop: 110 };
 const headerStyle: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid rgba(180,100,110,0.25)", paddingBottom: 20, marginBottom: 32 };
 const breadcrumbStyle: React.CSSProperties = { fontSize: 11, letterSpacing: "0.15em", color: "#7a6a60", marginBottom: 4 };
 const titleFontStyle: React.CSSProperties = { fontSize: 22, fontWeight: 600, color: "#e8d8d0", margin: 0 };
