@@ -4,6 +4,7 @@
   color: #f5f1eb;
   padding: 32px 20px 100px;
   font-family: "装甲明朝", "Soukou Mincho", serif;
+  overflow-x: hidden;
 }
 
 .pageLayout {
