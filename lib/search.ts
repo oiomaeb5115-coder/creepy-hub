@@ -9,7 +9,7 @@ function sanitizeForPostgrest(raw: string): string {
     .replace(/\\/g, "\\\\") // バックスラッシュを先にエスケープ
     .replace(/%/g, "\\%")   // LIKE ワイルドカード
     .replace(/_/g, "\\_")   // LIKE 単一文字ワイルドカード
-    .replace(/[(),.:"]/g, ""); // PostgREST 演算子・区切り文字の注入防止
+    .replace(/[(),.:"`;]/g, ""); // PostgREST 演算子・区切り文字の注入防止
 }
 
 export async function searchAll(query: string, locale: string) {
@@ -18,7 +18,7 @@ export async function searchAll(query: string, locale: string) {
     return { stories: [], wiki: [], storyError: null, wikiError: null };
   }
 
-  const safeQuery = sanitizeForPostgrest(trimmed);
+  const safeQuery = sanitizeForPostgrest(trimmed.slice(0, 200));
   const keyword = `%${safeQuery}%`;
 
   const [storiesResult, wikiResult] = await Promise.all([

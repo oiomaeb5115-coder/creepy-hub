@@ -92,6 +92,12 @@ function ReplyForm({
   const [text, setText] = useState("");
 
   async function submit() {
+    const trimmed = text.trim();
+    if (!trimmed || trimmed.length > 2000) {
+      alert("コメントは1〜2000文字で入力してください");
+      return;
+    }
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -105,7 +111,7 @@ function ReplyForm({
       post_id: postId,
       parent_id: parentId,
       user_id: user.id,
-      content: text,
+      content: trimmed,
     });
 
     location.reload();
@@ -116,6 +122,7 @@ function ReplyForm({
       <textarea
         rows={2}
         value={text}
+        maxLength={2000}
         onChange={(e) => setText(e.target.value)}
         style={{
           width: "100%",

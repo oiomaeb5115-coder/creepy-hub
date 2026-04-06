@@ -10,6 +10,10 @@ export async function GET(req: NextRequest) {
     ? excludeParam.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 200)
     : [];
 
+  // スラッグ形式のバリデーション（PostgREST フィルタインジェクション防止）
+  const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+  const validExcludeSlugs = excludeSlugs.filter((s) => SLUG_RE.test(s));
+
   // DB側でexclude済みの記事を除外
   let query = supabase
     .from("wiki_pages")
@@ -17,15 +21,15 @@ export async function GET(req: NextRequest) {
     .eq("locale", locale)
     .eq("is_published", true);
 
-  if (excludeSlugs.length > 0) {
-    query = query.not("slug", "in", `(${excludeSlugs.join(",")})`);
+  if (validExcludeSlugs.length > 0) {
+    query = query.not("slug", "in", `(${validExcludeSlugs.join(",")})`);
   }
 
   const { data, error } = await query.limit(50);
 
   if (error || !data || data.length === 0) {
     // fallback: excludeなしで再取得
-    if (excludeSlugs.length > 0) {
+    if (validExcludeSlugs.length > 0) {
       const { data: fallback } = await supabase
         .from("wiki_pages")
         .select("slug")

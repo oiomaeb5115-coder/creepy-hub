@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * DELETE /api/story/[id]
  * 自分のストーリーを削除する（管理者は誰のでも削除可）。
@@ -12,6 +14,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: storyId } = await params;
+
+  if (!UUID_RE.test(storyId)) {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  }
 
   // 認証
   const authHeader = req.headers.get("Authorization");

@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { getClientIp } from "@/lib/getClientIp";
+
+const STORY_CREATE_RATE_LIMIT = {
+  name: "story-create",
+  windowMs: 60 * 60 * 1000, // 1時間
+  maxRequests: 10,           // 1時間あたり10件
+};
 
 /**
  * POST /api/story
@@ -56,6 +64,16 @@ export async function POST(req: NextRequest) {
   const { data: userData, error: authError } = await supabase.auth.getUser(token);
   if (authError || !userData.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // レート制限（認証済みユーザーIDベース）
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(STORY_CREATE_RATE_LIMIT, `${userData.user.id}:${ip}`);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "投稿が多すぎます。しばらくしてからお試しください。" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
   }
 
   // リクエストボディ解析
