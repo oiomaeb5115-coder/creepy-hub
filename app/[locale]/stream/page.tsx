@@ -257,7 +257,7 @@ function StreamItemView({
                 textShadow: "0 1px 4px rgba(0,0,0,0.7)",
                 textDecoration: "none",
                 lineHeight: 1.3,
-                maxWidth: "calc(100vw - 100px)",
+                maxWidth: "calc(100% - 100px)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",

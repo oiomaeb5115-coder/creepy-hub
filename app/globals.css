@@ -31,8 +31,14 @@
 }
 
 /* ── Base reset ── */
+html {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+
 body {
   margin: 0;
+  overflow-x: hidden;
   background: #050204;
   color: #f5f1eb;
   font-family: "装甲明朝", "Soukou Mincho", "Palatino Linotype", "Palatino", "Book Antiqua", "Yu Mincho", "游明朝", "Hiragino Mincho ProN", serif;
