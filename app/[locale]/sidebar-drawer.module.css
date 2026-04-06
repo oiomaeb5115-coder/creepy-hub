@@ -215,6 +215,13 @@
   opacity: 0.85;
 }
 
+/* ── お気に入りカテゴリー ── */
+
+.favSection {
+  padding: 12px 20px;
+  border-top: 1px solid rgba(161, 102, 108, 0.12);
+}
+
 /* ── フッター ── */
 
 .drawerFooter {

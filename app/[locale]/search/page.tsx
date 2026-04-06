@@ -4,6 +4,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import { postUrl } from "@/lib/postUrl";
 import SearchBox from "@/components/SearchBox";
 import BackButton from "@/components/BackButton";
+import ViewIcon from "@/components/icons/ViewIcon";
 
 type SearchPageProps = {
   params: Promise<{ locale: string }>;
@@ -105,8 +106,8 @@ export default async function SearchPage({
                   <p style={{ margin: "0 0 10px", color: "#c8d3e4" }}>
                     {(post.content ?? "").slice(0, 120)}
                   </p>
-                  <span style={{ color: "#8ea4c2", fontSize: 13 }}>
-                    👁 {post.view_count ?? 0}
+                  <span className="stat-icon" style={{ fontSize: 13 }}>
+                    <ViewIcon /> {post.view_count ?? 0}
                   </span>
                 </Link>
               ))}
@@ -141,8 +142,8 @@ export default async function SearchPage({
                   <p style={{ margin: "0 0 10px", color: "#c8d3e4" }}>
                     {item.summary ?? dict.wiki.noSummary}
                   </p>
-                  <span style={{ color: "#8ea4c2", fontSize: 13 }}>
-                    👁 {item.view_count ?? 0}
+                  <span className="stat-icon" style={{ fontSize: 13 }}>
+                    <ViewIcon /> {item.view_count ?? 0}
                   </span>
                 </Link>
               ))}

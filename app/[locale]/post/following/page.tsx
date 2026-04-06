@@ -9,6 +9,7 @@ import BackButton from "@/components/BackButton";
 import styles from "../page.module.css";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
+import ViewIcon from "@/components/icons/ViewIcon";
 
 type AuthorProfile = {
   username: string | null;
@@ -198,7 +199,7 @@ export default function FollowingPostsPage() {
                       </div>
                     )}
                     <div className={styles.postFooter}>
-                      <span>👁 {post.view_count ?? 0}</span>
+                      <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0}</span>
                     </div>
                   </div>
                 </Link>

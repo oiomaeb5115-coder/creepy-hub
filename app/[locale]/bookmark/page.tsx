@@ -9,6 +9,7 @@ import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
+import ViewIcon from "@/components/icons/ViewIcon";
 
 type BookmarkedPost = {
   post_id: number;
@@ -144,8 +145,8 @@ export default function BookmarkPage() {
                       {excerpt && (
                         <p className={styles.cardExcerpt}>{excerpt}</p>
                       )}
-                      <p className={styles.cardViews}>
-                        👁 {bm.post.view_count ?? 0}
+                      <p className={`${styles.cardViews} stat-icon`}>
+                        <ViewIcon /> {bm.post.view_count ?? 0}
                       </p>
                     </div>
                   </Link>

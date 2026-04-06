@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import styles from "../wiki.module.css";
 import BackButton from "@/components/BackButton";
+import ViewIcon from "@/components/icons/ViewIcon";
 
 export const revalidate = 300;
 
@@ -117,13 +118,13 @@ export default async function WikiSearchPage({ params, searchParams }: Props) {
                       )}
                       <div className={styles.feedMeta}>
                         <span>{dateStr}</span>
-                        <span>👁 {page.view_count ?? 0}</span>
+                        <span className="stat-icon"><ViewIcon /> {page.view_count ?? 0}</span>
                       </div>
                     </div>
 
                     <div className={styles.feedRight}>
                       <span className={styles.feedDate}>{dateStr}</span>
-                      <span className={styles.feedViews}>👁 {page.view_count ?? 0}</span>
+                      <span className={`${styles.feedViews} stat-icon`}><ViewIcon /> {page.view_count ?? 0}</span>
                     </div>
                   </Link>
                 );

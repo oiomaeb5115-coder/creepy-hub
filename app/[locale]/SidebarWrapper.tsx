@@ -21,6 +21,8 @@ type Labels = {
   loginPrompt: string;
   login: string;
   register: string;
+  favPost: string;
+  favWiki: string;
 };
 
 type Props = {

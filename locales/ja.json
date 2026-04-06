@@ -116,7 +116,13 @@
     "alertImageFailed": "画像アップロードに失敗しました: ",
     "alertPostFailed": "投稿に失敗しました: ",
     "slugLabel": "URL スラッグ",
-    "slugHint": "URLに使われる英語の短いID。英小文字・数字・ハイフンのみ。空欄の場合タイトルから自動生成されます。例: 四咲映子に関する投稿の場合「shisaki-eiko」"
+    "slugHint": "URLに使われる英語の短いID。英小文字・数字・ハイフンのみ。空欄の場合タイトルから自動生成されます。例: 四咲映子に関する投稿の場合「shisaki-eiko」",
+    "videoLabel": "動画 (9:16)",
+    "videoHint": "MP4/WebM、3分以内、75MB以内",
+    "alertVideoFailed": "動画アップロードに失敗しました: ",
+    "alertVideoDuration": "動画は3分以内にしてください",
+    "alertVideoFormat": "動画はMP4またはWebM形式のみ対応しています",
+    "alertVideoSize": "動画ファイルは75MB以内にしてください"
   },
   "authDrawer": {
     "loginTitle": "ログイン",
@@ -578,7 +584,9 @@
     "logout": "ログアウト",
     "loginPrompt": "ログインしてください",
     "login": "ログイン",
-    "register": "新規登録"
+    "register": "新規登録",
+    "favPost": "Post お気に入り",
+    "favWiki": "Wiki お気に入り"
   },
   "story": {
     "addStory": "ストーリーを追加",

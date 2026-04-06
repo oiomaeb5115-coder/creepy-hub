@@ -11,6 +11,7 @@ import CategoryEditButton from "@/components/CategoryEditButton";
 import CategoryDeleteButton from "@/components/CategoryDeleteButton";
 import FavoriteCategoryButton from "@/components/FavoriteCategoryButton";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
+import ViewIcon from "@/components/icons/ViewIcon";
 
 export const revalidate = 300;
 
@@ -313,7 +314,7 @@ export default async function StoryCategoryPage({
                     )}
                     <div className={styles.postFooter}>
                       <InlineVoteButtons postId={post.id} initialScore={score} />
-                      <span>👁 {post.view_count ?? 0} {dict.post.views}</span>
+                      <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0} {dict.post.views}</span>
                     </div>
                   </div>
                 </Link>

@@ -2,6 +2,14 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import sanitizeHtml from "sanitize-html";
+import { escapeHtml, linkifyUrls } from "@/lib/linkify-urls";
+
+const COMMENT_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: ["a"],
+  allowedSchemes: ["https"],
+  allowedAttributes: { a: ["href", "target", "rel", "class"] },
+};
 
 type Comment = {
   id: number;
@@ -49,7 +57,15 @@ export default function CommentTree({
               {username}
             </div>
 
-            <div style={{ margin: "6px 0" }}>{comment.content}</div>
+            <div
+              style={{ margin: "6px 0" }}
+              dangerouslySetInnerHTML={{
+                __html: sanitizeHtml(
+                  linkifyUrls(escapeHtml(comment.content)),
+                  COMMENT_SANITIZE_OPTIONS
+                ),
+              }}
+            />
 
             <ReplyForm postId={postId} parentId={comment.id} />
 

@@ -6,6 +6,7 @@ import styles from "./wiki.module.css";
 import BackButton from "@/components/BackButton";
 import CategorySidebar from "@/components/CategorySidebar";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
+import ViewIcon from "@/components/icons/ViewIcon";
 
 export const revalidate = 300;
 
@@ -206,7 +207,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
                         </div>
                       )}
                       <div className={styles.feedFooter}>
-                        <span>👁 {item.view_count ?? 0} {dict.post.views}</span>
+                        <span className="stat-icon"><ViewIcon /> {item.view_count ?? 0} {dict.post.views}</span>
                       </div>
                     </div>
                   </Link>

@@ -4,6 +4,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getAccessToken } from "@/lib/auth";
 import { uploadImage } from "@/lib/uploadImage";
+import sanitizeHtml from "sanitize-html";
+import { escapeHtml, linkifyUrls } from "@/lib/linkify-urls";
+
+const COMMENT_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: ["a"],
+  allowedSchemes: ["https"],
+  allowedAttributes: { a: ["href", "target", "rel", "class"] },
+};
 
 type PostCommentsLabels = {
   comment?: string;
@@ -586,9 +594,15 @@ export default function PostComments({ postId, locale = "ja", labels }: PostComm
           </div>
         </div>
 
-        <p style={{ margin: 0, color: "#e0d8d0", lineHeight: 1.9 }}>
-          {comment.content}
-        </p>
+        <p
+          style={{ margin: 0, color: "#e0d8d0", lineHeight: 1.9 }}
+          dangerouslySetInnerHTML={{
+            __html: sanitizeHtml(
+              linkifyUrls(escapeHtml(comment.content)),
+              COMMENT_SANITIZE_OPTIONS
+            ),
+          }}
+        />
 
         {renderCommentImages(comment)}
       </>

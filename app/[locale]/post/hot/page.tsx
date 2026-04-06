@@ -5,6 +5,9 @@ import { getDictionary } from "@/lib/getDictionary";
 import styles from "../../page.module.css";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
+import CommentIcon from "@/components/icons/CommentIcon";
+import ViewIcon from "@/components/icons/ViewIcon";
+import ThumbUpIcon from "@/components/icons/ThumbUpIcon";
 
 export const revalidate = 300;
 
@@ -151,16 +154,16 @@ export default async function HotPage({ params }: Props) {
                     </p>
 
                     <div className={styles.postCardFooter}>
-                      <span className={styles.postCardStat}>
-                        ▲ {post.score}
+                      <span className={`${styles.postCardStat} stat-icon`}>
+                        <ThumbUpIcon size={14} /> {post.score}
                       </span>
 
-                      <span className={styles.postCardStat}>
-                        💬 {post.commentCount}
+                      <span className={`${styles.postCardStat} stat-icon`}>
+                        <CommentIcon /> {post.commentCount}
                       </span>
 
-                      <span className={styles.postCardStat}>
-                        👁 {post.view_count ?? 0}
+                      <span className={`${styles.postCardStat} stat-icon`}>
+                        <ViewIcon /> {post.view_count ?? 0}
                       </span>
                     </div>
                   </div>

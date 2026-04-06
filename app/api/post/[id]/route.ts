@@ -65,7 +65,7 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { title, content, category_id, image_url, image_url_2, image_url_3 } = body;
+  const { title, content, category_id, image_url, image_url_2, image_url_3, video_url } = body;
 
   // サーバーサイド入力バリデーション
   if (title !== undefined && (typeof title !== "string" || title.length === 0 || title.length > 200)) {
@@ -77,10 +77,10 @@ export async function PATCH(
   if (category_id !== undefined && category_id !== null && typeof category_id !== "number") {
     return NextResponse.json({ error: "カテゴリIDが不正です" }, { status: 400 });
   }
-  for (const key of ["image_url", "image_url_2", "image_url_3"] as const) {
+  for (const key of ["image_url", "image_url_2", "image_url_3", "video_url"] as const) {
     const val = body[key];
     if (val !== undefined && val !== null && typeof val !== "string") {
-      return NextResponse.json({ error: "画像URLが不正です" }, { status: 400 });
+      return NextResponse.json({ error: "メディアURLが不正です" }, { status: 400 });
     }
   }
 
@@ -96,6 +96,7 @@ export async function PATCH(
   if (image_url !== undefined) updateData.image_url = image_url;
   if (image_url_2 !== undefined) updateData.image_url_2 = image_url_2;
   if (image_url_3 !== undefined) updateData.image_url_3 = image_url_3;
+  if (video_url !== undefined) updateData.video_url = video_url;
 
   const { error } = await adminSupabase
     .from("post")

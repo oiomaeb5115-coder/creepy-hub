@@ -8,6 +8,9 @@ import { getIsAdmin, getAccessToken } from "@/lib/auth";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
 import { uploadImage } from "@/lib/uploadImage";
+import { uploadPostVideo } from "@/lib/uploadPostVideo";
+import { validateVideoFile } from "@/lib/validateVideoFile";
+import { getVideoDuration } from "@/lib/getVideoDuration";
 
 type Chapter = { id: number; title: string; body: string };
 
@@ -46,6 +49,10 @@ export default function StoryEditPage() {
   const [newImage2, setNewImage2] = useState<File | null>(null);
   const [newImage3, setNewImage3] = useState<File | null>(null);
 
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [newVideo, setNewVideo] = useState<File | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
+
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -53,7 +60,7 @@ export default function StoryEditPage() {
 
       const { data: post, error } = await supabase
         .from("post")
-        .select("id, title, content, category_id, user_id, slug, image_url, image_url_2, image_url_3")
+        .select("id, title, content, category_id, user_id, slug, image_url, image_url_2, image_url_3, video_url")
         .eq("id", postId)
         .single();
 
@@ -79,6 +86,7 @@ export default function StoryEditPage() {
       setImageUrl1(post.image_url ?? null);
       setImageUrl2(post.image_url_2 ?? null);
       setImageUrl3(post.image_url_3 ?? null);
+      setVideoUrl(post.video_url ?? null);
       setLoading(false);
     };
     init();
@@ -124,10 +132,20 @@ export default function StoryEditPage() {
         throw err;
       });
 
+      // 動画アップロード
+      let uploadedVideo: string | null = null;
+      if (newVideo) {
+        uploadedVideo = await uploadPostVideo(newVideo, user.id).catch((err) => {
+          alert(`動画アップロードに失敗しました: ${err.message}`);
+          throw err;
+        });
+      }
+
       // 新しい画像がアップロードされた場合はそのURL、そうでなければ現在のURL
       const finalImageUrl1 = uploaded1 ?? imageUrl1;
       const finalImageUrl2 = uploaded2 ?? imageUrl2;
       const finalImageUrl3 = uploaded3 ?? imageUrl3;
+      const finalVideoUrl = uploadedVideo ?? videoUrl;
 
       const mergedContent = chapters
         .map((ch) => {
@@ -151,6 +169,7 @@ export default function StoryEditPage() {
           image_url: finalImageUrl1,
           image_url_2: finalImageUrl2,
           image_url_3: finalImageUrl3,
+          video_url: finalVideoUrl,
         }),
       });
 
@@ -248,6 +267,63 @@ export default function StoryEditPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* 動画アップロード */}
+            <div style={groupStyle}>
+              <label style={labelStyle}>動画 (9:16)</label>
+              <small style={{ fontSize: 10, color: "rgba(200,150,140,0.35)", lineHeight: 1.5 }}>
+                MP4/WebM、3分以内、50MB以内
+              </small>
+              {(videoPreviewUrl || videoUrl) ? (
+                <div style={{ position: "relative", width: 135, aspectRatio: "9/16", borderRadius: 6, overflow: "hidden", background: "#000" }}>
+                  <video
+                    src={videoPreviewUrl || videoUrl!}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    playsInline
+                    muted
+                  />
+                  <button
+                    type="button"
+                    style={imageRemoveBtn}
+                    onClick={() => {
+                      setNewVideo(null);
+                      if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+                      setVideoPreviewUrl(null);
+                      setVideoUrl(null);
+                    }}
+                    title="動画を削除"
+                  >
+                    &times;
+                  </button>
+                </div>
+              ) : (
+                <label style={{ ...imageAddLabel, width: 135, height: 240, aspectRatio: "9/16" }}>
+                  <span style={{ fontSize: 24, lineHeight: 1 }}>▶</span>
+                  <span style={{ fontSize: 11 }}>動画 (9:16)</span>
+                  <input
+                    type="file"
+                    accept="video/mp4,video/webm"
+                    style={{ display: "none" }}
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0] ?? null;
+                      if (!f) return;
+                      if (!["video/mp4", "video/webm"].includes(f.type)) {
+                        alert("動画はMP4またはWebM形式のみ対応しています"); return;
+                      }
+                      if (f.size > 75 * 1024 * 1024) {
+                        alert("動画ファイルは75MB以内にしてください"); return;
+                      }
+                      const valid = await validateVideoFile(f);
+                      if (!valid) { alert("動画はMP4またはWebM形式のみ対応しています"); return; }
+                      const dur = await getVideoDuration(f);
+                      if (dur > 180000) { alert("動画は3分以内にしてください"); return; }
+                      setNewVideo(f);
+                      setVideoPreviewUrl(URL.createObjectURL(f));
+                    }}
+                  />
+                </label>
+              )}
             </div>
 
             <div style={{ ...groupStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>

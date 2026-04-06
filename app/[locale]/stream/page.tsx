@@ -1,34 +1,19 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import StoryMoreMenu from "@/components/StoryMoreMenu";
-import StoryComments from "@/components/StoryComments";
+import { postUrl } from "@/lib/postUrl";
 import styles from "./page.module.css";
 
-type TextOverlay = {
-  text: string;
-  x: number;
-  y: number;
-  fontSize: number;
-  fontFamily: string;
-  color: string;
-  backgroundColor: string | null;
-  rotation: number;
-  fontWeight?: "normal" | "bold";
-  fontStyle?: "normal" | "italic";
-  stroke?: string | null;
-};
-
-type FlatStoryItem = {
-  id: string;
-  media_url: string;
-  media_type: "image" | "video";
-  duration_ms: number | null;
-  text_overlays: TextOverlay[];
+type StreamPostItem = {
+  id: number;
+  video_url: string;
+  title: string | null;
   created_at: string;
   user_id: string;
+  slug: string | null;
   username: string | null;
   display_name: string | null;
   avatar_url: string | null;
@@ -87,20 +72,19 @@ function StreamItemView({
   isVisible,
   locale,
 }: {
-  item: FlatStoryItem;
+  item: StreamPostItem;
   isVisible: boolean;
   locale: string;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
 
-  // いいね
+  // いいね（post_votes テーブル）
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [likeLoading, setLikeLoading] = useState(false);
 
-  // コメント
-  const [commentOpen, setCommentOpen] = useState(false);
+  // コメント数
   const [commentCount, setCommentCount] = useState(0);
 
   // 共有
@@ -108,51 +92,48 @@ function StreamItemView({
 
   // 動画のオートプレイ/ポーズ
   useEffect(() => {
-    if (item.media_type !== "video" || !videoRef.current) return;
+    if (!videoRef.current) return;
     if (isVisible) {
       videoRef.current.currentTime = 0;
       videoRef.current.play().catch(() => {});
     } else {
       videoRef.current.pause();
     }
-  }, [isVisible, item.media_type]);
+  }, [isVisible]);
 
-  // いいね状態 + カウント初期化
+  // いいね・コメント数の初期化
   useEffect(() => {
     let cancelled = false;
 
     const init = async () => {
-      // カウント取得
-      const countRes = await fetch(`/api/story/${item.id}/like`, { method: "HEAD" }).catch(() => null);
-      // HEAD は未対応なので GET 的にカウントだけ別途取る
-      // supabase client で直接取得
-      const { count } = await supabase
-        .from("story_likes")
-        .select("id", { count: "exact", head: true })
-        .eq("story_id", item.id);
+      // 投票スコア取得
+      const { data: votes } = await supabase
+        .from("post_votes")
+        .select("vote_type")
+        .eq("post_id", item.id);
       if (cancelled) return;
-      setLikeCount(count ?? 0);
+      const score = (votes ?? []).reduce((sum, v) => sum + (v.vote_type ?? 0), 0);
+      setLikeCount(score);
 
       // ユーザーのいいね状態
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || cancelled) return;
       const { data } = await supabase
-        .from("story_likes")
-        .select("id")
-        .eq("story_id", item.id)
+        .from("post_votes")
+        .select("vote_type")
+        .eq("post_id", item.id)
         .eq("user_id", user.id)
         .maybeSingle();
-      if (!cancelled) setLiked(!!data);
+      if (!cancelled) setLiked(data?.vote_type === 1);
     };
 
-    // コメント数取得
     const initComments = async () => {
-      const res = await fetch(`/api/story/${item.id}/comments`).catch(() => null);
-      if (!res || cancelled) return;
-      const data = await res.json().catch(() => null);
-      if (data?.comments && !cancelled) {
-        setCommentCount(data.comments.filter((c: { is_deleted: boolean }) => !c.is_deleted).length);
-      }
+      const { count } = await supabase
+        .from("post_comments")
+        .select("id", { count: "exact", head: true })
+        .eq("post_id", item.id)
+        .or("is_deleted.eq.false,is_deleted.is.null");
+      if (!cancelled) setCommentCount(count ?? 0);
     };
 
     init();
@@ -160,46 +141,16 @@ function StreamItemView({
     return () => { cancelled = true; };
   }, [item.id]);
 
-  // いいねトグル
-  const handleLike = async () => {
-    if (likeLoading) return;
-
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      alert("いいねにはログインが必要です");
-      return;
-    }
-
-    setLikeLoading(true);
-    try {
-      const res = await fetch(`/api/story/${item.id}/like`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setLiked(data.liked);
-        setLikeCount(data.count);
-      }
-    } catch {
-      // ignore
-    } finally {
-      setLikeLoading(false);
-    }
-  };
-
   // 共有
   const handleShare = async () => {
-    const url = `${window.location.origin}/${locale}/stream`;
+    const url = `${window.location.origin}${postUrl(locale, item.id, item.slug)}`;
 
     if (navigator.share) {
       try {
         await navigator.share({ url });
         return;
       } catch {
-        // share cancelled — fall through to clipboard
+        // share cancelled
       }
     }
 
@@ -212,82 +163,41 @@ function StreamItemView({
     }
   };
 
+  const detailHref = postUrl(locale, item.id, item.slug);
+
   return (
     <div className={styles.streamItem}>
-      {item.media_type === "image" ? (
-        <img
-          src={item.media_url}
-          alt=""
-          className={styles.streamMedia}
-          loading="lazy"
-        />
-      ) : (
-        <video
-          ref={videoRef}
-          src={item.media_url}
-          className={styles.streamMedia}
-          playsInline
-          muted={muted}
-          loop
-          preload="metadata"
-        />
-      )}
-
-      {/* テキストオーバーレイ */}
-      {item.text_overlays.map((overlay, i) => (
-        <div
-          key={i}
-          className={styles.textOverlay}
-          style={{
-            left: `${overlay.x}%`,
-            top: `${overlay.y}%`,
-            fontSize: `${overlay.fontSize}px`,
-            fontFamily: overlay.fontFamily,
-            color: overlay.color,
-            backgroundColor: overlay.backgroundColor || "transparent",
-            transform: `translate(-50%, -50%) rotate(${overlay.rotation}deg)`,
-            fontWeight: overlay.fontWeight || "normal",
-            fontStyle: overlay.fontStyle || "normal",
-            WebkitTextStroke: overlay.stroke
-              ? `1.5px ${overlay.stroke}`
-              : undefined,
-            paintOrder: overlay.stroke ? "stroke fill" : undefined,
-          }}
-        >
-          {overlay.text}
-        </div>
-      ))}
+      <video
+        ref={videoRef}
+        src={item.video_url}
+        className={styles.streamMedia}
+        playsInline
+        muted={muted}
+        loop
+        preload="metadata"
+      />
 
       {/* 下部グラデーション */}
       <div className={styles.streamGradient} />
 
-      {/* 右上: 三点メニュー */}
-      <StoryMoreMenu storyId={item.id} storyUserId={item.user_id} />
-
       {/* 右サイドアクションバー */}
       <div className={styles.actionBar}>
-        {/* いいね */}
+        {/* いいね（投稿詳細ページへ） */}
         <div className={styles.actionItem}>
-          <button
+          <Link
+            href={detailHref}
             className={`${styles.actionBtn} ${liked ? styles.actionBtnActive : ""}`}
-            onClick={handleLike}
-            disabled={likeLoading}
-            type="button"
           >
             <ThumbUpIcon />
-          </button>
+          </Link>
           <span className={styles.actionLabel}>{likeCount > 0 ? likeCount : "--"}</span>
         </div>
 
-        {/* コメント */}
+        {/* コメント（投稿詳細ページへ） */}
         <div className={styles.actionItem}>
-          <button
-            className={styles.actionBtn}
-            onClick={() => setCommentOpen(true)}
-            type="button"
-          >
+          <Link href={detailHref} className={styles.actionBtn}>
             <CommentIcon />
-          </button>
+          </Link>
           <span className={styles.actionLabel}>{commentCount > 0 ? commentCount : "--"}</span>
         </div>
 
@@ -303,24 +213,22 @@ function StreamItemView({
           <span className={styles.actionLabel}>{shareLabel}</span>
         </div>
 
-        {/* ミュートトグル（動画のみ） */}
-        {item.media_type === "video" && (
-          <div className={styles.actionItem}>
-            <button
-              className={styles.actionBtn}
-              onClick={() => {
-                setMuted((prev) => !prev);
-                if (videoRef.current) videoRef.current.muted = !videoRef.current.muted;
-              }}
-              type="button"
-            >
-              {muted ? <MuteIcon /> : <VolumeIcon />}
-            </button>
-          </div>
-        )}
+        {/* ミュートトグル */}
+        <div className={styles.actionItem}>
+          <button
+            className={styles.actionBtn}
+            onClick={() => {
+              setMuted((prev) => !prev);
+              if (videoRef.current) videoRef.current.muted = !videoRef.current.muted;
+            }}
+            type="button"
+          >
+            {muted ? <MuteIcon /> : <VolumeIcon />}
+          </button>
+        </div>
       </div>
 
-      {/* ユーザー情報 */}
+      {/* ユーザー情報 + タイトル */}
       <div className={styles.streamUserInfo}>
         {item.avatar_url ? (
           <img
@@ -333,21 +241,34 @@ function StreamItemView({
             {(item.display_name || item.username || "?")[0]}
           </div>
         )}
-        <span className={styles.streamUserName}>
-          {item.display_name || item.username || "Anonymous"}
-          <span className={styles.streamUserTime}>
-            {timeAgo(item.created_at)}
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <span className={styles.streamUserName}>
+            {item.display_name || item.username || "Anonymous"}
+            <span className={styles.streamUserTime}>
+              {timeAgo(item.created_at)}
+            </span>
           </span>
-        </span>
+          {item.title && (
+            <Link
+              href={detailHref}
+              style={{
+                fontSize: 13,
+                color: "rgba(245,241,235,0.85)",
+                textShadow: "0 1px 4px rgba(0,0,0,0.7)",
+                textDecoration: "none",
+                lineHeight: 1.3,
+                maxWidth: "calc(100vw - 100px)",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                display: "block",
+              }}
+            >
+              {item.title}
+            </Link>
+          )}
+        </div>
       </div>
-
-      {/* コメントボトムシート */}
-      <StoryComments
-        storyId={item.id}
-        isOpen={commentOpen}
-        onClose={() => setCommentOpen(false)}
-        onCountChange={setCommentCount}
-      />
     </div>
   );
 }
@@ -356,7 +277,7 @@ export default function StreamPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
 
-  const [items, setItems] = useState<FlatStoryItem[]>([]);
+  const [items, setItems] = useState<StreamPostItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleIndex, setVisibleIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -364,28 +285,10 @@ export default function StreamPage() {
 
   // データ取得
   useEffect(() => {
-    fetch("/api/stories")
+    fetch("/api/stream/posts")
       .then((res) => res.json())
       .then((data) => {
-        const users = data.users ?? [];
-        const flat: FlatStoryItem[] = [];
-        for (const u of users) {
-          for (const s of u.stories) {
-            flat.push({
-              ...s,
-              text_overlays: s.text_overlays ?? [],
-              user_id: u.user_id,
-              username: u.username,
-              display_name: u.display_name,
-              avatar_url: u.avatar_url,
-            });
-          }
-        }
-        flat.sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-        setItems(flat);
+        setItems(data.posts ?? []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -437,7 +340,7 @@ export default function StreamPage() {
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>📡</div>
           <p className={styles.emptyText}>
-            まだストリームはありません
+            まだ動画投稿がありません
           </p>
         </div>
       </div>

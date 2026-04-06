@@ -8,6 +8,9 @@ import { getAccessToken } from "@/lib/auth";
 import { generateSlug, sanitizeSlug } from "@/lib/slug";
 import { postUrl } from "@/lib/postUrl";
 import { uploadImage } from "@/lib/uploadImage";
+import { uploadPostVideo } from "@/lib/uploadPostVideo";
+import { validateVideoFile } from "@/lib/validateVideoFile";
+import { getVideoDuration } from "@/lib/getVideoDuration";
 import BackButton from "@/components/BackButton";
 import StoryCreator from "@/components/StoryCreator";
 import { getDictionary } from "@/lib/getDictionary";
@@ -61,6 +64,9 @@ export default function PostNewPage() {
   const [newImage1, setNewImage1] = useState<File | null>(null);
   const [newImage2, setNewImage2] = useState<File | null>(null);
   const [newImage3, setNewImage3] = useState<File | null>(null);
+
+  const [newVideo, setNewVideo] = useState<File | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -127,6 +133,7 @@ export default function PostNewPage() {
     setCategoryId(""); setTitle(""); setBody(""); setSlugInput(""); setSlugManuallyEdited(false);
     setNewImage1(null); setNewImage2(null); setNewImage3(null);
     setImageUrl1(null); setImageUrl2(null); setImageUrl3(null);
+    setNewVideo(null); setVideoPreviewUrl(null);
   };
 
   const saveDraftManually = () => {
@@ -158,6 +165,14 @@ export default function PostNewPage() {
         throw err;
       });
 
+      let videoUrlUp: string | null = null;
+      if (newVideo) {
+        videoUrlUp = await uploadPostVideo(newVideo, user.id).catch((err) => {
+          alert(`${labels.alertVideoFailed}${err.message}`);
+          throw err;
+        });
+      }
+
       const rawSlug = sanitizeSlug(slugInput.trim());
       const slug = rawSlug || generateSlug(title.trim());
 
@@ -173,6 +188,7 @@ export default function PostNewPage() {
           image_url: imageUrlUp1,
           image_url_2: imageUrlUp2,
           image_url_3: imageUrlUp3,
+          video_url: videoUrlUp,
           slug,
         }])
         .select()
@@ -387,6 +403,60 @@ export default function PostNewPage() {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* 動画 */}
+                <div style={groupStyle}>
+                  <label style={labelStyle}>{labels.videoLabel}</label>
+                  <small style={slugHintStyle}>{labels.videoHint}</small>
+                  {videoPreviewUrl ? (
+                    <div style={{ position: "relative", width: 135, aspectRatio: "9/16", borderRadius: 6, overflow: "hidden", background: "#000" }}>
+                      <video
+                        src={videoPreviewUrl}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                        playsInline
+                        muted
+                      />
+                      <button
+                        type="button"
+                        style={imageRemoveBtn}
+                        onClick={() => {
+                          setNewVideo(null);
+                          if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+                          setVideoPreviewUrl(null);
+                        }}
+                        title={locale === "en" ? "Remove video" : "動画を削除"}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ) : (
+                    <label style={{ ...imageAddLabel, width: 135, height: 240, aspectRatio: "9/16" }}>
+                      <span style={{ fontSize: 24, lineHeight: 1 }}>▶</span>
+                      <span style={{ fontSize: 11 }}>{labels.videoLabel}</span>
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm"
+                        style={{ display: "none" }}
+                        onChange={async (e) => {
+                          const f = e.target.files?.[0] ?? null;
+                          if (!f) return;
+                          if (!["video/mp4", "video/webm"].includes(f.type)) {
+                            alert(labels.alertVideoFormat); return;
+                          }
+                          if (f.size > 75 * 1024 * 1024) {
+                            alert(labels.alertVideoSize); return;
+                          }
+                          const valid = await validateVideoFile(f);
+                          if (!valid) { alert(labels.alertVideoFormat); return; }
+                          const dur = await getVideoDuration(f);
+                          if (dur > 180000) { alert(labels.alertVideoDuration); return; }
+                          setNewVideo(f);
+                          setVideoPreviewUrl(URL.createObjectURL(f));
+                        }}
+                      />
+                    </label>
+                  )}
                 </div>
 
                 {/* 本文 */}

@@ -9,6 +9,7 @@ import WikiCategoryEditButton from "@/components/WikiCategoryEditButton";
 import WikiCategoryReportButton from "@/components/WikiCategoryReportButton";
 import CategoryDeleteButton from "@/components/CategoryDeleteButton";
 import FavoriteCategoryButton from "@/components/FavoriteCategoryButton";
+import ViewIcon from "@/components/icons/ViewIcon";
 
 export const revalidate = 300;
 
@@ -247,7 +248,7 @@ export default async function WikiCategoryPage({
                         </div>
                       )}
                       <div className={styles.feedFooter}>
-                        <span>👁 {item.view_count ?? 0}</span>
+                        <span className="stat-icon"><ViewIcon /> {item.view_count ?? 0}</span>
                       </div>
                     </div>
                   </Link>

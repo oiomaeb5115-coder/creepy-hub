@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
+import ViewIcon from "@/components/icons/ViewIcon";
 
 export const revalidate = 300;
 
@@ -122,8 +123,8 @@ export default async function StoryTagPage({ params }: TagPageProps) {
                 <p style={{ margin: "0 0 10px", color: "#c8d3e4" }}>
                   {(post.content ?? "").slice(0, 120)}
                 </p>
-                <span style={{ color: "#8ea4c2", fontSize: 13 }}>
-                  👁 {post.view_count ?? 0}
+                <span className="stat-icon" style={{ fontSize: 13 }}>
+                  <ViewIcon /> {post.view_count ?? 0}
                 </span>
               </Link>
             ))

@@ -23,9 +23,10 @@ type Props = {
   locale: string;
   labels?: Labels;
   embedded?: boolean;
+  onClose?: () => void;
 };
 
-export default function FavoriteSidebar({ type, locale, labels, embedded }: Props) {
+export default function FavoriteSidebar({ type, locale, labels, embedded, onClose }: Props) {
   const [favorites, setFavorites] = useState<FavEntry[]>([]);
 
   const t = {
@@ -61,7 +62,7 @@ export default function FavoriteSidebar({ type, locale, labels, embedded }: Prop
         <ul className={styles.list}>
           {favorites.map((fav) => (
             <li key={fav.slug} className={styles.item}>
-              <Link href={`${basePath}/${fav.slug}`} className={styles.link}>
+              <Link href={`${basePath}/${fav.slug}`} className={styles.link} onClick={onClose}>
                 {fav.name}
               </Link>
             </li>

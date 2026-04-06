@@ -13,6 +13,8 @@ import TranslateButton from "@/components/TranslateButton";
 import PostActionButtons from "@/components/PostActionButtons";
 import PostReadTracker from "@/components/PostReadTracker";
 import ReportButton from "@/components/ReportButton";
+import { escapeHtml, linkifyUrls } from "@/lib/linkify-urls";
+import AutoLinkedWikiContent from "@/components/AutoLinkedwikiContent";
 
 export const revalidate = 300;
 
@@ -108,6 +110,7 @@ type PostRow = {
   image_url: string | null;
   image_url_2: string | null;
   image_url_3: string | null;
+  video_url: string | null;
   is_published: boolean | null;
   view_count: number | null;
   user_id: string | null;
@@ -155,7 +158,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   const { data, error } = await supabaseAdmin
     .from("post")
     .select(
-      "id, title, content, created_at, image_url, image_url_2, image_url_3, is_published, view_count, user_id, slug"
+      "id, title, content, created_at, image_url, image_url_2, image_url_3, video_url, is_published, view_count, user_id, slug"
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -201,6 +204,17 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
 
   const safeCreatedAt = post.created_at ?? "";
   const contentLines = displayContent.split("\n");
+
+  const postHtml = linkifyUrls(
+    contentLines
+      .map((line: string) => {
+        if (line.startsWith("## "))
+          return `<h3>${escapeHtml(line.replace("## ", ""))}</h3>`;
+        if (!line.trim()) return "<br/>";
+        return `<p>${escapeHtml(line)}</p>`;
+      })
+      .join("")
+  );
 
   const imageUrls: string[] = [
     post.image_url,
@@ -335,22 +349,28 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
 
           {/* Post content */}
           <div className={styles.postContent}>
-            {contentLines.map((line: string, index: number) => {
-              if (line.startsWith("## ")) {
-                return (
-                  <h3 key={index}>
-                    {line.replace("## ", "")}
-                  </h3>
-                );
-              }
-
-              if (!line.trim()) {
-                return <br key={index} />;
-              }
-
-              return <p key={index}>{line}</p>;
-            })}
+            <AutoLinkedWikiContent html={postHtml} />
           </div>
+
+          {/* Video */}
+          {post.video_url && (
+            <div style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>
+              <video
+                src={post.video_url}
+                controls
+                playsInline
+                preload="metadata"
+                style={{
+                  width: "100%",
+                  maxWidth: 340,
+                  aspectRatio: "9/16",
+                  borderRadius: 8,
+                  background: "#000",
+                  border: "1px solid rgba(161,102,108,0.18)",
+                }}
+              />
+            </div>
+          )}
 
           {/* Images */}
           {imageUrls.length > 0 && (

@@ -9,6 +9,7 @@ import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
+import ViewIcon from "@/components/icons/ViewIcon";
 
 type StoryRow = {
   id: number;
@@ -124,8 +125,8 @@ export default function AccountStoriesPage() {
                       {excerpt && (
                         <p className={styles.cardViews}>{excerpt}</p>
                       )}
-                      <p className={styles.cardViews}>
-                        👁 {story.view_count ?? 0}
+                      <p className={`${styles.cardViews} stat-icon`}>
+                        <ViewIcon /> {story.view_count ?? 0}
                       </p>
                     </div>
                   </Link>

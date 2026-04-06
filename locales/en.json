@@ -116,7 +116,13 @@
     "alertImageFailed": "Image upload failed: ",
     "alertPostFailed": "Failed to post: ",
     "slugLabel": "URL Slug",
-    "slugHint": "A short English ID used in the URL. Only lowercase letters, numbers, and hyphens. Leave blank to auto-generate from the title. e.g. for a post about Shisaki Eiko, use \"shisaki-eiko\""
+    "slugHint": "A short English ID used in the URL. Only lowercase letters, numbers, and hyphens. Leave blank to auto-generate from the title. e.g. for a post about Shisaki Eiko, use \"shisaki-eiko\"",
+    "videoLabel": "Video (9:16)",
+    "videoHint": "MP4/WebM, max 3 min, max 75MB",
+    "alertVideoFailed": "Video upload failed: ",
+    "alertVideoDuration": "Video must be 3 minutes or less",
+    "alertVideoFormat": "Only MP4 and WebM videos are supported",
+    "alertVideoSize": "Video file must be under 75MB"
   },
   "authDrawer": {
     "loginTitle": "Login",
@@ -578,7 +584,9 @@
     "logout": "Logout",
     "loginPrompt": "Please log in",
     "login": "Login",
-    "register": "Sign Up"
+    "register": "Sign Up",
+    "favPost": "Post Favorites",
+    "favWiki": "Wiki Favorites"
   },
   "story": {
     "addStory": "Add Story",

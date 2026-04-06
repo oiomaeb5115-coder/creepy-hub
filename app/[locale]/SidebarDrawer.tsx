@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import FavoriteSidebar from "@/components/FavoriteSidebar";
 import styles from "./sidebar-drawer.module.css";
 
 type UserInfo = {
@@ -21,6 +22,8 @@ type Labels = {
   loginPrompt: string;
   login: string;
   register: string;
+  favPost: string;
+  favWiki: string;
 };
 
 type Props = {
@@ -164,6 +167,26 @@ export default function SidebarDrawer({
                 </>
               )}
             </nav>
+
+            {/* お気に入りカテゴリー */}
+            <div className={styles.favSection}>
+              <FavoriteSidebar
+                type="story"
+                locale={locale}
+                labels={{ title: labels.favPost }}
+                embedded
+                onClose={onClose}
+              />
+            </div>
+            <div className={styles.favSection}>
+              <FavoriteSidebar
+                type="wiki"
+                locale={locale}
+                labels={{ title: labels.favWiki }}
+                embedded
+                onClose={onClose}
+              />
+            </div>
 
             {/* ログアウト */}
             <div className={styles.drawerFooter}>

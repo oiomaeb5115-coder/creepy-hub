@@ -11,7 +11,7 @@
   letter-spacing: 0.06em;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
-  margin: 12px 0 4px;
+  margin: 12px 0 4px 60px;
   font-family: inherit;
 }
 

@@ -1,3 +1,5 @@
+import { escapeHtml, linkifyUrls } from "./linkify-urls";
+
 type WikiLinkItem = {
   slug: string;
   title: string;
@@ -5,15 +7,6 @@ type WikiLinkItem = {
 
 function escapeRegExp(input: string) {
   return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 export function buildAutoLinkedHtml(
@@ -64,6 +57,9 @@ export function buildAutoLinkedHtml(
       `<a href="/${locale}/wiki/${safeSlug}">${escapedTitle}</a>`
     );
   }
+
+  // Step 3: 外部 URL を自動リンク化（既存 <a> タグ内は除外）
+  result = linkifyUrls(result);
 
   return result;
 }

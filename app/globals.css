@@ -514,11 +514,20 @@ input[type="password"] {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   transition: all 0.2s;
+  margin-left: 60px;
 }
 
 .back-link:hover {
   color: rgba(220, 120, 130, 1);
   text-shadow: 0 0 10px rgba(200, 40, 50, 0.3);
+}
+
+/* ── Stat icons (comment / view) ── */
+.stat-icon {
+  color: #8b2030;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
 /* ── Entry meta block ── */
@@ -1431,4 +1440,18 @@ select.form-control {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(200, 40, 50, 0.5);
+}
+
+/* External URL auto-links */
+.external-link {
+  color: #c8283a;
+  text-decoration: underline;
+  text-decoration-color: rgba(200, 40, 58, 0.4);
+  text-underline-offset: 2px;
+  transition: color 0.2s, text-decoration-color 0.2s;
+}
+
+.external-link:hover {
+  color: #e03040;
+  text-decoration-color: rgba(224, 48, 64, 0.8);
 }

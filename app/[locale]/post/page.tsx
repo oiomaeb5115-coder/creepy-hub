@@ -8,6 +8,7 @@ import BackButton from "@/components/BackButton";
 import CategorySidebar from "@/components/CategorySidebar";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
+import ViewIcon from "@/components/icons/ViewIcon";
 
 export const revalidate = 300;
 
@@ -277,7 +278,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
                     )}
                     <div className={styles.postFooter}>
                       <InlineVoteButtons postId={post.id} initialScore={score} />
-                      <span>👁 {post.view_count ?? 0} {dict.post.views}</span>
+                      <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0} {dict.post.views}</span>
                     </div>
                   </div>
                 </Link>

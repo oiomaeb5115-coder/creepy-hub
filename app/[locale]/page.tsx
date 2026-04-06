@@ -7,7 +7,9 @@ import styles from "./page.module.css";
 import HomeAuthButtons from "./HomeAuthButtons";
 import AdminPendingSection from "@/components/AdminPendingSection";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
-import StoriesRow from "@/components/StoriesRow";
+import CommentIcon from "@/components/icons/CommentIcon";
+import ViewIcon from "@/components/icons/ViewIcon";
+
 
 export const revalidate = 300;
 
@@ -128,8 +130,8 @@ function StoryCardGrid({
 
         <div className={styles.gridCardFooter}>
           <InlineVoteButtons postId={post.id} initialScore={score} />
-          <span>💬 {commentCount}</span>
-          <span>👁 {post.view_count ?? 0}</span>
+          <span className="stat-icon"><CommentIcon /> {commentCount}</span>
+          <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0}</span>
         </div>
       </article>
     </Link>
@@ -186,7 +188,7 @@ function WikiCard({
           </p>
 
           <div className={styles.scrollCardFooter}>
-            <span>👁 {item.view_count ?? 0}</span>
+            <span className="stat-icon"><ViewIcon /> {item.view_count ?? 0}</span>
           </div>
         </div>
       </article>
@@ -321,9 +323,6 @@ export default async function HomePage({ params }: HomePageProps) {
 
           </div>
         </section>
-
-        {/* ── STORIES ── */}
-        <StoriesRow locale={locale} />
 
         {/* ── TWO-COLUMN LAYOUT ── */}
         <div className={styles.twoColLayout}>

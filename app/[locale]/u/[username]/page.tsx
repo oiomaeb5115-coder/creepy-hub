@@ -10,6 +10,7 @@ import { postUrl } from "@/lib/postUrl";
 import FollowButton from "@/components/FollowButton";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
+import ViewIcon from "@/components/icons/ViewIcon";
 
 type ProfileRow = {
   id: string;
@@ -409,7 +410,7 @@ export default function UserProfilePage() {
                 </div>
                 <h3 className={styles.postTitle}>{safeTitle}</h3>
                 {excerpt && <p className={styles.postExcerpt}>{excerpt}</p>}
-                <p className={styles.postViews}>👁 {post.view_count ?? 0}</p>
+                <p className={`${styles.postViews} stat-icon`}><ViewIcon /> {post.view_count ?? 0}</p>
               </div>
             </Link>
           );
@@ -478,7 +479,7 @@ export default function UserProfilePage() {
               </div>
               <h3 className={styles.postTitle}>{w.title}</h3>
               {w.summary && <p className={styles.postExcerpt}>{w.summary}</p>}
-              <p className={styles.postViews}>👁 {w.view_count ?? 0}</p>
+              <p className={`${styles.postViews} stat-icon`}><ViewIcon /> {w.view_count ?? 0}</p>
             </div>
           </Link>
         ))}

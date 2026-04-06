@@ -6,6 +6,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import styles from "../page.module.css";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
+import ViewIcon from "@/components/icons/ViewIcon";
 
 export const revalidate = 300;
 
@@ -142,7 +143,7 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
                   className={styles.postRow}
                 >
                   <div className={styles.scoreCol}>
-                    <span className={styles.scoreIcon}>👁</span>
+                    <span className={`${styles.scoreIcon} stat-icon`}><ViewIcon /></span>
                     <span className={styles.scoreNum}>{post.view_count ?? 0}</span>
                   </div>
 
@@ -158,7 +159,7 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
                         : safeContent}
                     </p>
                     <div className={styles.postFooter}>
-                      <span>👁 {post.view_count ?? 0} {dict.post.views}</span>
+                      <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0} {dict.post.views}</span>
                     </div>
                   </div>
 

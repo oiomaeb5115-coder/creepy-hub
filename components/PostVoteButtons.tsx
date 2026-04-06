@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getAccessToken } from "@/lib/auth";
+import ThumbUpIcon from "@/components/icons/ThumbUpIcon";
 
 type Labels = {
   rateLoginRequired?: string;
@@ -177,7 +178,7 @@ export default function PostVoteButtons({
           (e.currentTarget as HTMLButtonElement).style.background = "transparent";
         }}
       >
-        ▲
+        <ThumbUpIcon size={18} />
       </button>
 
       <span
