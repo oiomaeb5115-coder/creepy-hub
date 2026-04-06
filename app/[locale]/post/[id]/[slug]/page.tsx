@@ -348,10 +348,12 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
           {/* Post title */}
           <h2 className={styles.postTitle}>{displayTitle}</h2>
 
-          {/* Post content */}
-          <div className={styles.postContent}>
-            <AutoLinkedWikiContent html={postHtml} />
-          </div>
+          {/* Images */}
+          {imageUrls.length > 0 && (
+            <div className={styles.postImageWrap}>
+              <PostImageGallery imageUrls={imageUrls} title={displayTitle} />
+            </div>
+          )}
 
           {/* Video */}
           {post.video_url && (
@@ -373,12 +375,10 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
             </div>
           )}
 
-          {/* Images */}
-          {imageUrls.length > 0 && (
-            <div className={styles.postImageWrap}>
-              <PostImageGallery imageUrls={imageUrls} title={displayTitle} />
-            </div>
-          )}
+          {/* Post content */}
+          <div className={styles.postContent}>
+            <AutoLinkedWikiContent html={postHtml} />
+          </div>
 
           {/* Stats row */}
           <div className={styles.statsRow}>

@@ -54,8 +54,6 @@ export default function PostImageGallery({
   return (
     <>
       <section className={styles.storyImageSection}>
-        <h2 className={styles.storyImageHeading}>画像資料</h2>
-
         <div className={styles.storyDetailImagesScroll}>
           <div className={styles.storyDetailImages}>
             {imageUrls.map((url, index) => (
