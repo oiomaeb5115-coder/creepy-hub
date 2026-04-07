@@ -314,8 +314,10 @@ export default function StoryEditPage() {
                       if (f.size > 75 * 1024 * 1024) {
                         alert("動画ファイルは75MB以内にしてください"); return;
                       }
-                      const valid = await validateVideoFile(f);
-                      if (!valid) { alert("動画はMP4、WebMまたはMOV形式のみ対応しています"); return; }
+                      if (f.type !== "video/quicktime") {
+                        const valid = await validateVideoFile(f);
+                        if (!valid) { alert("動画はMP4、WebMまたはMOV形式のみ対応しています"); return; }
+                      }
                       const dur = await getVideoDuration(f);
                       if (dur > 180000) { alert("動画は3分以内にしてください"); return; }
                       setNewVideo(f);

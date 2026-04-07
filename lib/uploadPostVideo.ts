@@ -20,9 +20,11 @@ export async function uploadPostVideo(
     throw new Error("動画ファイルは75MB以内にしてください");
   }
 
-  const isValid = await validateVideoFile(file);
-  if (!isValid) {
-    throw new Error("ファイルの内容が動画形式と一致しません");
+  if (file.type !== "video/quicktime") {
+    const isValid = await validateVideoFile(file);
+    if (!isValid) {
+      throw new Error("ファイルの内容が動画形式と一致しません");
+    }
   }
 
   const ext = file.name.split(".").pop() || "mp4";

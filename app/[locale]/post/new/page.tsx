@@ -391,8 +391,10 @@ export default function PostNewPage() {
                           if (f.size > 75 * 1024 * 1024) {
                             alert(labels.alertVideoSize); return;
                           }
-                          const valid = await validateVideoFile(f);
-                          if (!valid) { alert(labels.alertVideoFormat); return; }
+                          if (f.type !== "video/quicktime") {
+                            const valid = await validateVideoFile(f);
+                            if (!valid) { alert(labels.alertVideoFormat); return; }
+                          }
                           const dur = await getVideoDuration(f);
                           if (dur > 180000) { alert(labels.alertVideoDuration); return; }
                           setNewVideo(f);
