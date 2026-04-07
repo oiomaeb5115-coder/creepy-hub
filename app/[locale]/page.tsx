@@ -7,6 +7,7 @@ import styles from "./page.module.css";
 import HomeAuthButtons from "./HomeAuthButtons";
 import AdminPendingSection from "@/components/AdminPendingSection";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
+import PopularPeriodDropdown from "@/components/PopularPeriodDropdown";
 import CommentIcon from "@/components/icons/CommentIcon";
 import ViewIcon from "@/components/icons/ViewIcon";
 
@@ -15,6 +16,7 @@ export const revalidate = 300;
 
 type HomePageProps = {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ sort?: string; period?: string }>;
 };
 
 type AuthorProfile = {
@@ -196,11 +198,22 @@ function WikiCard({
   );
 }
 
-export default async function HomePage({ params }: HomePageProps) {
+export default async function HomePage({ params, searchParams }: HomePageProps) {
   const { locale } = await params;
+  const { sort, period } = await searchParams;
+  const isPopular = sort === "popular";
+  const currentPeriod = (period === "today" || period === "3days" || period === "week" || period === "month") ? period : "today";
   const dict = await getDictionary(locale);
 
-  const storiesQuery = supabaseAdmin
+  const periodMs: Record<string, number> = {
+    today: 24 * 60 * 60 * 1000,
+    "3days": 3 * 24 * 60 * 60 * 1000,
+    week: 7 * 24 * 60 * 60 * 1000,
+    month: 30 * 24 * 60 * 60 * 1000,
+  };
+  const cutoff = new Date(Date.now() - periodMs[currentPeriod]).toISOString();
+
+  let storiesQuery = supabaseAdmin
     .from("post_with_counts")
     .select(`
       id,
@@ -216,9 +229,19 @@ export default async function HomePage({ params }: HomePageProps) {
       vote_score,
       comment_count
     `)
-    .eq("is_published", true)
-    .order("created_at", { ascending: false })
-    .limit(12);
+    .eq("is_published", true);
+
+  if (isPopular) {
+    storiesQuery = storiesQuery
+      .gte("created_at", cutoff)
+      .order("vote_score", { ascending: false })
+      .order("view_count", { ascending: false })
+      .limit(12);
+  } else {
+    storiesQuery = storiesQuery
+      .order("created_at", { ascending: false })
+      .limit(12);
+  }
 
   const [latestStoriesResult, latestWikiResult, storyCategoriesResult, wikiCategoriesResult] = await Promise.all([
     storiesQuery,
@@ -338,6 +361,35 @@ export default async function HomePage({ params }: HomePageProps) {
                 <Link href={`/${locale}/post`} className={styles.seeAllLink}>
                   {locale === "en" ? "VIEW ALL" : "すべて見る"} →
                 </Link>
+              </div>
+
+              <div className={styles.homeSortTabs}>
+                <Link
+                  href={`/${locale}`}
+                  className={`${styles.homeSortTab} ${!isPopular ? styles.homeSortTabActive : ""}`}
+                >
+                  {dict.home.tabNew}
+                </Link>
+                <div className={styles.homeSortTabWithDropdown}>
+                  <Link
+                    href={`/${locale}?sort=popular`}
+                    className={`${styles.homeSortTab} ${isPopular ? styles.homeSortTabActive : ""}`}
+                  >
+                    {dict.home.tabPopular}
+                  </Link>
+                  {isPopular && (
+                    <PopularPeriodDropdown
+                      locale={locale}
+                      currentPeriod={currentPeriod}
+                      labels={{
+                        today: dict.home.periodToday,
+                        "3days": dict.home.period3days,
+                        week: dict.home.periodWeek,
+                        month: dict.home.periodMonth,
+                      }}
+                    />
+                  )}
+                </div>
               </div>
 
               {latestStories.length === 0 ? (

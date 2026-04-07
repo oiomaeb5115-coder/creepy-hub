@@ -483,6 +483,42 @@
   font-size: 13px;
 }
 
+/* ── Home sort tabs ── */
+
+.homeSortTabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(161, 102, 108, 0.2);
+  margin-bottom: 16px;
+}
+
+.homeSortTab {
+  padding: 10px 22px;
+  font-size: 13px;
+  color: #7a6a62;
+  text-decoration: none;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  letter-spacing: 0.06em;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.12s;
+}
+
+.homeSortTab:hover {
+  color: #d0c8c0;
+}
+
+.homeSortTabActive {
+  color: #f5f1eb;
+  border-bottom-color: rgba(165, 104, 108, 0.85);
+}
+
+.homeSortTabWithDropdown {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
 /* ═══════════════════════════════════════════════════════════
    CARD GRID (CREEPY POSTS)
    ═══════════════════════════════════════════════════════════ */

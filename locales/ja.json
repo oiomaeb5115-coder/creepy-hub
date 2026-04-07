@@ -25,7 +25,13 @@
     "noWiki": "まだWiki記事がありません。",
     "noCategory": "カテゴリなし",
     "storySearchDesc": "ユーザー投稿の怪談・ホラー体験談・Creepypasta",
-    "wikiSearchDesc": "都市伝説・怪事件・オカルト用語を調べる百科辞典"
+    "wikiSearchDesc": "都市伝説・怪事件・オカルト用語を調べる百科辞典",
+    "tabNew": "新着",
+    "tabPopular": "人気",
+    "periodToday": "今日",
+    "period3days": "過去3日",
+    "periodWeek": "過去一週間",
+    "periodMonth": "過去1か月"
   },
   "post": {
     "label": "怪談",

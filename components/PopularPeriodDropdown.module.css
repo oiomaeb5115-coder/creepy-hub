@@ -1,0 +1,82 @@
+.wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 2px;
+}
+
+.triggerButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid rgba(200, 40, 50, 0.3);
+  border-radius: 2px;
+  background: rgba(200, 40, 50, 0.08);
+  color: rgba(200, 120, 130, 0.7);
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.triggerButton:hover {
+  background: rgba(200, 40, 50, 0.18);
+  border-color: rgba(200, 40, 50, 0.5);
+  color: #f5f1eb;
+}
+
+.currentLabel {
+  white-space: nowrap;
+}
+
+.chevron {
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 120px;
+  background: rgba(5, 2, 4, 0.97);
+  border: 1px solid rgba(200, 40, 50, 0.25);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  z-index: 30;
+}
+
+.dropdownItem {
+  display: block;
+  padding: 9px 14px;
+  font-size: 12px;
+  color: rgba(245, 241, 235, 0.65);
+  text-decoration: none;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid rgba(200, 40, 50, 0.08);
+  transition: all 0.12s;
+}
+
+.dropdownItem:last-child {
+  border-bottom: none;
+}
+
+.dropdownItem:hover {
+  background: rgba(200, 40, 50, 0.12);
+  color: #f5f1eb;
+  padding-left: 18px;
+}
+
+.dropdownItemActive {
+  color: #f5f1eb;
+  background: rgba(200, 40, 50, 0.1);
+  border-left: 2px solid rgba(200, 40, 50, 0.6);
+}

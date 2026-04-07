@@ -25,7 +25,13 @@
     "noWiki": "No wiki articles yet.",
     "noCategory": "No categories",
     "storySearchDesc": "User-submitted horror stories, ghost experiences & creepypasta",
-    "wikiSearchDesc": "Encyclopedia of urban legends, strange incidents & occult terms"
+    "wikiSearchDesc": "Encyclopedia of urban legends, strange incidents & occult terms",
+    "tabNew": "New",
+    "tabPopular": "Popular",
+    "periodToday": "Today",
+    "period3days": "Past 3 Days",
+    "periodWeek": "Past Week",
+    "periodMonth": "Past Month"
   },
   "post": {
     "label": "Story",
