@@ -11,6 +11,7 @@ import { uploadImage } from "@/lib/uploadImage";
 import { uploadPostVideo } from "@/lib/uploadPostVideo";
 import { validateVideoFile } from "@/lib/validateVideoFile";
 import { getVideoDuration } from "@/lib/getVideoDuration";
+import { convertMovToMp4 } from "@/lib/convertMovToMp4";
 import BackButton from "@/components/BackButton";
 import { getDictionary } from "@/lib/getDictionary";
 import type { Dictionary } from "@/lib/getDictionary";
@@ -45,6 +46,8 @@ export default function PostNewPage() {
 
   const [newVideo, setNewVideo] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
+  const [videoConverting, setVideoConverting] = useState(false);
+  const [videoConvertProgress, setVideoConvertProgress] = useState(0);
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -374,6 +377,14 @@ export default function PostNewPage() {
                         &times;
                       </button>
                     </div>
+                  ) : videoConverting ? (
+                    <div style={{ width: 135, height: 240, aspectRatio: "9/16", borderRadius: 6, background: "#111", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, border: "1px solid rgba(161,102,108,0.18)" }}>
+                      <span style={{ fontSize: 12, color: "#aaa" }}>MOV→MP4 変換中...</span>
+                      <div style={{ width: 80, height: 4, background: "#333", borderRadius: 2, overflow: "hidden" }}>
+                        <div style={{ width: `${Math.round(videoConvertProgress * 100)}%`, height: "100%", background: "#a1666c", transition: "width 0.3s" }} />
+                      </div>
+                      <span style={{ fontSize: 11, color: "#666" }}>{Math.round(videoConvertProgress * 100)}%</span>
+                    </div>
                   ) : (
                     <label style={{ ...imageAddLabel, width: 135, height: 240, aspectRatio: "9/16" }}>
                       <span style={{ fontSize: 24, lineHeight: 1 }}>▶</span>
@@ -391,14 +402,27 @@ export default function PostNewPage() {
                           if (f.size > 75 * 1024 * 1024) {
                             alert(labels.alertVideoSize); return;
                           }
-                          if (f.type !== "video/quicktime") {
+                          let videoFile = f;
+                          if (f.type === "video/quicktime") {
+                            try {
+                              setVideoConverting(true);
+                              setVideoConvertProgress(0);
+                              videoFile = await convertMovToMp4(f, (p) => setVideoConvertProgress(p));
+                            } catch {
+                              alert("MOV→MP4変換に失敗しました。MP4形式で再度お試しください。");
+                              setVideoConverting(false);
+                              return;
+                            } finally {
+                              setVideoConverting(false);
+                            }
+                          } else {
                             const valid = await validateVideoFile(f);
                             if (!valid) { alert(labels.alertVideoFormat); return; }
                           }
-                          const dur = await getVideoDuration(f);
+                          const dur = await getVideoDuration(videoFile);
                           if (dur > 180000) { alert(labels.alertVideoDuration); return; }
-                          setNewVideo(f);
-                          setVideoPreviewUrl(URL.createObjectURL(f));
+                          setNewVideo(videoFile);
+                          setVideoPreviewUrl(URL.createObjectURL(videoFile));
                         }}
                       />
                     </label>

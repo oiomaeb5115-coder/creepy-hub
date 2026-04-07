@@ -14,7 +14,9 @@ const nextConfig: NextConfig = {
       // Supabase Storage・外部画像・アバタークロッパー用 blob: を許可
       "img-src 'self' https: blob:",
       // Supabase API・Cloudflare Workers AI への接続を許可
-      "connect-src 'self' https://*.supabase.co https://api.cloudflare.com",
+      "connect-src 'self' https://*.supabase.co https://api.cloudflare.com https://unpkg.com blob:",
+      // ffmpeg.wasm の Web Worker 用
+      "worker-src 'self' blob:",
       // フォント（必要に応じて追加）
       "font-src 'self'",
       // iframe 埋め込みを全面禁止（X-Frame-Options: DENY と同等）

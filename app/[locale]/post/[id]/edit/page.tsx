@@ -11,6 +11,7 @@ import { uploadImage } from "@/lib/uploadImage";
 import { uploadPostVideo } from "@/lib/uploadPostVideo";
 import { validateVideoFile } from "@/lib/validateVideoFile";
 import { getVideoDuration } from "@/lib/getVideoDuration";
+import { convertMovToMp4 } from "@/lib/convertMovToMp4";
 
 type Chapter = { id: number; title: string; body: string };
 
@@ -52,6 +53,8 @@ export default function StoryEditPage() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [newVideo, setNewVideo] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
+  const [videoConverting, setVideoConverting] = useState(false);
+  const [videoConvertProgress, setVideoConvertProgress] = useState(0);
 
   useEffect(() => {
     const init = async () => {
@@ -273,7 +276,7 @@ export default function StoryEditPage() {
             <div style={groupStyle}>
               <label style={labelStyle}>動画 (9:16)</label>
               <small style={{ fontSize: 10, color: "rgba(200,150,140,0.35)", lineHeight: 1.5 }}>
-                MP4/WebM、3分以内、50MB以内
+                MP4/WebM/MOV、3分以内、75MB以内
               </small>
               {(videoPreviewUrl || videoUrl) ? (
                 <div style={{ position: "relative", width: 135, aspectRatio: "9/16", borderRadius: 6, overflow: "hidden", background: "#000" }}>
@@ -297,6 +300,14 @@ export default function StoryEditPage() {
                     &times;
                   </button>
                 </div>
+              ) : videoConverting ? (
+                <div style={{ width: 135, height: 240, aspectRatio: "9/16", borderRadius: 6, background: "#111", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, border: "1px solid rgba(161,102,108,0.18)" }}>
+                  <span style={{ fontSize: 12, color: "#aaa" }}>MOV→MP4 変換中...</span>
+                  <div style={{ width: 80, height: 4, background: "#333", borderRadius: 2, overflow: "hidden" }}>
+                    <div style={{ width: `${Math.round(videoConvertProgress * 100)}%`, height: "100%", background: "#a1666c", transition: "width 0.3s" }} />
+                  </div>
+                  <span style={{ fontSize: 11, color: "#666" }}>{Math.round(videoConvertProgress * 100)}%</span>
+                </div>
               ) : (
                 <label style={{ ...imageAddLabel, width: 135, height: 240, aspectRatio: "9/16" }}>
                   <span style={{ fontSize: 24, lineHeight: 1 }}>▶</span>
@@ -314,14 +325,27 @@ export default function StoryEditPage() {
                       if (f.size > 75 * 1024 * 1024) {
                         alert("動画ファイルは75MB以内にしてください"); return;
                       }
-                      if (f.type !== "video/quicktime") {
+                      let videoFile = f;
+                      if (f.type === "video/quicktime") {
+                        try {
+                          setVideoConverting(true);
+                          setVideoConvertProgress(0);
+                          videoFile = await convertMovToMp4(f, (p) => setVideoConvertProgress(p));
+                        } catch {
+                          alert("MOV→MP4変換に失敗しました。MP4形式で再度お試しください。");
+                          setVideoConverting(false);
+                          return;
+                        } finally {
+                          setVideoConverting(false);
+                        }
+                      } else {
                         const valid = await validateVideoFile(f);
                         if (!valid) { alert("動画はMP4、WebMまたはMOV形式のみ対応しています"); return; }
                       }
-                      const dur = await getVideoDuration(f);
+                      const dur = await getVideoDuration(videoFile);
                       if (dur > 180000) { alert("動画は3分以内にしてください"); return; }
-                      setNewVideo(f);
-                      setVideoPreviewUrl(URL.createObjectURL(f));
+                      setNewVideo(videoFile);
+                      setVideoPreviewUrl(URL.createObjectURL(videoFile));
                     }}
                   />
                 </label>
