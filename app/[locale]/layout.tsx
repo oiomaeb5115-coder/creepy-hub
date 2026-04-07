@@ -7,6 +7,7 @@ import SidebarWrapper from "./SidebarWrapper";
 import PageTransition from "./PageTransition";
 import FloatingPostButton from "./FloatingPostButton";
 import AuthDrawer from "./AuthDrawer";
+import Script from "next/script";
 import Link from "next/link";
 import styles from "./layout.module.css";
 import WelcomeVideoModal from "@/components/WelcomeVideoModal";
@@ -64,6 +65,14 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6817166626712495"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+      </head>
       <body>
       <PageTransition>{children}</PageTransition>
 
