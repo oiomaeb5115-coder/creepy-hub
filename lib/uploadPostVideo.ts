@@ -1,20 +1,20 @@
 import { supabase } from "@/lib/supabase";
 import { validateVideoFile } from "@/lib/validateVideoFile";
 
-const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm"];
+const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 const MAX_VIDEO_SIZE = 75 * 1024 * 1024; // 75MB
 const BUCKET = "story-media";
 
 /**
  * Post 用動画をアップロードする。
- * 3分以内・75MB以内の MP4/WebM のみ許可。
+ * 3分以内・75MB以内の MP4/WebM/MOV のみ許可。
  */
 export async function uploadPostVideo(
   file: File,
   userId: string
 ): Promise<string> {
   if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
-    throw new Error("動画ファイル（MP4 / WebM）のみアップロード可能です");
+    throw new Error("動画ファイル（MP4 / WebM / MOV）のみアップロード可能です");
   }
   if (file.size > MAX_VIDEO_SIZE) {
     throw new Error("動画ファイルは75MB以内にしてください");

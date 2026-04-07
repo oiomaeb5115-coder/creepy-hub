@@ -380,12 +380,12 @@ export default function PostNewPage() {
                       <span style={{ fontSize: 11 }}>{labels.videoLabel}</span>
                       <input
                         type="file"
-                        accept="video/mp4,video/webm"
+                        accept="video/mp4,video/webm,video/quicktime"
                         style={{ display: "none" }}
                         onChange={async (e) => {
                           const f = e.target.files?.[0] ?? null;
                           if (!f) return;
-                          if (!["video/mp4", "video/webm"].includes(f.type)) {
+                          if (!["video/mp4", "video/webm", "video/quicktime"].includes(f.type)) {
                             alert(labels.alertVideoFormat); return;
                           }
                           if (f.size > 75 * 1024 * 1024) {

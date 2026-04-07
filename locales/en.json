@@ -127,7 +127,7 @@
     "videoHint": "MP4/WebM, max 3 min, max 75MB",
     "alertVideoFailed": "Video upload failed: ",
     "alertVideoDuration": "Video must be 3 minutes or less",
-    "alertVideoFormat": "Only MP4 and WebM videos are supported",
+    "alertVideoFormat": "Only MP4, WebM, and MOV videos are supported",
     "alertVideoSize": "Video file must be under 75MB"
   },
   "authDrawer": {

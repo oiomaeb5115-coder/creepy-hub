@@ -23,6 +23,10 @@ async function getAuthorizedUser(req: NextRequest) {
   return { id: userData.user.id, role: profile?.role ?? "user", token };
 }
 
+function isValidCategoryIds(value: unknown): value is number[] {
+  return Array.isArray(value) && value.every((item) => Number.isInteger(item) && item > 0);
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -55,34 +59,54 @@ export async function PATCH(
   const body = await req.json();
   const { title, subtitle, summary, content, category_ids, image_url } = body;
 
-  // 文字数制限バリデーション
   if (typeof title === "string" && title.length > 200) {
-    return NextResponse.json({ error: "タイトルは200文字以内にしてください" }, { status: 400 });
+    return NextResponse.json(
+      { error: "タイトルは200文字以内にしてください" },
+      { status: 400 }
+    );
   }
   if (typeof subtitle === "string" && subtitle.length > 300) {
-    return NextResponse.json({ error: "サブタイトルは300文字以内にしてください" }, { status: 400 });
+    return NextResponse.json(
+      { error: "サブタイトルは300文字以内にしてください" },
+      { status: 400 }
+    );
   }
   if (typeof summary === "string" && summary.length > 1000) {
-    return NextResponse.json({ error: "概要は1000文字以内にしてください" }, { status: 400 });
+    return NextResponse.json(
+      { error: "要約は1000文字以内にしてください" },
+      { status: 400 }
+    );
   }
   if (typeof content === "string" && content.length > 100000) {
-    return NextResponse.json({ error: "本文は100000文字以内にしてください" }, { status: 400 });
+    return NextResponse.json(
+      { error: "本文は100000文字以内にしてください" },
+      { status: 400 }
+    );
+  }
+  if (category_ids !== undefined && !isValidCategoryIds(category_ids)) {
+    return NextResponse.json(
+      { error: "category_ids の形式が不正です" },
+      { status: 400 }
+    );
   }
 
-  // image_url スキーム検証: https: のみ許可（null は削除を意味するので許可）
   if (image_url !== undefined && image_url !== null) {
     try {
       const parsed = new URL(image_url);
       if (parsed.protocol !== "https:") {
-        return NextResponse.json({ error: "image_urlはhttpsで始まる必要があります" }, { status: 400 });
+        return NextResponse.json(
+          { error: "image_url は https のみ許可されています" },
+          { status: 400 }
+        );
       }
     } catch {
-      return NextResponse.json({ error: "image_urlの形式が正しくありません" }, { status: 400 });
+      return NextResponse.json(
+        { error: "image_url の形式が正しくありません" },
+        { status: 400 }
+      );
     }
   }
 
-  // NOTE: サービスロールキーを使用（RLSバイパス）。認証・認可チェック済みのため許容。
-  // TODO: RLSポリシーを整備してユーザートークンベースに移行することを推奨。
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -103,13 +127,27 @@ export async function PATCH(
     .eq("slug", slug)
     .eq("locale", "ja");
 
-  if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
+  if (error) {
+    return NextResponse.json(
+      { error: "サーバーエラーが発生しました" },
+      { status: 500 }
+    );
+  }
 
-  if (Array.isArray(category_ids)) {
-    await adminSupabase.from("wiki_page_categories").delete().eq("wiki_page_id", page.id);
-    if (category_ids.length > 0) {
-      await adminSupabase.from("wiki_page_categories").insert(
-        category_ids.map((cat_id: number) => ({ wiki_page_id: page.id, category_id: cat_id }))
+  if (category_ids !== undefined) {
+    const { error: categoryReplaceError } = await adminSupabase.rpc(
+      "replace_wiki_page_categories",
+      {
+        p_wiki_page_id: page.id,
+        p_category_ids: category_ids,
+      }
+    );
+
+    if (categoryReplaceError) {
+      console.error("[wiki PATCH] category replace error:", categoryReplaceError.message);
+      return NextResponse.json(
+        { error: "カテゴリの更新に失敗しました" },
+        { status: 500 }
       );
     }
   }
@@ -134,7 +172,6 @@ export async function DELETE(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // wiki の author_id を確認（ja 版を基準）
   const { data: page } = await supabase
     .from("wiki_pages")
     .select("author_id")
@@ -151,19 +188,22 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // NOTE: サービスロールキーを使用（RLSバイパス）。認証・認可チェック済みのため許容。
-  // TODO: RLSポリシーを整備してユーザートークンベースに移行することを推奨。
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // ソフトデリート: 全ロケールを非公開化 + deleted_at をセット
   const { error } = await adminSupabase
     .from("wiki_pages")
     .update({ is_published: false, deleted_at: new Date().toISOString() })
     .eq("slug", slug);
-  if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
+
+  if (error) {
+    return NextResponse.json(
+      { error: "サーバーエラーが発生しました" },
+      { status: 500 }
+    );
+  }
 
   revalidatePath("/ja/wiki");
   revalidatePath("/en/wiki");

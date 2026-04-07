@@ -127,7 +127,7 @@
     "videoHint": "MP4/WebM、3分以内、75MB以内",
     "alertVideoFailed": "動画アップロードに失敗しました: ",
     "alertVideoDuration": "動画は3分以内にしてください",
-    "alertVideoFormat": "動画はMP4またはWebM形式のみ対応しています",
+    "alertVideoFormat": "動画はMP4、WebMまたはMOV形式のみ対応しています",
     "alertVideoSize": "動画ファイルは75MB以内にしてください"
   },
   "authDrawer": {

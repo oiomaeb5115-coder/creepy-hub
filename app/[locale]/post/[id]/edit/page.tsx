@@ -303,19 +303,19 @@ export default function StoryEditPage() {
                   <span style={{ fontSize: 11 }}>動画 (9:16)</span>
                   <input
                     type="file"
-                    accept="video/mp4,video/webm"
+                    accept="video/mp4,video/webm,video/quicktime"
                     style={{ display: "none" }}
                     onChange={async (e) => {
                       const f = e.target.files?.[0] ?? null;
                       if (!f) return;
-                      if (!["video/mp4", "video/webm"].includes(f.type)) {
-                        alert("動画はMP4またはWebM形式のみ対応しています"); return;
+                      if (!["video/mp4", "video/webm", "video/quicktime"].includes(f.type)) {
+                        alert("動画はMP4、WebMまたはMOV形式のみ対応しています"); return;
                       }
                       if (f.size > 75 * 1024 * 1024) {
                         alert("動画ファイルは75MB以内にしてください"); return;
                       }
                       const valid = await validateVideoFile(f);
-                      if (!valid) { alert("動画はMP4またはWebM形式のみ対応しています"); return; }
+                      if (!valid) { alert("動画はMP4、WebMまたはMOV形式のみ対応しています"); return; }
                       const dur = await getVideoDuration(f);
                       if (dur > 180000) { alert("動画は3分以内にしてください"); return; }
                       setNewVideo(f);
