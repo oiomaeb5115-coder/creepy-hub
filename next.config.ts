@@ -27,8 +27,16 @@ const nextConfig: NextConfig = {
     ].join("; ");
 
     return [
+      // 広告用HTMLはCSPを緩和（忍者AdMaxのスクリプトが動作するため）
       {
-        source: "/(.*)",
+        source: "/ads/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+        ],
+      },
+      {
+        source: "/((?!ads/).*)",
         headers: [
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "X-Content-Type-Options", value: "nosniff" },
