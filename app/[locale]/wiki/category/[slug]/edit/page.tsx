@@ -228,7 +228,7 @@ export default function WikiCategoryEditPage() {
       <div className={styles.shell}>
         <BackButton />
         <header className={styles.header}>
-          <p className={styles.breadcrumb}>OCCULT WIKI / CATEGORY / SETTINGS</p>
+          <p className={styles.breadcrumb}>OCCULT FILES / CATEGORY / SETTINGS</p>
           <h1 className={styles.title}>{dict.categoryEdit.settingsTitle}</h1>
           <p className={styles.subtitle}>
             {dict.categoryEdit.settingsSubtitle.replace("{category}", category?.name ?? "")}

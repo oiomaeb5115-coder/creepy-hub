@@ -456,7 +456,7 @@ export default function UserProfilePage() {
     <>
       {wikiPages.length === 0 && (
         <p className={styles.empty}>
-          {locale === "en" ? "No wiki articles yet." : "まだWiki記事はありません。"}
+          {locale === "en" ? "No files yet." : "まだファイルはありません。"}
         </p>
       )}
       <div className={styles.feed}>

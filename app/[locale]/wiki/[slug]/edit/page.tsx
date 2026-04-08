@@ -255,8 +255,8 @@ export default function WikiEditPage() {
         <BackButton />
         <header style={headerStyle}>
           <div>
-            <p style={breadcrumbStyle}>ARCHIVE / WIKI / EDIT</p>
-            <h1 style={titleStyle}>Wiki を編集</h1>
+            <p style={breadcrumbStyle}>ARCHIVE / FILES / EDIT</p>
+            <h1 style={titleStyle}>ファイルを編集</h1>
           </div>
           <Link href={`/${locale}/wiki/${slug}`} style={linkStyle}>キャンセル</Link>
         </header>

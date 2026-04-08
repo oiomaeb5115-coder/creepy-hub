@@ -95,14 +95,22 @@ export default async function WikiCategoryPage({
   if (joinError) {
     wikiErrorMessage = joinError.message;
   } else if (wikiIds.length > 0) {
-    const orderCol = isPopular ? "view_count" : "updated_at";
-    const { data: wikiItems, error: wikiError } = await supabaseAdmin
+    let wikiQuery = supabaseAdmin
       .from("wiki_pages")
-      .select("id, slug, title, summary, image_url, view_count, updated_at")
+      .select("id, slug, title, summary, image_url, view_count, updated_at, vote_score")
       .eq("locale", locale)
       .eq("is_published", true)
-      .in("id", wikiIds)
-      .order(orderCol, { ascending: false });
+      .in("id", wikiIds);
+
+    if (isPopular) {
+      wikiQuery = wikiQuery
+        .order("vote_score", { ascending: false })
+        .order("view_count", { ascending: false });
+    } else {
+      wikiQuery = wikiQuery.order("updated_at", { ascending: false });
+    }
+
+    const { data: wikiItems, error: wikiError } = await wikiQuery;
 
     if (wikiError) {
       wikiErrorMessage = wikiError.message;
@@ -143,7 +151,7 @@ export default async function WikiCategoryPage({
               />
             )}
             <div>
-              <p className={styles.categoryBreadcrumb}>OCCULT WIKI / CATEGORY</p>
+              <p className={styles.categoryBreadcrumb}>OCCULT FILES / CATEGORY</p>
               <p className={styles.categorySubtitle}>
                 {safeCategory.description ?? dict.wiki.categoryDefaultDesc}
               </p>

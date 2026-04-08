@@ -93,7 +93,7 @@ export default async function LocaleLayout({
 
         <Link href={`/${locale}/wiki`} className={styles.bottomNavItem}>
           <span className={styles.bottomNavLabel}>
-            <span className={styles.bottomNavLabelEn}>WIKI</span>
+            <span className={styles.bottomNavLabelEn}>CREEPY FILES</span>
             <span className={styles.bottomNavLabelJa}>{dict.nav.wiki}</span>
           </span>
         </Link>

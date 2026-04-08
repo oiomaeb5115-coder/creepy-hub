@@ -21,15 +21,15 @@ export function escapeHtml(str: string): string {
  * are left untouched.
  */
 export function linkifyUrls(escapedHtml: string): string {
-  // Split around existing <a ...>...</a> so we never touch them.
-  const parts = escapedHtml.split(/(<a\s[^>]*>.*?<\/a>)/g);
+  // Split around existing <a ...>...</a> and <img .../> so we never touch them.
+  const parts = escapedHtml.split(/(<a\s[^>]*>.*?<\/a>|<img\s[^>]*\/?>)/g);
 
   const urlRe = /https:\/\/[^\s<>&"']+/g;
 
   return parts
     .map((part) => {
-      // Odd-indexed parts are the captured <a> tags — keep as-is.
-      if (part.startsWith("<a ")) return part;
+      // Captured <a> or <img> tags — keep as-is.
+      if (part.startsWith("<a ") || part.startsWith("<img ")) return part;
 
       return part.replace(
         urlRe,

@@ -427,7 +427,7 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
         <BackButton />
         <header className={styles.submitHeader}>
           <div>
-            <p className={styles.submitBreadcrumb}>ARCHIVE / WIKI / SUBMIT</p>
+            <p className={styles.submitBreadcrumb}>ARCHIVE / FILES / SUBMIT</p>
             <p className={styles.submitSubtitle}>{labels.headerSubtitle}</p>
           </div>
         </header>

@@ -12,6 +12,7 @@ import WikiActionButtons from "@/components/WikiActionButtons";
 import WikiRandomButton from "@/components/WikiRandomButton";
 import WikiReadTracker from "@/components/WikiReadTracker";
 import ReportButton from "@/components/ReportButton";
+import WikiVoteButtons from "@/components/WikiVoteButtons";
 
 export const revalidate = 300;
 
@@ -74,6 +75,8 @@ type WikiPageRow = {
   is_published: boolean;
   image_url: string | null;
   author_id: string | null;
+  vote_score: number | null;
+  show_author: boolean;
 };
 
 type RelatedRow = {
@@ -98,7 +101,7 @@ export default async function WikiDetailPage({
   const { data: page, error } = await supabaseAdmin
     .from("wiki_pages")
     .select(
-      "id, slug, title, subtitle, summary, content, locale, view_count, updated_at, is_published, image_url, author_id"
+      "id, slug, title, subtitle, summary, content, locale, view_count, updated_at, is_published, image_url, author_id, vote_score, show_author"
     )
     .eq("locale", locale)
     .eq("slug", slug)
@@ -113,22 +116,33 @@ export default async function WikiDetailPage({
 
   await supabaseAdmin.rpc("increment_wiki_view", { p_wiki_id: safePage.id });
 
-  const { data: related } = await supabaseAdmin
-    .from("wiki_pages")
-    .select("id, slug, title, summary, image_url")
-    .eq("locale", locale)
-    .eq("is_published", true)
-    .neq("id", safePage.id)
-    .order("updated_at", { ascending: false })
-    .limit(6);
+  const [{ data: related }, { data: wikiItemsData }, authorProfile] = await Promise.all([
+    supabaseAdmin
+      .from("wiki_pages")
+      .select("id, slug, title, summary, image_url")
+      .eq("locale", locale)
+      .eq("is_published", true)
+      .neq("id", safePage.id)
+      .order("updated_at", { ascending: false })
+      .limit(6),
 
-  const { data: wikiItemsData } = await supabaseAdmin
-    .from("wiki_pages")
-    .select("slug, title")
-    .eq("locale", locale)
-    .eq("is_published", true)
-    .neq("id", safePage.id)
-    .limit(50);
+    supabaseAdmin
+      .from("wiki_pages")
+      .select("slug, title")
+      .eq("locale", locale)
+      .eq("is_published", true)
+      .neq("id", safePage.id)
+      .limit(50),
+
+    safePage.author_id
+      ? supabaseAdmin
+          .from("profiles")
+          .select("username, display_name, avatar_url")
+          .eq("id", safePage.author_id)
+          .single()
+          .then((r) => r.data)
+      : Promise.resolve(null),
+  ]);
 
   // 英語版の存在チェック（ja ページの場合）
   let hasEnglishTranslation = false;
@@ -162,17 +176,9 @@ export default async function WikiDetailPage({
         <header className={styles.wikiHeader}>
           <div className={styles.wikiHeaderTop}>
             <p className={styles.wikiBreadcrumb}>
-              ARCHIVE / WIKI
+              ARCHIVE / FILES
             </p>
             <div className={styles.headerActions}>
-            <Link href={`/${locale}/wiki`} className={styles.topLink}>
-              {dict.wiki.listTitle}
-            </Link>
-            <WikiRandomButton
-              locale={locale}
-              label={dict.wiki.randomArticle}
-              className={styles.topLink}
-            />
             <TranslateButton
               type="wiki"
               slug={safePage.slug}
@@ -185,7 +191,7 @@ export default async function WikiDetailPage({
           <div className={styles.wikiTitleRow}>
             <h1 className={styles.wikiTitle}>{safePage.title}</h1>
             <p className={styles.wikiSubtitle}>
-              {safePage.subtitle ?? "Wiki"}
+              {safePage.subtitle ?? "File"}
             </p>
           </div>
           <WikiActionButtons
@@ -200,22 +206,32 @@ export default async function WikiDetailPage({
               deleteFailed: dict.common.deleteFailed,
             }}
           />
-          <ReportButton
-            reportUrl={`/api/wiki-page/${safePage.id}/report`}
-            labels={{
-              report: dict.common.reportThisWiki,
-              reportAccepted: dict.common.reportAccepted,
-              reportLoginRequired: dict.common.reportLoginRequired,
-              reporting: dict.common.reporting,
-              retry: dict.common.retry,
-            }}
-          />
         </header>
 
         <section className={styles.card}>
+          {safePage.show_author ? (
+            <div className={styles.articleAuthorRow}>
+              {authorProfile?.avatar_url ? (
+                <img src={authorProfile.avatar_url} alt="" className={styles.articleAvatar} />
+              ) : (
+                <span className={styles.articleAvatarPlaceholder} />
+              )}
+              <span className={styles.articleAuthorName}>
+                {authorProfile
+                  ? `@${authorProfile.username ?? authorProfile.display_name}`
+                  : (locale === "en" ? "Anonymous" : "匿名")}
+              </span>
+              <span className={styles.articleDate}>
+                {safePage.updated_at
+                  ? new Date(safePage.updated_at).toLocaleDateString(dateLocale)
+                  : "—"}
+              </span>
+            </div>
+          ) : null}
           <div className={styles.metaRow}>
-            <span className={styles.badge}>{dict.post.views}: {displayedViewCount}</span>
-            <span className={styles.badge}>
+            <WikiVoteButtons wikiId={safePage.id} initialScore={safePage.vote_score ?? 0} />
+            <span className={styles.metaText}>{dict.post.views}: {displayedViewCount}</span>
+            <span className={styles.metaText}>
               {safePage.updated_at
                 ? new Date(safePage.updated_at).toLocaleDateString(dateLocale)
                 : "—"}
@@ -292,6 +308,19 @@ export default async function WikiDetailPage({
             />
           </div>
         </section>
+
+        <div className={styles.bottomReport}>
+          <ReportButton
+            reportUrl={`/api/wiki-page/${safePage.id}/report`}
+            labels={{
+              report: dict.common.reportThisWiki,
+              reportAccepted: dict.common.reportAccepted,
+              reportLoginRequired: dict.common.reportLoginRequired,
+              reporting: dict.common.reporting,
+              retry: dict.common.retry,
+            }}
+          />
+        </div>
 
         <WikiReadTracker slug={safePage.slug} />
       </div>

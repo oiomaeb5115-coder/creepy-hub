@@ -19,7 +19,7 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
       width: [/^\d+(\.\d+)?(%|px|em|rem|vw|vh)$/],
       margin: [/^(0|auto|[\d.]+(px|em|rem)(\s+(0|auto|[\d.]+(px|em|rem))){0,3})$/],
       display: [/^(block|inline|inline-block|flex|none)$/],
-      border: [/^\d+(\.\d+)?px\s+(solid|dashed|dotted|none)\s+(#[0-9a-fA-F]{3,8}|[a-z]+)$/],
+      border: [/^\d+(\.\d+)?px\s+(solid|dashed|dotted|none)\s+(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|[a-z]+)$/],
     },
   },
 };

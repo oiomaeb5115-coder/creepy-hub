@@ -483,6 +483,38 @@
   font-size: 13px;
 }
 
+/* ── Main content tabs (Posts / Everyone Files) ── */
+
+.mainTabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(200, 40, 50, 0.25);
+  padding: 0 28px;
+}
+
+.mainTab {
+  padding: 14px 24px;
+  font-size: 14px;
+  color: #7a6a62;
+  background: none;
+  border: none;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  letter-spacing: 0.08em;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.mainTab:hover {
+  color: #d0c8c0;
+}
+
+.mainTabActive {
+  color: #f5f1eb;
+  border-bottom-color: rgba(200, 40, 50, 0.85);
+}
+
 /* ── Home sort tabs ── */
 
 .homeSortTabs {

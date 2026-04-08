@@ -7,6 +7,7 @@ import BackButton from "@/components/BackButton";
 import CategorySidebar from "@/components/CategorySidebar";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
 import ViewIcon from "@/components/icons/ViewIcon";
+import InlineWikiVoteButtons from "@/components/InlineWikiVoteButtons";
 
 export const revalidate = 300;
 
@@ -24,6 +25,12 @@ export async function generateMetadata({ params }: WikiIndexPageProps): Promise<
   };
 }
 
+type AuthorProfile = {
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+
 type WikiPageRow = {
   id: number;
   slug: string;
@@ -34,6 +41,9 @@ type WikiPageRow = {
   updated_at: string | null;
   is_published: boolean;
   image_url: string | null;
+  author_id: string | null;
+  vote_score: number | null;
+  show_author: boolean;
 };
 
 type CategoryRow = {
@@ -48,18 +58,25 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
   const { locale } = await params;
   const { sort = "new" } = await searchParams;
   const isPopular = sort === "popular";
-  const orderCol = isPopular ? "view_count" : "updated_at";
   const dict = await getDictionary(locale);
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
+  let wikiQuery = supabaseAdmin
+    .from("wiki_pages")
+    .select("id, slug, title, summary, locale, view_count, updated_at, is_published, image_url, author_id, vote_score, show_author")
+    .eq("locale", locale)
+    .eq("is_published", true);
+
+  if (isPopular) {
+    wikiQuery = wikiQuery
+      .order("vote_score", { ascending: false })
+      .order("view_count", { ascending: false });
+  } else {
+    wikiQuery = wikiQuery.order("updated_at", { ascending: false });
+  }
+
   const [mainResult, categoriesResult] = await Promise.all([
-    supabaseAdmin
-      .from("wiki_pages")
-      .select("id, slug, title, summary, locale, view_count, updated_at, is_published, image_url")
-      .eq("locale", locale)
-      .eq("is_published", true)
-      .order(orderCol, { ascending: false })
-      .limit(20),
+    wikiQuery.limit(20),
 
     supabaseAdmin
       .from("categories")
@@ -72,6 +89,15 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
 
   const mainItems = (mainResult.data ?? []) as WikiPageRow[];
   const categories = (categoriesResult.data ?? []) as CategoryRow[];
+
+  const authorIds = [...new Set(mainItems.map((p) => p.author_id).filter(Boolean))] as string[];
+  const profilesResult = authorIds.length > 0
+    ? await supabaseAdmin.from("profiles").select("id, username, display_name, avatar_url").in("id", authorIds)
+    : { data: [] };
+  const profilesMap: Record<string, AuthorProfile> = {};
+  for (const p of profilesResult.data ?? []) {
+    profilesMap[p.id] = { username: p.username, display_name: p.display_name, avatar_url: p.avatar_url };
+  }
 
   if (mainResult.error) {
     return (
@@ -89,12 +115,13 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
     <main className={styles.wikiPage}>
       <div className={styles.pageHero}>
         <img src="/images/ui/auth-logo_2.webp" alt="" className={styles.pageTopLogo} />
-        <h1 className={styles.wikiTitle}>Occult Wiki</h1>
+        <h1 className={styles.wikiTitle}>Occult Files</h1>
         <p className={styles.wikiSubtitle}>{dict.wiki.subtitle}</p>
+        <p className={styles.wikiInvitation}>{dict.wiki.invitation}</p>
       </div>
       <div className={styles.pageLayout}>
       <CategorySidebar
-        title="OCCULT WIKI"
+        title="OCCULT FILES"
         categories={categories.map((cat) => ({
           slug: cat.slug,
           name: cat.name,
@@ -115,10 +142,9 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
         <BackButton />
         <header className={styles.wikiHeader}>
           <div>
-            <p className={styles.wikiBreadcrumb}>OCCULT WIKI / ARCHIVE</p>
+            <p className={styles.wikiBreadcrumb}>OCCULT FILES / ARCHIVE</p>
           </div>
           <div className={styles.headerActions}>
-            <Link href={`/${locale}/wiki/random`} className={`${styles.topLink} ${styles.topLinkAccent}`}>{dict.wiki.random}</Link>
             <Link href={`/${locale}/wiki/submit`} className={styles.topLink}>{dict.wiki.submit}</Link>
           </div>
         </header>
@@ -188,10 +214,27 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
                 const dateStr = item.updated_at
                   ? new Date(item.updated_at).toLocaleDateString(dateLocale)
                   : "—";
+                const showAuthor = item.show_author;
+                const author = showAuthor && item.author_id ? (profilesMap[item.author_id] ?? null) : null;
+                const authorName = author?.display_name || author?.username || null;
                 return (
                   <Link key={item.id} href={`/${locale}/wiki/${item.slug}`} className={styles.feedRow}>
                     <div className={styles.feedContent}>
-                      <span className={styles.feedDate}>{dateStr}</span>
+                      {showAuthor ? (
+                        <div className={styles.feedAuthorRow}>
+                          {author?.avatar_url ? (
+                            <img src={author.avatar_url} alt="" className={styles.feedAvatar} />
+                          ) : (
+                            <span className={styles.feedAvatarPlaceholder} />
+                          )}
+                          <span className={styles.feedAuthorName}>
+                            {authorName ? `@${author?.username ?? authorName}` : (locale === "en" ? "Anonymous" : "匿名")}
+                          </span>
+                          <span className={styles.feedDate}>{dateStr}</span>
+                        </div>
+                      ) : (
+                        <span className={styles.feedDate}>{dateStr}</span>
+                      )}
                       <h3 className={styles.feedTitle}>{item.title}</h3>
                       <p className={styles.feedSummary}>
                         {item.summary ?? dict.wiki.noSummary}
@@ -207,6 +250,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
                         </div>
                       )}
                       <div className={styles.feedFooter}>
+                        <InlineWikiVoteButtons wikiId={item.id} initialScore={item.vote_score ?? 0} />
                         <span className="stat-icon"><ViewIcon /> {item.view_count ?? 0} {dict.post.views}</span>
                       </div>
                     </div>
@@ -240,6 +284,9 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
             </div>
           </section>
         )}
+        <div className={styles.bottomRandom}>
+          <Link href={`/${locale}/wiki/random`}>{dict.wiki.random}</Link>
+        </div>
       </div>
       </div>
     </main>

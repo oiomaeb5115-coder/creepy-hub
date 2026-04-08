@@ -173,7 +173,7 @@ export default function WikiCategoryCreateClient({ locale, dict }: Props) {
       <div className={styles.shell}>
         <BackButton />
         <header className={styles.header}>
-          <p className={styles.breadcrumb}>OCCULT WIKI / CATEGORY / NEW</p>
+          <p className={styles.breadcrumb}>OCCULT FILES / CATEGORY / NEW</p>
           <h1 className={styles.title}>{dict.title}</h1>
           <p className={styles.subtitle}>{dict.subtitle}</p>
         </header>
@@ -186,7 +186,7 @@ export default function WikiCategoryCreateClient({ locale, dict }: Props) {
               className={styles.backBtn}
               onClick={() => router.push(`/${locale}/wiki`)}
             >
-              Wiki 一覧へ
+              ファイル一覧へ
             </button>
           </div>
         ) : (

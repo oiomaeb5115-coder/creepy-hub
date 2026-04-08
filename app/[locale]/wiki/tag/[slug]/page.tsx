@@ -100,7 +100,7 @@ export default async function WikiTagPage({ params }: WikiTagPageProps) {
 
           <div className={styles.headerActions}>
             <Link href={`/${locale}/wiki`} className={styles.topLink}>
-              Wiki 一覧
+              ファイル一覧
             </Link>
           </div>
         </header>

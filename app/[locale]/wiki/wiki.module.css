@@ -86,11 +86,38 @@
   text-align: center;
 }
 
+.wikiInvitation {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #c8a882;
+  text-align: center;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
 .headerActions {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   flex-shrink: 0;
+  justify-content: flex-start;
+}
+
+.bottomRandom {
+  margin-top: 32px;
+  text-align: left;
+}
+
+.bottomRandom a {
+  font-size: 12px;
+  color: #8a7870;
+  opacity: 0.5;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.bottomRandom a:hover {
+  opacity: 0.8;
 }
 
 .topLink {
@@ -406,10 +433,39 @@
   min-width: 0;
 }
 
+/* Author row inside feed */
+.feedAuthorRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.feedAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.feedAvatarPlaceholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(80, 30, 36, 0.6);
+  flex-shrink: 0;
+}
+
+.feedAuthorName {
+  font-size: 0.85rem;
+  color: rgba(200, 120, 130, 0.6);
+  letter-spacing: 0.02em;
+}
+
 .feedDate {
   font-size: 13px;
   color: #6a5a52;
-  margin-bottom: 6px;
 }
 
 .feedTitle {
@@ -510,11 +566,55 @@
   background: rgba(40, 12, 16, 0.8);
 }
 
+/* Author row for detail page */
+.articleAuthorRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 0 2px;
+}
+
+.articleAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.articleAvatarPlaceholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(80, 30, 36, 0.6);
+  flex-shrink: 0;
+}
+
+.articleAuthorName {
+  font-size: 0.9rem;
+  color: rgba(200, 120, 130, 0.7);
+  letter-spacing: 0.02em;
+}
+
+.articleDate {
+  font-size: 13px;
+  color: #6a5a52;
+  margin-left: auto;
+}
+
+.metaText {
+  font-size: 12px;
+  color: #6a5a52;
+  letter-spacing: 0.02em;
+}
+
 .metaRow {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   margin-bottom: 14px;
+  align-items: center;
 }
 
 .wikiThumbnail {
@@ -591,6 +691,18 @@
 .randomBottomButton:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+/* Bottom report link — subtle, no border */
+.bottomReport {
+  text-align: center;
+  margin: 16px 0 8px;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+}
+
+.bottomReport:hover {
+  opacity: 0.7;
 }
 
 .emptyText {

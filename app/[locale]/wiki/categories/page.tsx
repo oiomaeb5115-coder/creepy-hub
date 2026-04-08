@@ -45,7 +45,7 @@ export default async function WikiCategoriesPage({ params }: WikiCategoriesPageP
         <BackButton />
         <header className={styles.wikiHeader}>
           <div>
-            <p className={styles.wikiBreadcrumb}>OCCULT WIKI / CATEGORIES</p>
+            <p className={styles.wikiBreadcrumb}>OCCULT FILES / CATEGORIES</p>
             <h1 className={styles.wikiTitle}>{dict.wiki.categories}</h1>
             <p className={styles.wikiSubtitle}>{dict.wiki.browseByCategory}</p>
           </div>

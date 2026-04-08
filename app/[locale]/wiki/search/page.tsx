@@ -52,10 +52,11 @@ export default async function WikiSearchPage({ params, searchParams }: Props) {
   const { data } = q
     ? await supabaseAdmin
         .from("wiki_pages")
-        .select("id,slug,title,summary,updated_at,view_count")
+        .select("id,slug,title,summary,updated_at,view_count,vote_score")
         .eq("locale", locale)
         .eq("is_published", true)
         .or(`title.ilike.${keyword},summary.ilike.${keyword},content.ilike.${keyword}`)
+        .order("vote_score", { ascending: false })
         .order("view_count", { ascending: false })
         .limit(30)
     : { data: [] };
@@ -68,7 +69,7 @@ export default async function WikiSearchPage({ params, searchParams }: Props) {
         <BackButton />
         <header className={styles.wikiHeader}>
           <div>
-            <p className={styles.wikiBreadcrumb}>ARCHIVE / WIKI / SEARCH</p>
+            <p className={styles.wikiBreadcrumb}>ARCHIVE / FILES / SEARCH</p>
             <h1 className={styles.wikiTitle}>{dict.wiki.listTitle} — {dict.search.title}</h1>
           </div>
           <div className={styles.headerActions}>

@@ -1,22 +1,17 @@
 import Link from "next/link";
-import Image from "next/image";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
-import { postUrl } from "@/lib/postUrl";
 import styles from "./page.module.css";
 import HomeAuthButtons from "./HomeAuthButtons";
+import HomeContentTabs from "./HomeContentTabs";
 import AdminPendingSection from "@/components/AdminPendingSection";
-import InlineVoteButtons from "@/components/InlineVoteButtons";
-import PopularPeriodDropdown from "@/components/PopularPeriodDropdown";
-import CommentIcon from "@/components/icons/CommentIcon";
-import ViewIcon from "@/components/icons/ViewIcon";
 
 
 export const revalidate = 300;
 
 type HomePageProps = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ sort?: string; period?: string }>;
+  searchParams: Promise<{ sort?: string; period?: string; wiki_sort?: string }>;
 };
 
 type AuthorProfile = {
@@ -48,6 +43,9 @@ type WikiPost = {
   updated_at: string | null;
   view_count: number | null;
   image_url: string | null;
+  vote_score: number | null;
+  show_author: boolean;
+  author?: AuthorProfile | null;
 };
 
 type StoryCategoryRow = {
@@ -64,144 +62,11 @@ type WikiCategoryRow = {
 };
 
 
-function StoryCardGrid({
-  post,
-  locale,
-  storyLabel,
-  unknownDate,
-}: {
-  post: StoryPost;
-  locale: string;
-  storyLabel: string;
-  unknownDate: string;
-}) {
-  const safeTitle = post.title ?? storyLabel;
-  const safeContent = post.content ?? "";
-  const safeCreatedAt = post.created_at ?? "";
-  const dateLocale = locale === "en" ? "en-US" : "ja-JP";
-
-  const score = post.vote_score ?? 0;
-  const commentCount = post.comment_count ?? 0;
-
-  const imageUrls = [post.image_url, post.image_url_2, post.image_url_3]
-    .filter((url): url is string => Boolean(url))
-    .slice(0, 4);
-
-  const authorName = post.author?.display_name || post.author?.username || null;
-
-  return (
-    <Link href={postUrl(locale, post.id, post.slug)} className={styles.gridCardLink}>
-      <article className={styles.gridCard}>
-        <div className={styles.gridCardBody}>
-          <div className={styles.gridCardAuthorRow}>
-            {post.author?.avatar_url ? (
-              <img src={post.author.avatar_url} alt="" className={styles.gridCardAvatar} />
-            ) : (
-              <span className={styles.gridCardAvatarPlaceholder} />
-            )}
-            <span className={styles.gridCardAuthorName}>
-              {authorName ? `@${post.author?.username ?? authorName}` : (locale === "en" ? "Anonymous" : "匿名")}
-            </span>
-            <span className={styles.gridCardDate}>
-              {safeCreatedAt
-                ? new Date(safeCreatedAt).toLocaleDateString(dateLocale)
-                : unknownDate}
-            </span>
-          </div>
-
-          <h3 className={styles.gridCardTitle}>{safeTitle}</h3>
-
-          <p className={styles.gridCardExcerpt}>
-            {safeContent.length > 400 ? `${safeContent.slice(0, 400)}...` : safeContent}
-          </p>
-        </div>
-
-        {imageUrls.length > 0 && (
-          <div className={`${styles.gridCardImageWrap} ${imageUrls.length >= 2 ? styles.gridCardImageGrid : ""}`}>
-            {imageUrls.map((url, i) => (
-              <img
-                key={i}
-                src={url}
-                alt={`${safeTitle} ${i + 1}`}
-                className={styles.gridCardImage}
-                loading="lazy"
-              />
-            ))}
-          </div>
-        )}
-
-        <div className={styles.gridCardFooter}>
-          <InlineVoteButtons postId={post.id} initialScore={score} />
-          <span className="stat-icon"><CommentIcon /> {commentCount}</span>
-          <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0}</span>
-        </div>
-      </article>
-    </Link>
-  );
-}
-
-function WikiCard({
-  item,
-  locale,
-  unknownDate,
-  noSummary,
-}: {
-  item: WikiPost;
-  locale: string;
-  unknownDate: string;
-  noSummary: string;
-}) {
-  const safeUpdatedAt = item.updated_at ?? "";
-  const dateLocale = locale === "en" ? "en-US" : "ja-JP";
-
-  return (
-    <Link href={`/${locale}/wiki/${item.slug}`} className={styles.scrollCardLink}>
-      <article className={styles.scrollCard}>
-        <div className={styles.scrollCardImageWrap}>
-          {item.image_url ? (
-            <img
-              src={item.image_url}
-              alt={item.title}
-              className={styles.scrollCardImage}
-              loading="lazy"
-            />
-          ) : (
-            <div
-              className={`${styles.scrollCardImage} ${styles.scrollCardImagePlaceholder}`}
-            >
-              WIKI
-            </div>
-          )}
-        </div>
-
-        <div className={styles.scrollCardBody}>
-          <div className={styles.scrollCardMeta}>
-            <span>
-              {safeUpdatedAt
-                ? new Date(safeUpdatedAt).toLocaleDateString(dateLocale)
-                : unknownDate}
-            </span>
-          </div>
-
-          <h3 className={styles.scrollCardTitle}>{item.title}</h3>
-
-          <p className={styles.scrollCardExcerpt}>
-            {item.summary ?? noSummary}
-          </p>
-
-          <div className={styles.scrollCardFooter}>
-            <span className="stat-icon"><ViewIcon /> {item.view_count ?? 0}</span>
-          </div>
-        </div>
-      </article>
-    </Link>
-  );
-}
-
 export default async function HomePage({ params, searchParams }: HomePageProps) {
   const { locale } = await params;
-  const { sort, period } = await searchParams;
+  const { sort, period, wiki_sort } = await searchParams;
   const isPopular = sort === "popular";
+  const isWikiPopular = wiki_sort === "popular";
   const currentPeriod = (period === "today" || period === "3days" || period === "week" || period === "month") ? period : "today";
   const dict = await getDictionary(locale);
 
@@ -248,10 +113,11 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
 
     supabaseAdmin
       .from("wiki_pages")
-      .select("id, slug, title, summary, updated_at, view_count, image_url")
+      .select("id, slug, title, summary, updated_at, view_count, image_url, author_id, vote_score, show_author")
       .eq("locale", locale)
       .eq("is_published", true)
-      .order("updated_at", { ascending: false })
+      .order(isWikiPopular ? "vote_score" : "updated_at", { ascending: false })
+      .order(isWikiPopular ? "view_count" : "created_at", { ascending: false })
       .limit(12),
 
     supabaseAdmin
@@ -270,8 +136,11 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
   ]);
 
   const postsData = latestStoriesResult.data ?? [];
+  const wikiData = latestWikiResult.data ?? [];
   const storyPostIds = postsData.map((p: any) => p.id);
-  const userIds = [...new Set(postsData.map((p: any) => p.user_id).filter(Boolean))] as string[];
+  const postUserIds = postsData.map((p: any) => p.user_id).filter(Boolean);
+  const wikiAuthorIds = wikiData.map((p: any) => p.author_id).filter(Boolean);
+  const userIds = [...new Set([...postUserIds, ...wikiAuthorIds])] as string[];
 
   // 翻訳クエリとプロフィールクエリを並列実行
   const [translationsResult, profilesResult] = await Promise.all([
@@ -318,7 +187,18 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
       author: p.user_id ? (profilesMap[p.user_id] ?? null) : null,
     };
   }) as StoryPost[];
-  const latestWiki = (latestWikiResult.data ?? []) as WikiPost[];
+  const latestWiki = wikiData.map((p: any) => ({
+    id: p.id,
+    slug: p.slug,
+    title: p.title,
+    summary: p.summary,
+    updated_at: p.updated_at,
+    view_count: p.view_count,
+    image_url: p.image_url,
+    vote_score: p.vote_score,
+    show_author: p.show_author ?? true,
+    author: p.author_id ? (profilesMap[p.author_id] ?? null) : null,
+  })) as WikiPost[];
   const storyCategories = (storyCategoriesResult.data ?? []) as StoryCategoryRow[];
   const wikiCategories = (wikiCategoriesResult.data ?? []) as WikiCategoryRow[];
 
@@ -351,92 +231,32 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
         <div className={styles.twoColLayout}>
           {/* ── MAIN COLUMN ── */}
           <div className={styles.mainCol}>
-            {/* CREEPY POSTS - Card Grid */}
-            <section className={styles.contentSection}>
-              <div className={styles.sectionHeader}>
-                <div className={styles.textSectionTitle}>
-                  <span className={styles.textSectionTitleEn}>CREEPY POSTS</span>
-                  <span className={styles.textSectionTitleJa}>{dict.home.latestStories}</span>
-                </div>
-                <Link href={`/${locale}/post`} className={styles.seeAllLink}>
-                  {locale === "en" ? "VIEW ALL" : "すべて見る"} →
-                </Link>
-              </div>
-
-              <div className={styles.homeSortTabs}>
-                <Link
-                  href={`/${locale}`}
-                  className={`${styles.homeSortTab} ${!isPopular ? styles.homeSortTabActive : ""}`}
-                >
-                  {dict.home.tabNew}
-                </Link>
-                <div className={styles.homeSortTabWithDropdown}>
-                  <Link
-                    href={`/${locale}?sort=popular`}
-                    className={`${styles.homeSortTab} ${isPopular ? styles.homeSortTabActive : ""}`}
-                  >
-                    {dict.home.tabPopular}
-                  </Link>
-                  {isPopular && (
-                    <PopularPeriodDropdown
-                      locale={locale}
-                      currentPeriod={currentPeriod}
-                      labels={{
-                        today: dict.home.periodToday,
-                        "3days": dict.home.period3days,
-                        week: dict.home.periodWeek,
-                        month: dict.home.periodMonth,
-                      }}
-                    />
-                  )}
-                </div>
-              </div>
-
-              {latestStories.length === 0 ? (
-                <p className={styles.emptyText}>{dict.home.noStories}</p>
-              ) : (
-                <div className={styles.cardGrid}>
-                  {latestStories.map((post) => (
-                    <StoryCardGrid
-                      key={post.id}
-                      post={post}
-                      locale={locale}
-                      storyLabel={dict.post.label}
-                      unknownDate={dict.post.unknownDate}
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* OCCULT WIKI - Horizontal Scroll */}
-            <section className={styles.contentSection}>
-              <div className={styles.sectionHeader}>
-                <div className={styles.textSectionTitle}>
-                  <span className={styles.textSectionTitleEn}>OCCULT WIKI</span>
-                  <span className={styles.textSectionTitleJa}>{dict.home.latestWiki}</span>
-                </div>
-                <Link href={`/${locale}/wiki`} className={styles.seeAllLink}>
-                  {locale === "en" ? "VIEW ALL" : "すべて見る"} →
-                </Link>
-              </div>
-
-              {latestWiki.length === 0 ? (
-                <p className={styles.emptyText}>{dict.home.noWiki}</p>
-              ) : (
-                <div className={styles.horizontalScrollRow}>
-                  {latestWiki.map((item) => (
-                    <WikiCard
-                      key={item.id}
-                      item={item}
-                      locale={locale}
-                      unknownDate={dict.post.unknownDate}
-                      noSummary={dict.wiki.noSummary}
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
+            <HomeContentTabs
+              latestStories={latestStories}
+              latestWiki={latestWiki}
+              locale={locale}
+              isPopular={isPopular}
+              isWikiPopular={isWikiPopular}
+              currentPeriod={currentPeriod}
+              labels={{
+                tabPosts: dict.home.tabPosts,
+                tabFiles: dict.home.tabFiles,
+                latestStories: dict.home.latestStories,
+                latestWiki: dict.home.latestWiki,
+                noStories: dict.home.noStories,
+                noWiki: dict.home.noWiki,
+                tabNew: dict.home.tabNew,
+                tabPopular: dict.home.tabPopular,
+                periodToday: dict.home.periodToday,
+                period3days: dict.home.period3days,
+                periodWeek: dict.home.periodWeek,
+                periodMonth: dict.home.periodMonth,
+                storyLabel: dict.post.label,
+                unknownDate: dict.post.unknownDate,
+                noSummary: dict.wiki.noSummary,
+                viewAll: locale === "en" ? "VIEW ALL" : "すべて見る",
+              }}
+            />
           </div>
 
           {/* ── SIDEBAR ── */}
@@ -464,7 +284,7 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
 
             {/* Wiki Categories */}
             <div className={styles.sidePanel}>
-              <p className={styles.sidePanelSub}>OCCULT WIKI</p>
+              <p className={styles.sidePanelSub}>OCCULT FILES</p>
               <div className={styles.sideCategoryList}>
                 {wikiCategories.map((cat) => (
                   <Link
