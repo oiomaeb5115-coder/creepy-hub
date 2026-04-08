@@ -2,19 +2,19 @@
 
 type AdType = 'leaderboard' | 'sp-banner' | 'rectangle'
 
-const AD_CONFIG: Record<AdType, { src: string; width: number; height: number }> = {
+const AD_CONFIG: Record<AdType, { path: string; width: number; height: number }> = {
   leaderboard: {
-    src: 'https://adm.shinobi.jp/s/a1dfbbec31ebeff55c80320fb7631c5b',
+    path: '/ads/leaderboard.html',
     width: 728,
     height: 90,
   },
   'sp-banner': {
-    src: 'https://adm.shinobi.jp/s/f8bf70b37536a0b5db703891277141e2',
+    path: '/ads/sp-banner.html',
     width: 320,
     height: 100,
   },
   rectangle: {
-    src: 'https://adm.shinobi.jp/s/59fcb423fbdd78a61cd073fa1eb4c7a2',
+    path: '/ads/rectangle.html',
     width: 300,
     height: 250,
   },
@@ -22,9 +22,6 @@ const AD_CONFIG: Record<AdType, { src: string; width: number; height: number }> 
 
 export default function NinjaAd({ type }: { type: AdType }) {
   const config = AD_CONFIG[type]
-
-  // 忍者AdMaxはdocument.writeを使用するため、iframeで読み込む
-  const iframeSrcDoc = `<!DOCTYPE html><html><head><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:${config.height}px;overflow:hidden;}</style></head><body><script src="${config.src}"><\/script></body></html>`
 
   return (
     <div
@@ -36,7 +33,7 @@ export default function NinjaAd({ type }: { type: AdType }) {
       }}
     >
       <iframe
-        srcDoc={iframeSrcDoc}
+        src={config.path}
         style={{
           width: config.width,
           height: config.height,
@@ -44,7 +41,6 @@ export default function NinjaAd({ type }: { type: AdType }) {
           overflow: 'hidden',
         }}
         scrolling="no"
-        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
       />
     </div>
   )
