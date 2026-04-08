@@ -19,9 +19,9 @@ const nextConfig: NextConfig = {
       "worker-src 'self' blob:",
       // フォント（必要に応じて追加）
       "font-src 'self'",
-      // iframe 埋め込みを全面禁止（X-Frame-Options: DENY と同等）
+      // iframe: 自サイトからの埋め込みのみ許可（広告用）
       "frame-src 'self' blob: https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.shinobi.jp",
-      "frame-ancestors 'none'",
+      "frame-ancestors 'self'",
       // object タグを禁止
       "object-src 'none'",
     ].join("; ");
@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: [
-          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
