@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
 import PopularPeriodDropdown from "@/components/PopularPeriodDropdown";
@@ -9,6 +9,7 @@ import ViewIcon from "@/components/icons/ViewIcon";
 import InlineWikiVoteButtons from "@/components/InlineWikiVoteButtons";
 import { postUrl } from "@/lib/postUrl";
 import styles from "./page.module.css";
+import NinjaAd from "@/components/NinjaAd";
 
 type AuthorProfile = {
   username: string | null;
@@ -289,14 +290,20 @@ export default function HomeContentTabs({
             <p className={styles.emptyText}>{labels.noStories}</p>
           ) : (
             <div className={styles.cardGrid}>
-              {latestStories.map((post) => (
-                <StoryCardGrid
-                  key={post.id}
-                  post={post}
-                  locale={locale}
-                  storyLabel={labels.storyLabel}
-                  unknownDate={labels.unknownDate}
-                />
+              {latestStories.map((post, index) => (
+                <React.Fragment key={post.id}>
+                  {index > 0 && index % 4 === 0 && (
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <NinjaAd type="sp-banner" />
+                    </div>
+                  )}
+                  <StoryCardGrid
+                    post={post}
+                    locale={locale}
+                    storyLabel={labels.storyLabel}
+                    unknownDate={labels.unknownDate}
+                  />
+                </React.Fragment>
               ))}
             </div>
           )}
@@ -334,14 +341,20 @@ export default function HomeContentTabs({
             <p className={styles.emptyText}>{labels.noWiki}</p>
           ) : (
             <div className={styles.cardGrid}>
-              {latestWiki.map((item) => (
-                <WikiCardGrid
-                  key={item.id}
-                  item={item}
-                  locale={locale}
-                  unknownDate={labels.unknownDate}
-                  noSummary={labels.noSummary}
-                />
+              {latestWiki.map((item, index) => (
+                <React.Fragment key={item.id}>
+                  {index > 0 && index % 4 === 0 && (
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <NinjaAd type="sp-banner" />
+                    </div>
+                  )}
+                  <WikiCardGrid
+                    item={item}
+                    locale={locale}
+                    unknownDate={labels.unknownDate}
+                    noSummary={labels.noSummary}
+                  />
+                </React.Fragment>
               ))}
             </div>
           )}
