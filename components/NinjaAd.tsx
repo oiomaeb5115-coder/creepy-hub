@@ -10,8 +10,8 @@ const AD_CONFIG: Record<AdType, { path: string; width: number; height: number }>
   },
   'sp-banner': {
     path: '/ads/sp-banner.html',
-    width: 320,
-    height: 100,
+    width: 300,
+    height: 250,
   },
   rectangle: {
     path: '/ads/rectangle.html',
