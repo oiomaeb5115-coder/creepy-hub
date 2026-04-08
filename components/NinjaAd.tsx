@@ -54,20 +54,20 @@ export default function NinjaAd({ type }: { type: AdType }) {
 export function ResponsiveAd({ pc, sp }: { pc: AdType; sp: AdType }) {
   return (
     <>
-      <div className="ninja-ad-pc">
-        <NinjaAd type={pc} />
-      </div>
-      <div className="ninja-ad-sp">
-        <NinjaAd type={sp} />
-      </div>
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .ninja-ad-sp { display: none; }
         .ninja-ad-pc { display: block; }
         @media (max-width: 768px) {
           .ninja-ad-sp { display: block; }
           .ninja-ad-pc { display: none; }
         }
-      `}</style>
+      `}} />
+      <div className="ninja-ad-pc">
+        <NinjaAd type={pc} />
+      </div>
+      <div className="ninja-ad-sp">
+        <NinjaAd type={sp} />
+      </div>
     </>
   )
 }
