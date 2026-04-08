@@ -13,6 +13,7 @@ import WikiRandomButton from "@/components/WikiRandomButton";
 import WikiReadTracker from "@/components/WikiReadTracker";
 import ReportButton from "@/components/ReportButton";
 import WikiVoteButtons from "@/components/WikiVoteButtons";
+import { ResponsiveAd } from "@/components/NinjaAd";
 
 export const revalidate = 300;
 
@@ -267,6 +268,9 @@ export default async function WikiDetailPage({
             </Link>
           </div>
         </section>
+
+        {/* Ad */}
+        <ResponsiveAd pc="rectangle" sp="sp-banner" />
 
         <section className={styles.card}>
           <div className={styles.sectionHead}>

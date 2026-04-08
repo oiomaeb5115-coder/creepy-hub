@@ -5,6 +5,7 @@ import styles from "./page.module.css";
 import HomeAuthButtons from "./HomeAuthButtons";
 import HomeContentTabs from "./HomeContentTabs";
 import AdminPendingSection from "@/components/AdminPendingSection";
+import { ResponsiveAd } from "@/components/NinjaAd";
 
 
 export const revalidate = 300;
@@ -226,6 +227,9 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
 
           </div>
         </section>
+
+        {/* Ad */}
+        <ResponsiveAd pc="leaderboard" sp="sp-banner" />
 
         {/* ── TWO-COLUMN LAYOUT ── */}
         <div className={styles.twoColLayout}>

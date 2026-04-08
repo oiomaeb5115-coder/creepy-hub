@@ -16,6 +16,7 @@ import ReportButton from "@/components/ReportButton";
 import { escapeHtml, linkifyUrls } from "@/lib/linkify-urls";
 import AutoLinkedWikiContent from "@/components/AutoLinkedwikiContent";
 import PersonIcon from "@/components/icons/PersonIcon";
+import { ResponsiveAd } from "@/components/NinjaAd";
 
 export const revalidate = 300;
 
@@ -462,6 +463,9 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
           </div>
         </div>
 
+        {/* Ad */}
+        <ResponsiveAd pc="rectangle" sp="sp-banner" />
+
         {/* Comments */}
         <div className={styles.commentsWrap}>
           <PostComments
@@ -511,6 +515,9 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
             </div>
           </section>
         )}
+
+        {/* Ad */}
+        <ResponsiveAd pc="leaderboard" sp="sp-banner" />
       </div>
     </main>
   );
