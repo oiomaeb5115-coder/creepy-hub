@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
       // フォント（必要に応じて追加）
       "font-src 'self'",
       // iframe 埋め込みを全面禁止（X-Frame-Options: DENY と同等）
-      "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.shinobi.jp",
+      "frame-src 'self' blob: https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.shinobi.jp",
       "frame-ancestors 'none'",
       // object タグを禁止
       "object-src 'none'",

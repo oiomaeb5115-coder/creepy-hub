@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-
 type AdType = 'leaderboard' | 'sp-banner' | 'rectangle'
 
 const AD_CONFIG: Record<AdType, { src: string; width: number; height: number }> = {
@@ -23,41 +21,32 @@ const AD_CONFIG: Record<AdType, { src: string; width: number; height: number }> 
 }
 
 export default function NinjaAd({ type }: { type: AdType }) {
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    const config = AD_CONFIG[type]
-    const script = document.createElement('script')
-    script.src = config.src
-    script.async = true
-    container.appendChild(script)
-
-    return () => {
-      if (container) {
-        container.innerHTML = ''
-      }
-    }
-  }, [type])
-
   const config = AD_CONFIG[type]
+
+  // 忍者AdMaxはdocument.writeを使用するため、iframeで読み込む
+  const iframeSrcDoc = `<!DOCTYPE html><html><head><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:${config.height}px;overflow:hidden;}</style></head><body><script src="${config.src}"><\/script></body></html>`
 
   return (
     <div
-      ref={containerRef}
       style={{
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: config.height,
         width: '100%',
-        maxWidth: config.width,
         margin: '16px auto',
-        overflow: 'hidden',
       }}
-    />
+    >
+      <iframe
+        srcDoc={iframeSrcDoc}
+        style={{
+          width: config.width,
+          height: config.height,
+          border: 'none',
+          overflow: 'hidden',
+        }}
+        scrolling="no"
+        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+      />
+    </div>
   )
 }
 
