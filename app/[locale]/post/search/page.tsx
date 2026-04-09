@@ -7,6 +7,7 @@ import styles from "../page.module.css";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
 import ViewIcon from "@/components/icons/ViewIcon";
+import ImpressionTracker from "@/components/ImpressionTracker";
 
 export const revalidate = 300;
 
@@ -142,6 +143,7 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
                   href={postUrl(locale, post.id, post.slug)}
                   className={styles.postRow}
                 >
+                  <ImpressionTracker type="post" id={post.id}>
                   <div className={styles.scoreCol}>
                     <span className={`${styles.scoreIcon} stat-icon`}><ViewIcon /></span>
                     <span className={styles.scoreNum}>{post.view_count ?? 0}</span>
@@ -174,6 +176,7 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
                       <div className={styles.thumbPlaceholder}>NO IMAGE</div>
                     )}
                   </div>
+                  </ImpressionTracker>
                 </Link>
               );
             })}

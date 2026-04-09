@@ -7,6 +7,7 @@ import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
 import CommentIcon from "@/components/icons/CommentIcon";
 import ViewIcon from "@/components/icons/ViewIcon";
+import ImpressionTracker from "@/components/ImpressionTracker";
 import ThumbUpIcon from "@/components/icons/ThumbUpIcon";
 
 export const revalidate = 300;
@@ -108,6 +109,7 @@ export default async function PopularPage({ params }: Props) {
                 key={post.id}
                 className={styles.postCardLink}
               >
+                <ImpressionTracker type="post" id={post.id}>
                 <article className={styles.postCard}>
                   {post.image_url ? (
                     <img
@@ -159,6 +161,7 @@ export default async function PopularPage({ params }: Props) {
                     </div>
                   </div>
                 </article>
+                </ImpressionTracker>
               </Link>
             );
           })}

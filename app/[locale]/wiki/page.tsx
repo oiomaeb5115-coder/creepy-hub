@@ -7,6 +7,7 @@ import BackButton from "@/components/BackButton";
 import CategorySidebar from "@/components/CategorySidebar";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
 import ViewIcon from "@/components/icons/ViewIcon";
+import ImpressionTracker from "@/components/ImpressionTracker";
 import InlineWikiVoteButtons from "@/components/InlineWikiVoteButtons";
 
 export const revalidate = 300;
@@ -219,6 +220,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
                 const authorName = author?.display_name || author?.username || null;
                 return (
                   <Link key={item.id} href={`/${locale}/wiki/${item.slug}`} className={styles.feedRow}>
+                    <ImpressionTracker type="wiki" id={item.id}>
                     <div className={styles.feedContent}>
                       {showAuthor ? (
                         <div className={styles.feedAuthorRow}>
@@ -254,6 +256,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
                         <span className="stat-icon"><ViewIcon /> {item.view_count ?? 0} {dict.post.views}</span>
                       </div>
                     </div>
+                    </ImpressionTracker>
                   </Link>
                 );
               })}

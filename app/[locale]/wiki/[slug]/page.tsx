@@ -115,8 +115,6 @@ export default async function WikiDetailPage({
 
   const safePage = page as WikiPageRow;
 
-  await supabaseAdmin.rpc("increment_wiki_view", { p_wiki_id: safePage.id });
-
   const [{ data: related }, { data: wikiItemsData }, authorProfile] = await Promise.all([
     supabaseAdmin
       .from("wiki_pages")
@@ -326,7 +324,7 @@ export default async function WikiDetailPage({
           />
         </div>
 
-        <WikiReadTracker slug={safePage.slug} />
+        <WikiReadTracker id={String(safePage.id)} />
       </div>
     </main>
   );

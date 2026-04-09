@@ -10,6 +10,7 @@ import styles from "../page.module.css";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
 import ViewIcon from "@/components/icons/ViewIcon";
+import ImpressionTracker from "@/components/ImpressionTracker";
 
 type AuthorProfile = {
   username: string | null;
@@ -167,6 +168,7 @@ export default function FollowingPostsPage() {
                   href={postUrl(locale, post.id, post.slug)}
                   className={styles.postRow}
                 >
+                  <ImpressionTracker type="post" id={post.id}>
                   <div className={styles.postContent}>
                     <div className={styles.postAuthorRow}>
                       {post.author?.avatar_url ? (
@@ -202,6 +204,7 @@ export default function FollowingPostsPage() {
                       <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0}</span>
                     </div>
                   </div>
+                  </ImpressionTracker>
                 </Link>
               );
             })}

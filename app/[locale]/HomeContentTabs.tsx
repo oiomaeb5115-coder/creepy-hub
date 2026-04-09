@@ -8,6 +8,7 @@ import CommentIcon from "@/components/icons/CommentIcon";
 import ViewIcon from "@/components/icons/ViewIcon";
 import InlineWikiVoteButtons from "@/components/InlineWikiVoteButtons";
 import { postUrl } from "@/lib/postUrl";
+import ImpressionTracker from "@/components/ImpressionTracker";
 import styles from "./page.module.css";
 import NinjaAd from "@/components/NinjaAd";
 
@@ -100,6 +101,7 @@ function StoryCardGrid({
 
   return (
     <Link href={postUrl(locale, post.id, post.slug)} className={styles.gridCardLink}>
+      <ImpressionTracker type="post" id={post.id}>
       <article className={styles.gridCard}>
         <div className={styles.gridCardBody}>
           <div className={styles.gridCardAuthorRow}>
@@ -143,6 +145,7 @@ function StoryCardGrid({
           <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0}</span>
         </div>
       </article>
+      </ImpressionTracker>
     </Link>
   );
 }
@@ -165,6 +168,7 @@ function WikiCardGrid({
 
   return (
     <Link href={`/${locale}/wiki/${item.slug}`} className={styles.gridCardLink}>
+      <ImpressionTracker type="wiki" id={item.id}>
       <article className={styles.gridCard}>
         <div className={styles.gridCardBody}>
           <div className={styles.gridCardAuthorRow}>
@@ -213,6 +217,7 @@ function WikiCardGrid({
           <span className="stat-icon"><ViewIcon /> {item.view_count ?? 0}</span>
         </div>
       </article>
+      </ImpressionTracker>
     </Link>
   );
 }

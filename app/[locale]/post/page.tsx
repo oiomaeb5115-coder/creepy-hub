@@ -9,6 +9,7 @@ import CategorySidebar from "@/components/CategorySidebar";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
 import ViewIcon from "@/components/icons/ViewIcon";
+import ImpressionTracker from "@/components/ImpressionTracker";
 
 export const revalidate = 300;
 
@@ -245,6 +246,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
                   href={postUrl(locale, post.id, post.slug)}
                   className={styles.postRow}
                 >
+                  <ImpressionTracker type="post" id={post.id}>
                   <div className={styles.postContent}>
                     <div className={styles.postAuthorRow}>
                       {post.author?.avatar_url ? (
@@ -281,6 +283,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
                       <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0} {dict.post.views}</span>
                     </div>
                   </div>
+                  </ImpressionTracker>
                 </Link>
               );
             })}
