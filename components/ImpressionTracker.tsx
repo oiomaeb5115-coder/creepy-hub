@@ -2,6 +2,22 @@
 
 import { useEffect, useRef } from "react";
 
+const SESSION_KEY = "creepyhub_impressions";
+
+function shouldCount(type: string, id: number): boolean {
+  try {
+    const key = `${type}-${id}`;
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    const set: string[] = raw ? JSON.parse(raw) : [];
+    if (set.includes(key)) return false;
+    set.push(key);
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(set));
+    return true;
+  } catch {
+    return true;
+  }
+}
+
 interface ImpressionTrackerProps {
   type: "post" | "wiki";
   id: number;
@@ -19,9 +35,12 @@ export default function ImpressionTracker({ type, id, children }: ImpressionTrac
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            fetch(`/api/${type === "post" ? "post" : "wiki-page"}/${id}/view`, {
-              method: "POST",
-            }).catch(() => {});
+            observer.unobserve(el);
+            if (shouldCount(type, id)) {
+              fetch(`/api/${type === "post" ? "post" : "wiki-page"}/${id}/view`, {
+                method: "POST",
+              }).catch(() => {});
+            }
           }
         }
       },
