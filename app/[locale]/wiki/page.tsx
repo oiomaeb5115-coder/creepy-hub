@@ -73,7 +73,7 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
       .order("vote_score", { ascending: false })
       .order("view_count", { ascending: false });
   } else {
-    wikiQuery = wikiQuery.order("updated_at", { ascending: false });
+    wikiQuery = wikiQuery.order("created_at", { ascending: false });
   }
 
   const [mainResult, categoriesResult] = await Promise.all([

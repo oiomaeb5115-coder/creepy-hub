@@ -4,7 +4,7 @@
 
 .pageWrap {
   min-height: 100vh;
-  background: #0d0808;
+  background: var(--bg-base);
   display: flex;
   flex-direction: column;
 }
@@ -14,11 +14,11 @@
 .tabBar {
   display: flex;
   align-items: stretch;
-  border-bottom: 1px solid rgba(200, 40, 50, 0.12);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.12);
   position: sticky;
   top: 0;
   z-index: 30;
-  background: #0d0808;
+  background: var(--bg-base);
 }
 
 .tabItem {
@@ -31,18 +31,18 @@
   cursor: pointer;
   background: none;
   border: none;
-  color: #6a5858;
+  color: var(--text-muted);
   transition: color 0.25s;
   position: relative;
   gap: 2px;
 }
 
 .tabItem:hover {
-  color: #c8b8b0;
+  color: var(--text-body);
 }
 
 .tabItemActive {
-  color: #f5f1eb;
+  color: var(--text-primary);
 }
 
 .tabLabelEn {
@@ -66,7 +66,7 @@
   transform: translateX(-50%);
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #c82832, #8b0000);
+  background: linear-gradient(90deg, rgba(var(--accent-rgb), 1), var(--stat-icon-color));
   border-radius: 1px;
   transition: width 0.25s ease;
 }
@@ -109,7 +109,7 @@
 
 /* POST パネル */
 .postPanel {
-  color: #c8b8b0;
+  color: var(--text-body);
   padding: 0 16px 80px;
 }
 

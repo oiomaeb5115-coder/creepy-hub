@@ -1,7 +1,7 @@
 .settingsPage {
   min-height: 100vh;
-  background: #050204;
-  color: #f5f1eb;
+  background: var(--bg-base);
+  color: var(--text-primary);
   padding: 32px 20px 100px;
 }
 
@@ -17,34 +17,34 @@
   gap: 24px;
   padding-bottom: 24px;
   margin-bottom: 28px;
-  border-bottom: 1px solid rgba(167, 108, 113, 0.16);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.16);
 }
 
 .settingsBreadcrumb {
   margin: 0 0 14px;
   font-size: 13px;
   letter-spacing: 0.12em;
-  color: #8a7870;
+  color: var(--text-muted);
 }
 
 .settingsTitle {
   margin: 0;
   font-size: clamp(34px, 5vw, 54px);
   line-height: 1.05;
-  color: #f5f1eb;
+  color: var(--text-primary);
 }
 
 .settingsSubtitle {
   margin: 14px 0 0;
   font-size: 16px;
-  color: #a49080;
+  color: var(--text-muted);
 }
 
 .backLink {
   display: inline-block;
   margin-bottom: 16px;
   font-size: 14px;
-  color: #c49090;
+  color: var(--accent-link);
   text-decoration: none;
 }
 
@@ -58,7 +58,7 @@
     rgba(18, 5, 8, 0.97),
     rgba(10, 3, 5, 0.98)
   );
-  border: 1px solid rgba(161, 102, 108, 0.24);
+  border: 1px solid rgba(var(--accent-rgb), 0.24);
   border-radius: 0;
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.26);
   padding: 28px 24px;
@@ -80,14 +80,14 @@
   object-fit: cover;
   display: block;
   border-radius: 0;
-  background: #150608;
+  background: var(--bg-image);
 }
 
 .bannerPlaceholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #8a7070;
+  color: var(--text-muted);
 }
 
 .avatarPreviewRow {
@@ -101,14 +101,14 @@
   height: 120px;
   border-radius: 999px;
   object-fit: cover;
-  background: #150608;
+  background: var(--bg-image);
 }
 
 .avatarPlaceholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #8a7070;
+  color: var(--text-muted);
 }
 
 .formGroup {
@@ -120,7 +120,7 @@
   margin-bottom: 10px;
   font-size: 15px;
   font-weight: 700;
-  color: #e8d8d0;
+  color: var(--text-on-surface);
 }
 
 .formControl {
@@ -129,9 +129,9 @@
   padding: 14px 16px;
   box-sizing: border-box;
   border-radius: 0;
-  border: 1px solid rgba(165, 99, 104, 0.28);
-  background: rgba(8, 3, 4, 0.96);
-  color: #f5f1eb;
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  background: var(--bg-input);
+  color: var(--text-primary);
   font-size: 16px;
   outline: none;
 }
@@ -149,7 +149,7 @@
 
 .helpText {
   margin: 8px 0 0;
-  color: #8a7870;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
@@ -161,7 +161,7 @@
   display: inline-flex;
   gap: 10px;
   align-items: center;
-  color: #e8d8d0;
+  color: var(--text-on-surface);
 }
 
 .submitRow {
@@ -178,7 +178,7 @@
     rgba(163, 60, 70, 0.96),
     rgba(121, 40, 50, 0.96)
   );
-  color: #f5f1eb;
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -209,7 +209,7 @@
 .dangerText {
   margin: 0 0 18px;
   font-size: 14px;
-  color: #9a8880;
+  color: var(--text-muted);
   line-height: 1.7;
 }
 

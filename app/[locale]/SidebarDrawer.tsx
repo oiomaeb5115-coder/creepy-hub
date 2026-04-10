@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
+import ThemeToggle from "@/components/ThemeToggle";
 import styles from "./sidebar-drawer.module.css";
 
 type UserInfo = {
@@ -90,6 +91,7 @@ export default function SidebarDrawer({
       {/* Drawer */}
       <div className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ""}`}>
         <div className={styles.drawerHeader}>
+          <ThemeToggle />
           <button
             className={styles.closeBtn}
             onClick={onClose}

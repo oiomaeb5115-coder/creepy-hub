@@ -12,8 +12,8 @@
   z-index: 50;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  background: rgba(5, 2, 4, 0.96);
-  border-top: 1px solid rgba(200, 40, 50, 0.2);
+  background: var(--bg-nav);
+  border-top: 1px solid rgba(var(--accent-rgb), 0.2);
   backdrop-filter: blur(16px);
 }
 
@@ -28,9 +28,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(200, 40, 50, 0.4) 20%,
-    rgba(200, 40, 50, 0.6) 50%,
-    rgba(200, 40, 50, 0.4) 80%,
+    rgba(var(--accent-rgb), 0.4) 20%,
+    rgba(var(--accent-rgb), 0.6) 50%,
+    rgba(var(--accent-rgb), 0.4) 80%,
     transparent 100%
   );
   pointer-events: none;
@@ -41,7 +41,7 @@
   align-items: center;
   justify-content: center;
   min-height: 80px;
-  border-right: 1px solid rgba(200, 40, 50, 0.1);
+  border-right: 1px solid rgba(var(--accent-rgb), 0.1);
   text-decoration: none;
   transition: all 0.2s ease;
   position: relative;
@@ -53,7 +53,7 @@
 
 /* Hover highlight */
 .bottomNavItem:hover {
-  background: rgba(200, 40, 50, 0.06);
+  background: rgba(var(--accent-rgb), 0.06);
 }
 
 /* Active indicator line on hover */
@@ -65,7 +65,7 @@
   transform: translateX(-50%);
   width: 0;
   height: 2px;
-  background: rgba(200, 40, 50, 0.7);
+  background: rgba(var(--accent-rgb), 0.7);
   transition: width 0.25s ease;
 }
 
@@ -83,7 +83,7 @@
 .bottomNavLabelEn {
   font-size: 11px;
   letter-spacing: 0.18em;
-  color: rgba(245, 241, 235, 0.8);
+  color: var(--text-body);
   font-family: "Impact", "Anton", "Arial Black", sans-serif;
   font-weight: 400;
   text-align: center;
@@ -93,14 +93,14 @@
 }
 
 .bottomNavItem:hover .bottomNavLabelEn {
-  color: rgba(245, 241, 235, 1);
-  text-shadow: 0 0 10px rgba(200, 40, 50, 0.3);
+  color: var(--text-primary);
+  text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.3);
 }
 
 .bottomNavLabelJa {
   font-size: 8px;
   letter-spacing: 0.12em;
-  color: rgba(200, 120, 130, 0.35);
+  color: var(--accent-text-muted);
   font-family: "装甲明朝", "Soukou Mincho", serif;
   text-align: center;
   width: 100%;
@@ -108,7 +108,7 @@
 }
 
 .bottomNavItem:hover .bottomNavLabelJa {
-  color: rgba(200, 120, 130, 0.55);
+  color: var(--accent-text);
 }
 
 /* ── Floating Post Button ── */
@@ -131,7 +131,7 @@
 .floatingPostButton:hover {
   opacity: 0.85;
   transform: scale(1.08);
-  filter: drop-shadow(0 0 12px rgba(200, 40, 50, 0.3));
+  filter: drop-shadow(0 0 12px rgba(var(--accent-rgb), 0.3));
 }
 
 @media (max-width: 960px) {

@@ -117,7 +117,7 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
       .select("id, slug, title, summary, updated_at, view_count, image_url, author_id, vote_score, show_author")
       .eq("locale", locale)
       .eq("is_published", true)
-      .order(isWikiPopular ? "vote_score" : "updated_at", { ascending: false })
+      .order(isWikiPopular ? "vote_score" : "created_at", { ascending: false })
       .order(isWikiPopular ? "view_count" : "created_at", { ascending: false })
       .limit(12),
 

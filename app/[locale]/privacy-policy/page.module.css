@@ -1,7 +1,7 @@
 .privacyPage {
   min-height: 100vh;
-  background: #050204;
-  color: #f5f1eb;
+  background: var(--bg-base);
+  color: var(--text-primary);
   padding: 32px 20px 100px;
 }
 
@@ -13,27 +13,27 @@
 .privacyHeader {
   padding-bottom: 24px;
   margin-bottom: 28px;
-  border-bottom: 1px solid rgba(167, 108, 113, 0.16);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.16);
 }
 
 .privacyBreadcrumb {
   margin: 0 0 14px;
   font-size: 13px;
   letter-spacing: 0.12em;
-  color: #8a7870;
+  color: var(--text-muted);
 }
 
 .privacyTitle {
   margin: 0;
   font-size: clamp(28px, 4vw, 42px);
   line-height: 1.1;
-  color: #f5f1eb;
+  color: var(--text-primary);
 }
 
 .privacyUpdated {
   margin: 12px 0 0;
   font-size: 13px;
-  color: #8a7870;
+  color: var(--text-muted);
 }
 
 .section {
@@ -43,7 +43,7 @@
 .sectionTitle {
   margin: 0 0 12px;
   font-size: 18px;
-  color: #d4c8b8;
+  color: var(--text-on-surface);
   letter-spacing: 0.04em;
 }
 
@@ -51,7 +51,7 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.8;
-  color: #a49080;
+  color: var(--text-muted);
 }
 
 .sectionBody ul {

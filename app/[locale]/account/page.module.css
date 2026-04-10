@@ -1,7 +1,7 @@
 .accountPage {
   min-height: 100vh;
-  background: #050204;
-  color: #f5f1eb;
+  background: var(--bg-base);
+  color: var(--text-primary);
   padding: 32px 20px 100px;
 }
 
@@ -24,27 +24,27 @@
   gap: 24px;
   padding-bottom: 24px;
   margin-bottom: 28px;
-  border-bottom: 1px solid rgba(167, 108, 113, 0.16);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.16);
 }
 
 .accountBreadcrumb {
   margin: 0 0 14px;
   font-size: 13px;
   letter-spacing: 0.12em;
-  color: #8a7870;
+  color: var(--text-muted);
 }
 
 .accountTitle {
   margin: 0;
   font-size: clamp(34px, 5vw, 54px);
   line-height: 1.05;
-  color: #f5f1eb;
+  color: var(--text-primary);
 }
 
 .accountSubtitle {
   margin: 14px 0 0;
   font-size: 16px;
-  color: #a49080;
+  color: var(--text-muted);
 }
 
 .headerActions {
@@ -57,9 +57,9 @@
   min-height: 46px;
   padding: 0 18px;
   border-radius: 0;
-  border: 1px solid rgba(170, 108, 112, 0.32);
+  border: 1px solid rgba(var(--accent-rgb), 0.32);
   background: rgba(48, 18, 22, 0.78);
-  color: #f5f1eb;
+  color: var(--text-primary);
   font-weight: 700;
   text-decoration: none;
   display: inline-flex;
@@ -68,12 +68,12 @@
 }
 
 .profileCard {
-  background: rgba(8, 3, 5, 0.92);
-  border: 1px solid rgba(161, 102, 108, 0.18);
+  background: var(--bg-surface-alt);
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
   border-radius: 0;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-heavy);
 }
 
 .profileCard::before {
@@ -83,7 +83,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, rgba(180, 80, 70, 0.6), transparent 60%);
+  background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.6), transparent 60%);
   z-index: 1;
 }
 
@@ -93,14 +93,14 @@
   height: 220px;
   object-fit: cover;
   display: block;
-  background: #150608;
+  background: var(--bg-image);
 }
 
 .bannerPlaceholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #8a7070;
+  color: var(--text-muted);
 }
 
 .profileMain {
@@ -115,7 +115,7 @@
   height: 120px;
   border-radius: 999px;
   object-fit: cover;
-  background: #150608;
+  background: var(--bg-image);
   flex-shrink: 0;
 }
 
@@ -123,7 +123,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #8a7070;
+  color: var(--text-muted);
 }
 
 .profileBody {
@@ -133,17 +133,17 @@
 .displayName {
   margin: 0;
   font-size: 30px;
-  color: #f5f1eb;
+  color: var(--text-primary);
 }
 
 .username {
   margin: 8px 0 0;
-  color: #8a7870;
+  color: var(--text-muted);
 }
 
 .email {
   margin: 8px 0 0;
-  color: #a49080;
+  color: var(--text-muted);
   font-size: 14px;
 }
 
@@ -160,7 +160,7 @@
   min-height: 30px;
   padding: 0 12px;
   border-radius: 999px;
-  border: 1px solid rgba(165, 104, 108, 0.3);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   color: #f0d0d2;
   font-size: 12px;
   background: rgba(31, 10, 12, 0.8);
@@ -168,14 +168,14 @@
 
 .bio {
   margin: 0;
-  color: #e8e0d8;
+  color: var(--text-on-surface);
   line-height: 1.9;
 }
 
 .website {
   display: inline-block;
   margin-top: 16px;
-  color: #c49090;
+  color: var(--accent-link);
   text-decoration: none;
 }
 
@@ -191,8 +191,8 @@
   padding: 5px 16px;
   font-size: 12px;
   background: rgba(48, 18, 22, 0.8);
-  border: 1px solid rgba(170, 108, 112, 0.4);
-  color: #e0c8c8;
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  color: var(--text-body);
   border-radius: 4px;
   cursor: pointer;
   letter-spacing: 0.06em;
@@ -217,14 +217,14 @@
 
 .inlineLabel {
   font-size: 12px;
-  color: #8a7870;
+  color: var(--text-muted);
   letter-spacing: 0.08em;
 }
 
 .inlineInput {
-  background: rgba(20, 8, 10, 0.85);
-  border: 1px solid rgba(170, 108, 112, 0.3);
-  color: #f5f1eb;
+  background: var(--bg-input);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  color: var(--text-primary);
   padding: 8px 12px;
   font-size: 14px;
   border-radius: 4px;
@@ -234,12 +234,12 @@
 }
 
 .inlineInput:focus {
-  border-color: rgba(170, 108, 112, 0.65);
+  border-color: rgba(var(--accent-rgb), 0.65);
 }
 
 .inlineHint {
   font-size: 12px;
-  color: #8a7870;
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -248,7 +248,7 @@
   height: 72px;
   border-radius: 999px;
   object-fit: cover;
-  border: 1px solid rgba(170, 108, 112, 0.3);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
 }
 
 .bannerPreviewInline {
@@ -256,7 +256,7 @@
   height: 100px;
   object-fit: cover;
   border-radius: 4px;
-  border: 1px solid rgba(170, 108, 112, 0.3);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
 }
 
 .inlineTextarea {
@@ -275,7 +275,7 @@
   padding: 8px 20px;
   font-size: 13px;
   background: rgba(80, 28, 36, 0.9);
-  border: 1px solid rgba(180, 100, 110, 0.5);
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
   color: #f0d0d2;
   border-radius: 4px;
   cursor: pointer;
@@ -291,8 +291,8 @@
   padding: 8px 16px;
   font-size: 13px;
   background: transparent;
-  border: 1px solid rgba(170, 108, 112, 0.25);
-  color: #8a7870;
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  color: var(--text-muted);
   border-radius: 4px;
   cursor: pointer;
 }

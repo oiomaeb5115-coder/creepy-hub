@@ -18,7 +18,7 @@
 .floatingButton:hover {
   opacity: 0.85;
   transform: scale(1.08);
-  filter: drop-shadow(0 0 12px rgba(200, 40, 50, 0.3));
+  filter: drop-shadow(0 0 12px rgba(var(--accent-rgb), 0.3));
 }
 
 @media (max-width: 960px) {

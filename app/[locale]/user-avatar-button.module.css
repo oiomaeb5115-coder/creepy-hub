@@ -10,8 +10,8 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 2px solid rgba(200, 40, 50, 0.4);
-  background: #0e0507;
+  border: 2px solid rgba(var(--accent-rgb), 0.4);
+  background: var(--bg-surface);
   cursor: pointer;
   overflow: hidden;
   padding: 0;
@@ -19,8 +19,8 @@
 }
 
 .avatarButton:hover {
-  border-color: rgba(200, 40, 50, 0.7);
-  box-shadow: 0 0 12px rgba(200, 40, 50, 0.2);
+  border-color: rgba(var(--accent-rgb), 0.7);
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.2);
 }
 
 .avatarImage {
@@ -36,9 +36,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #8b2030;
+  color: var(--stat-icon-color);
   font-size: 21px;
-  background: #1a0a0c;
+  background: var(--bg-surface);
 }
 
 .badgeWrap {
@@ -63,7 +63,7 @@
   padding: 0 4px;
   line-height: 1;
   pointer-events: none;
-  border: 2px solid #050204;
+  border: 2px solid var(--bg-base);
 }
 
 @media (max-width: 600px) {

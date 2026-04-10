@@ -4,8 +4,8 @@
 
 .archivePage {
   min-height: 100vh;
-  background: #050204;
-  color: #f5f1eb;
+  background: var(--bg-base);
+  color: var(--text-primary);
   padding: 38px 20px 100px;
   overflow-x: hidden;
 }
@@ -29,7 +29,7 @@
   margin: 0 0 18px;
   font-size: 10px;
   letter-spacing: 0.18em;
-  color: rgba(180, 130, 110, 0.4);
+  color: var(--text-muted);
   text-transform: uppercase;
 }
 
@@ -37,7 +37,7 @@
   margin: 0;
   font-size: clamp(38px, 5vw, 58px);
   line-height: 1.05;
-  color: #f5f1eb;
+  color: var(--text-primary);
   font-family: "装甲明朝", "Soukou Mincho", "Palatino Linotype", serif;
   font-weight: 600;
 }
@@ -45,7 +45,7 @@
 .archiveSubtitle {
   margin: 18px 0 0;
   font-size: 15px;
-  color: rgba(180, 130, 110, 0.45);
+  color: var(--text-muted);
 }
 
 .archiveActions {
@@ -61,7 +61,7 @@
   border-radius: 0;
   border: 1px solid rgba(180, 80, 70, 0.25);
   background: rgba(180, 60, 50, 0.1);
-  color: #f5f1eb;
+  color: var(--text-primary);
   font-weight: 700;
   font-size: 11px;
   letter-spacing: 0.1em;
@@ -80,7 +80,7 @@
 }
 
 .archiveContentCard {
-  background: rgba(8, 3, 5, 0.92);
+  background: var(--bg-surface-alt);
   border: 1px solid rgba(180, 80, 70, 0.15);
   border-radius: 0;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
@@ -133,7 +133,7 @@
   font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(180, 130, 110, 0.6);
+  color: var(--text-muted);
   padding: 8px 14px;
   border-radius: 0;
   background: rgba(180, 60, 50, 0.06);
@@ -161,13 +161,13 @@
 
 .storyViewCount {
   font-size: 11px;
-  color: rgba(180, 130, 110, 0.35);
+  color: var(--text-muted);
   letter-spacing: 0.06em;
 }
 
 .storyDetailMeta {
   margin: 0 0 14px;
-  color: rgba(180, 130, 110, 0.4);
+  color: var(--text-muted);
   font-size: 12px;
   letter-spacing: 0.06em;
 }
@@ -175,7 +175,7 @@
 .storyDetailTitle {
   margin: 0 0 24px;
   font-size: clamp(26px, 4vw, 40px);
-  color: #f5f1eb;
+  color: var(--text-primary);
   line-height: 1.15;
   font-family: "装甲明朝", "Soukou Mincho", "Palatino Linotype", serif;
   font-weight: 600;
@@ -184,14 +184,14 @@
 .storyDetailContent p {
   margin: 0 0 1em;
   line-height: 1.95;
-  color: rgba(230, 220, 210, 0.8);
+  color: var(--text-body);
   font-size: 15px;
 }
 
 .storySectionTitle {
   margin: 2em 0 0.8em;
   font-size: 22px;
-  color: #f5f1eb;
+  color: var(--text-primary);
   font-family: "装甲明朝", "Soukou Mincho", serif;
   letter-spacing: 0.04em;
 }
@@ -206,7 +206,7 @@
 .relatedTitle {
   margin: 0 0 14px;
   font-size: 14px;
-  color: rgba(200, 150, 130, 0.5);
+  color: var(--text-muted);
   font-family: "装甲明朝", "Soukou Mincho", serif;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -223,7 +223,7 @@
   flex-direction: column;
   text-decoration: none;
   color: inherit;
-  background: rgba(8, 3, 5, 0.85);
+  background: var(--bg-surface-alt);
   border: 1px solid rgba(180, 80, 70, 0.12);
   overflow: hidden;
   transition: all 0.2s;
@@ -242,7 +242,7 @@
 }
 
 .relatedCard:hover {
-  background: rgba(15, 5, 8, 0.95);
+  background: var(--bg-surface-hover);
   border-color: rgba(200, 80, 70, 0.25);
 }
 
@@ -291,7 +291,7 @@
 .relatedCardText {
   margin: 0;
   font-size: 10px;
-  color: rgba(180, 130, 110, 0.35);
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

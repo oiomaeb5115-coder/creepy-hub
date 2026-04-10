@@ -28,7 +28,7 @@
   width: 100%;
   height: 100dvh;
   z-index: 90;
-  background: #000000;
+  background: var(--bg-base);
   overflow-y: auto;
   transform: translateY(-100%);
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -70,7 +70,7 @@
   background: none;
   border: 1px solid transparent;
   cursor: pointer;
-  color: rgba(180, 130, 110, 0.4);
+  color: var(--text-muted-light);
   font-size: 22px;
   line-height: 1;
   padding: 4px 8px;
@@ -78,8 +78,8 @@
 }
 
 .closeButton:hover {
-  color: rgba(200, 140, 120, 0.9);
-  border-color: rgba(180, 80, 70, 0.3);
+  color: var(--accent-link-hover);
+  border-color: rgba(var(--accent-rgb), 0.3);
 }
 
 /* Welcome text */
@@ -87,7 +87,7 @@
   text-align: center;
   font-size: 28px;
   font-weight: 700;
-  color: #f5f1eb;
+  color: var(--text-primary);
   margin: 10px 0 28px;
   letter-spacing: 0.08em;
   font-family: "装甲明朝", "Soukou Mincho", serif;
@@ -97,7 +97,7 @@
 .modeTitle {
   text-align: center;
   font-size: 13px;
-  color: rgba(180, 130, 110, 0.55);
+  color: var(--text-muted);
   letter-spacing: 0.18em;
   margin: 0 0 18px;
   font-family: "装甲明朝", "Soukou Mincho", serif;
@@ -128,7 +128,7 @@
   padding: 6px 4px;
   font-size: 10px;
   letter-spacing: 0.18em;
-  color: rgba(180, 130, 110, 0.28);
+  color: var(--text-muted-light);
   font-family: "装甲明朝", "Soukou Mincho", serif;
   cursor: pointer;
   border-bottom: 1px solid transparent;
@@ -154,7 +154,7 @@
 }
 
 .tab:hover {
-  color: rgba(200, 150, 130, 0.5);
+  color: var(--text-muted);
 }
 
 /* Active tab — in normal flow, auto-centered by parent */
@@ -162,9 +162,9 @@
   position: relative;
   font-size: 15px;
   color: rgba(245, 241, 235, 0.9);
-  border-bottom-color: rgba(200, 80, 70, 0.6);
+  border-bottom-color: rgba(var(--accent-rgb), 0.6);
   letter-spacing: 0.22em;
-  border-bottom: 1px solid rgba(200, 80, 70, 0.6);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.6);
 }
 
 /* Body */
@@ -175,14 +175,14 @@
 .sectionTitle {
   font-size: 18px;
   letter-spacing: 0.04em;
-  color: #f5f1eb;
+  color: var(--text-primary);
   margin: 0 0 5px;
   font-family: "装甲明朝", "Soukou Mincho", serif;
 }
 
 .sectionSub {
   font-size: 11px;
-  color: rgba(180, 130, 110, 0.4);
+  color: var(--text-muted-light);
   margin: 0 0 18px;
   letter-spacing: 0.04em;
 }
@@ -198,15 +198,15 @@
 .formGroup label {
   font-size: 9px;
   letter-spacing: 0.18em;
-  color: rgba(180, 130, 110, 0.45);
+  color: var(--text-muted-light);
   font-family: "装甲明朝", "Soukou Mincho", serif;
   text-transform: uppercase;
 }
 
 .formControl {
-  background: rgba(180, 80, 70, 0.03);
-  border: 1px solid rgba(180, 80, 70, 0.15);
-  color: #f5f1eb;
+  background: rgba(var(--accent-rgb), 0.03);
+  border: 1px solid rgba(var(--accent-rgb), 0.15);
+  color: var(--text-primary);
   padding: 7px 11px;
   font-size: 13px;
   font-family: inherit;
@@ -217,8 +217,8 @@
 }
 
 .formControl:focus {
-  border-color: rgba(200, 80, 70, 0.45);
-  box-shadow: 0 0 15px rgba(200, 80, 70, 0.06);
+  border-color: rgba(var(--accent-rgb), 0.45);
+  box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.06);
 }
 
 .submitRow {
@@ -227,9 +227,9 @@
 
 .primaryButton {
   width: 100%;
-  background: rgba(180, 60, 50, 0.2);
-  border: 1px solid rgba(200, 80, 70, 0.4);
-  color: #f5f1eb;
+  background: rgba(var(--accent-rgb), 0.2);
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  color: var(--text-primary);
   padding: 10px;
   font-size: 11px;
   letter-spacing: 0.16em;
@@ -240,9 +240,9 @@
 }
 
 .primaryButton:hover:not(:disabled) {
-  background: rgba(200, 60, 50, 0.35);
-  border-color: rgba(220, 90, 80, 0.55);
-  box-shadow: 0 0 20px rgba(200, 60, 50, 0.1);
+  background: rgba(var(--accent-rgb), 0.35);
+  border-color: rgba(var(--accent-rgb), 0.55);
+  box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.1);
 }
 
 .primaryButton:disabled {
@@ -253,7 +253,7 @@
 .authFooter {
   margin-top: 24px;
   font-size: 11px;
-  color: rgba(180, 130, 110, 0.35);
+  color: var(--text-muted-light);
   letter-spacing: 0.04em;
 }
 
@@ -261,7 +261,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: rgba(200, 120, 100, 0.6);
+  color: var(--accent-text-muted);
   font-size: 11px;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -271,7 +271,7 @@
 }
 
 .switchLink:hover {
-  color: rgba(220, 140, 120, 0.9);
+  color: var(--accent-link-hover);
 }
 
 .divider {
@@ -281,7 +281,7 @@
   margin: 14px 0;
   font-size: 9px;
   letter-spacing: 0.15em;
-  color: rgba(180, 130, 110, 0.2);
+  color: var(--text-muted-light);
   text-transform: uppercase;
 }
 
@@ -290,14 +290,14 @@
   content: '';
   flex: 1;
   height: 1px;
-  background: rgba(180, 80, 70, 0.1);
+  background: rgba(var(--accent-rgb), 0.1);
 }
 
 .googleButton {
   width: 100%;
-  background: rgba(180, 80, 70, 0.03);
-  border: 1px solid rgba(180, 80, 70, 0.15);
-  color: rgba(245, 241, 235, 0.75);
+  background: rgba(var(--accent-rgb), 0.03);
+  border: 1px solid rgba(var(--accent-rgb), 0.15);
+  color: var(--text-body-light);
   padding: 8px;
   font-size: 11px;
   letter-spacing: 0.1em;
@@ -311,16 +311,16 @@
 }
 
 .googleButton:hover:not(:disabled) {
-  background: rgba(180, 80, 70, 0.08);
-  border-color: rgba(200, 100, 90, 0.3);
-  color: #f5f1eb;
+  background: rgba(var(--accent-rgb), 0.08);
+  border-color: rgba(var(--accent-rgb), 0.3);
+  color: var(--text-primary);
 }
 
 .discordButton {
   width: 100%;
   background: rgba(88, 101, 242, 0.03);
   border: 1px solid rgba(88, 101, 242, 0.25);
-  color: rgba(245, 241, 235, 0.75);
+  color: var(--text-body-light);
   padding: 8px;
   font-size: 11px;
   letter-spacing: 0.1em;
@@ -337,7 +337,7 @@
 .discordButton:hover:not(:disabled) {
   background: rgba(88, 101, 242, 0.08);
   border-color: rgba(88, 101, 242, 0.5);
-  color: #f5f1eb;
+  color: var(--text-primary);
 }
 
 .googleButton:disabled,
@@ -356,25 +356,25 @@
   align-items: flex-start;
   gap: 6px;
   font-size: 10px;
-  color: rgba(200, 170, 155, 0.7);
+  color: var(--text-body);
   cursor: pointer;
   line-height: 1.5;
 }
 
 .checkbox {
   margin-top: 3px;
-  accent-color: rgba(200, 80, 70, 0.8);
+  accent-color: rgba(var(--accent-rgb), 0.8);
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .inlineLink {
-  color: rgba(200, 120, 100, 0.8);
+  color: var(--accent-link);
   text-decoration: underline;
   text-underline-offset: 2px;
   transition: color 0.15s;
 }
 
 .inlineLink:hover {
-  color: rgba(230, 150, 130, 1);
+  color: var(--accent-link-hover);
 }

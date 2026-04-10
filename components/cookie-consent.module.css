@@ -27,14 +27,14 @@
 }
 
 .link:hover {
-  color: #f5f1eb;
+  color: var(--text-primary);
 }
 
 .acceptButton {
   flex-shrink: 0;
   padding: 8px 20px;
-  background: #f5f1eb;
-  color: #050204;
+  background: var(--text-primary);
+  color: var(--bg-base);
   border: none;
   font-size: 12px;
   font-weight: 600;
