@@ -3,8 +3,9 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { uploadStoryImage, uploadStoryVideo } from "@/lib/uploadStoryMedia";
-import { validateVideoFile } from "@/lib/validateVideoFile";
+import { uploadStoryImage } from "@/lib/uploadStoryMedia";
+import { uploadVideoToStream } from "@/lib/uploadVideoToStream";
+import { pollVideoReady } from "@/lib/pollVideoReady";
 import { validateImageFile } from "@/lib/validateImageFile";
 import { getVideoDuration } from "@/lib/getVideoDuration";
 import styles from "./StoryCreator.module.css";
@@ -189,19 +190,6 @@ export default function StoryCreator({ locale, embedded }: Props) {
         setMediaType("image");
         setAdjustMode(true); // 画像は最初に位置調整モード
       } else {
-        // 既知の動画形式のみmagic bytes検証
-        const knownVideoType = ["video/mp4", "video/webm"].includes(file.type);
-        if (knownVideoType) {
-          const valid = await validateVideoFile(file);
-          if (!valid) {
-            setError(
-              locale === "en"
-                ? "File content does not match video format"
-                : "ファイルの内容が動画形式と一致しません"
-            );
-            return;
-          }
-        }
         const duration = await getVideoDuration(file);
         if (duration > MAX_VIDEO_DURATION_MS) {
           setError(
@@ -488,18 +476,21 @@ export default function StoryCreator({ locale, embedded }: Props) {
       const token = session.access_token;
 
       // メディアアップロード
-      let mediaUrl: string;
+      let mediaUrl: string | null = null;
+      let streamVideoId: string | null = null;
+
       if (mediaType === "image") {
-        // 画像は位置調整を反映してcanvas cropしてからアップロード
         const croppedFile = await cropImageToFile();
         mediaUrl = await uploadStoryImage(croppedFile, userId);
       } else {
-        mediaUrl = await uploadStoryVideo(mediaFile, userId);
+        // 動画はCloudflare Stream経由
+        const { uid } = await uploadVideoToStream(mediaFile, { type: "story" });
+        await pollVideoReady(uid);
+        streamVideoId = uid;
       }
 
       // APIでストーリー作成
       const body: Record<string, unknown> = {
-        media_url: mediaUrl,
         media_type: mediaType,
         text_overlays: overlays.map(
           ({ id, scale, fontSize, ...rest }) => ({
@@ -508,7 +499,11 @@ export default function StoryCreator({ locale, embedded }: Props) {
           })
         ),
       };
-      if (mediaType === "video") {
+      if (mediaType === "image") {
+        body.media_url = mediaUrl;
+      } else {
+        body.stream_video_id = streamVideoId;
+        body.media_url = `https://${process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN}.cloudflarestream.com/${streamVideoId}/manifest/video.m3u8`;
         body.duration_ms = videoDurationMs;
       }
 

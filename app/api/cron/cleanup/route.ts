@@ -24,7 +24,31 @@ export async function GET(req: NextRequest) {
   // 3日前のタイムスタンプ
   const cutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
 
-  // 投稿のパージ
+  // 投稿のパージ（先に Stream 動画を削除してからDBレコード削除）
+  const { data: postsToDelete } = await supabase
+    .from("post")
+    .select("id, stream_video_id")
+    .not("deleted_at", "is", null)
+    .lt("deleted_at", cutoff);
+
+  // Cloudflare Stream 動画を削除
+  const cfAccountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const cfApiToken = process.env.CLOUDFLARE_STREAM_API_TOKEN;
+  if (postsToDelete && cfAccountId && cfApiToken) {
+    const streamIds = postsToDelete
+      .map((p) => p.stream_video_id)
+      .filter((id): id is string => !!id);
+
+    await Promise.allSettled(
+      streamIds.map((uid) =>
+        fetch(`https://api.cloudflare.com/client/v4/accounts/${cfAccountId}/stream/${uid}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${cfApiToken}` },
+        })
+      )
+    );
+  }
+
   const { count: postsCount, error: postsError } = await supabase
     .from("post")
     .delete({ count: "exact" })
@@ -61,14 +85,32 @@ export async function GET(req: NextRequest) {
   let storiesCount = 0;
   const now = new Date().toISOString();
 
-  // 1. 期限切れストーリーのメディアURLを取得
+  // 1. 期限切れストーリーのメディアURLとStream IDを取得
   const { data: expiredStories } = await supabase
     .from("user_stories")
-    .select("id, media_url")
+    .select("id, media_url, stream_video_id")
     .lt("expires_at", now);
 
   if (expiredStories && expiredStories.length > 0) {
-    // 2. Storage からファイル削除
+    // 2a. Cloudflare Stream 動画を削除
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+    const apiToken = process.env.CLOUDFLARE_STREAM_API_TOKEN;
+    if (accountId && apiToken) {
+      const streamIds = expiredStories
+        .map((s) => s.stream_video_id)
+        .filter((id): id is string => !!id);
+
+      await Promise.allSettled(
+        streamIds.map((uid) =>
+          fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${uid}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${apiToken}` },
+          })
+        )
+      );
+    }
+
+    // 2b. Supabase Storage からファイル削除（レガシー）
     const filePaths = expiredStories
       .map((s) => {
         try {

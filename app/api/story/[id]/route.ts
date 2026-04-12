@@ -32,7 +32,7 @@ export async function DELETE(
 
   const { data: story, error: fetchError } = await supabaseAdmin
     .from("user_stories")
-    .select("id, user_id, media_url")
+    .select("id, user_id, media_url, stream_video_id")
     .eq("id", storyId)
     .single();
 
@@ -62,6 +62,19 @@ export async function DELETE(
     return NextResponse.json({ error: "削除に失敗しました" }, { status: 500 });
   }
 
+  // Cloudflare Stream 動画のクリーンアップ
+  if (story.stream_video_id) {
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+    const apiToken = process.env.CLOUDFLARE_STREAM_API_TOKEN;
+    if (accountId && apiToken) {
+      fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${story.stream_video_id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${apiToken}` },
+      }).catch((err) => console.error("[DELETE /api/story] Stream cleanup error:", err));
+    }
+  }
+
+  // Supabase Storage のクリーンアップ（レガシー）
   try {
     const url = new URL(story.media_url);
     const pathMatch = url.pathname.match(/\/story-media\/(.+)$/);

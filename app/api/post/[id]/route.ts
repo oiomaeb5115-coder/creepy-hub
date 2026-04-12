@@ -65,7 +65,7 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { title, content, category_id, image_url, image_url_2, image_url_3, video_url } = body;
+  const { title, content, category_id, image_url, image_url_2, image_url_3, video_url, stream_video_id } = body;
 
   // サーバーサイド入力バリデーション
   if (title !== undefined && (typeof title !== "string" || title.length === 0 || title.length > 200)) {
@@ -77,7 +77,7 @@ export async function PATCH(
   if (category_id !== undefined && category_id !== null && typeof category_id !== "number") {
     return NextResponse.json({ error: "カテゴリIDが不正です" }, { status: 400 });
   }
-  for (const key of ["image_url", "image_url_2", "image_url_3", "video_url"] as const) {
+  for (const key of ["image_url", "image_url_2", "image_url_3", "video_url", "stream_video_id"] as const) {
     const val = body[key];
     if (val !== undefined && val !== null && typeof val !== "string") {
       return NextResponse.json({ error: "メディアURLが不正です" }, { status: 400 });
@@ -97,6 +97,7 @@ export async function PATCH(
   if (image_url_2 !== undefined) updateData.image_url_2 = image_url_2;
   if (image_url_3 !== undefined) updateData.image_url_3 = image_url_3;
   if (video_url !== undefined) updateData.video_url = video_url;
+  if (stream_video_id !== undefined) updateData.stream_video_id = stream_video_id;
 
   const { error } = await adminSupabase
     .from("post")
@@ -142,7 +143,7 @@ export async function DELETE(
   // 投稿の owner を確認
   const { data: post } = await supabase
     .from("post")
-    .select("user_id")
+    .select("user_id, stream_video_id")
     .eq("id", postId)
     .single();
 
@@ -166,6 +167,18 @@ export async function DELETE(
     .update({ is_published: false, deleted_at: new Date().toISOString() })
     .eq("id", postId);
   if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
+
+  // Cloudflare Stream 動画のクリーンアップ
+  if (post.stream_video_id) {
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+    const apiToken = process.env.CLOUDFLARE_STREAM_API_TOKEN;
+    if (accountId && apiToken) {
+      fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${post.stream_video_id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${apiToken}` },
+      }).catch((err) => console.error("[DELETE /api/post] Stream cleanup error:", err));
+    }
+  }
 
   revalidatePath("/ja");
   revalidatePath("/en");

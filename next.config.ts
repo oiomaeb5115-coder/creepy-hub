@@ -14,13 +14,13 @@ const nextConfig: NextConfig = {
       // Supabase Storage・外部画像・アバタークロッパー用 blob: を許可
       "img-src 'self' https: blob:",
       // Supabase API・Cloudflare Workers AI への接続を許可
-      "connect-src 'self' https://*.supabase.co https://api.cloudflare.com https://unpkg.com https://*.shinobi.jp https://*.criteo.com https://*.amossp-sp.in blob:",
-      // ffmpeg.wasm の Web Worker 用
+      "connect-src 'self' https://*.supabase.co https://api.cloudflare.com https://unpkg.com https://*.shinobi.jp https://*.criteo.com https://*.amossp-sp.in https://*.cloudflarestream.com https://upload.videodelivery.net blob:",
+      // browser-image-compression の Web Worker 用
       "worker-src 'self' blob:",
       // フォント（必要に応じて追加）
       "font-src 'self'",
       // iframe: 自サイトからの埋め込みのみ許可（広告用）
-      "frame-src 'self' blob: https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.shinobi.jp https://*.criteo.com https://*.amossp-sp.in",
+      "frame-src 'self' blob: https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.shinobi.jp https://*.criteo.com https://*.amossp-sp.in https://*.cloudflarestream.com",
       "frame-ancestors 'self'",
       // object タグを禁止
       "object-src 'none'",

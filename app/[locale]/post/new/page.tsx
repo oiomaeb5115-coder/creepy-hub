@@ -8,10 +8,8 @@ import { getAccessToken } from "@/lib/auth";
 import { generateSlug, sanitizeSlug } from "@/lib/slug";
 import { postUrl } from "@/lib/postUrl";
 import { uploadImage } from "@/lib/uploadImage";
-import { uploadPostVideo } from "@/lib/uploadPostVideo";
-import { validateVideoFile } from "@/lib/validateVideoFile";
-import { getVideoDuration } from "@/lib/getVideoDuration";
-import { convertMovToMp4 } from "@/lib/convertMovToMp4";
+import { uploadVideoToStream } from "@/lib/uploadVideoToStream";
+import { pollVideoReady } from "@/lib/pollVideoReady";
 import BackButton from "@/components/BackButton";
 import { getDictionary } from "@/lib/getDictionary";
 import type { Dictionary } from "@/lib/getDictionary";
@@ -46,8 +44,9 @@ export default function PostNewPage() {
 
   const [newVideo, setNewVideo] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
-  const [videoConverting, setVideoConverting] = useState(false);
-  const [videoConvertProgress, setVideoConvertProgress] = useState(0);
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+  const [videoProcessing, setVideoProcessing] = useState(false);
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -146,12 +145,26 @@ export default function PostNewPage() {
         throw err;
       });
 
-      let videoUrlUp: string | null = null;
+      let streamVideoId: string | null = null;
       if (newVideo) {
-        videoUrlUp = await uploadPostVideo(newVideo, user.id).catch((err) => {
-          alert(`${labels.alertVideoFailed}${err.message}`);
+        try {
+          setVideoUploading(true);
+          setVideoUploadProgress(0);
+          const { uid } = await uploadVideoToStream(newVideo, {
+            type: "post",
+            onProgress: (ratio) => setVideoUploadProgress(ratio),
+          });
+          setVideoUploading(false);
+          setVideoProcessing(true);
+          await pollVideoReady(uid);
+          setVideoProcessing(false);
+          streamVideoId = uid;
+        } catch (err) {
+          setVideoUploading(false);
+          setVideoProcessing(false);
+          alert(`${labels.alertVideoFailed}${err instanceof Error ? err.message : String(err)}`);
           throw err;
-        });
+        }
       }
 
       const rawSlug = sanitizeSlug(slugInput.trim());
@@ -169,7 +182,7 @@ export default function PostNewPage() {
           image_url: imageUrlUp1,
           image_url_2: imageUrlUp2,
           image_url_3: imageUrlUp3,
-          video_url: videoUrlUp,
+          stream_video_id: streamVideoId,
           slug,
         }])
         .select()
@@ -377,13 +390,22 @@ export default function PostNewPage() {
                         &times;
                       </button>
                     </div>
-                  ) : videoConverting ? (
+                  ) : (videoUploading || videoProcessing) ? (
                     <div style={{ width: 135, height: 240, aspectRatio: "9/16", borderRadius: 6, background: "#111", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, border: "1px solid rgba(161,102,108,0.18)" }}>
-                      <span style={{ fontSize: 12, color: "#aaa" }}>MOV→MP4 変換中...</span>
-                      <div style={{ width: 80, height: 4, background: "#333", borderRadius: 2, overflow: "hidden" }}>
-                        <div style={{ width: `${Math.round(videoConvertProgress * 100)}%`, height: "100%", background: "#a1666c", transition: "width 0.3s" }} />
-                      </div>
-                      <span style={{ fontSize: 11, color: "#666" }}>{Math.round(videoConvertProgress * 100)}%</span>
+                      <span style={{ fontSize: 12, color: "#aaa" }}>
+                        {videoUploading ? (locale === "en" ? "Uploading..." : "アップロード中...") : (locale === "en" ? "Processing..." : "動画を処理中...")}
+                      </span>
+                      {videoUploading && (
+                        <>
+                          <div style={{ width: 80, height: 4, background: "#333", borderRadius: 2, overflow: "hidden" }}>
+                            <div style={{ width: `${Math.round(videoUploadProgress * 100)}%`, height: "100%", background: "#a1666c", transition: "width 0.3s" }} />
+                          </div>
+                          <span style={{ fontSize: 11, color: "#666" }}>{Math.round(videoUploadProgress * 100)}%</span>
+                        </>
+                      )}
+                      {videoProcessing && (
+                        <span style={{ fontSize: 11, color: "#666" }}>{locale === "en" ? "Please wait..." : "しばらくお待ちください..."}</span>
+                      )}
                     </div>
                   ) : (
                     <label style={{ ...imageAddLabel, width: 135, height: 240, aspectRatio: "9/16" }}>
@@ -393,7 +415,7 @@ export default function PostNewPage() {
                         type="file"
                         accept="video/mp4,video/webm,video/quicktime"
                         style={{ display: "none" }}
-                        onChange={async (e) => {
+                        onChange={(e) => {
                           const f = e.target.files?.[0] ?? null;
                           if (!f) return;
                           if (!["video/mp4", "video/webm", "video/quicktime"].includes(f.type)) {
@@ -402,27 +424,8 @@ export default function PostNewPage() {
                           if (f.size > 75 * 1024 * 1024) {
                             alert(labels.alertVideoSize); return;
                           }
-                          let videoFile = f;
-                          if (f.type === "video/quicktime") {
-                            try {
-                              setVideoConverting(true);
-                              setVideoConvertProgress(0);
-                              videoFile = await convertMovToMp4(f, (p) => setVideoConvertProgress(p));
-                            } catch {
-                              alert("MOV→MP4変換に失敗しました。MP4形式で再度お試しください。");
-                              setVideoConverting(false);
-                              return;
-                            } finally {
-                              setVideoConverting(false);
-                            }
-                          } else {
-                            const valid = await validateVideoFile(f);
-                            if (!valid) { alert(labels.alertVideoFormat); return; }
-                          }
-                          const dur = await getVideoDuration(videoFile);
-                          if (dur > 180000) { alert(labels.alertVideoDuration); return; }
-                          setNewVideo(videoFile);
-                          setVideoPreviewUrl(URL.createObjectURL(videoFile));
+                          setNewVideo(f);
+                          setVideoPreviewUrl(URL.createObjectURL(f));
                         }}
                       />
                     </label>

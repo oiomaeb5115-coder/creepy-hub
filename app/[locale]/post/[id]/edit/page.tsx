@@ -8,10 +8,8 @@ import { getIsAdmin, getAccessToken } from "@/lib/auth";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
 import { uploadImage } from "@/lib/uploadImage";
-import { uploadPostVideo } from "@/lib/uploadPostVideo";
-import { validateVideoFile } from "@/lib/validateVideoFile";
-import { getVideoDuration } from "@/lib/getVideoDuration";
-import { convertMovToMp4 } from "@/lib/convertMovToMp4";
+import { uploadVideoToStream } from "@/lib/uploadVideoToStream";
+import { pollVideoReady } from "@/lib/pollVideoReady";
 
 type Chapter = { id: number; title: string; body: string };
 
@@ -51,10 +49,12 @@ export default function StoryEditPage() {
   const [newImage3, setNewImage3] = useState<File | null>(null);
 
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [existingStreamVideoId, setExistingStreamVideoId] = useState<string | null>(null);
   const [newVideo, setNewVideo] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
-  const [videoConverting, setVideoConverting] = useState(false);
-  const [videoConvertProgress, setVideoConvertProgress] = useState(0);
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+  const [videoProcessing, setVideoProcessing] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -63,7 +63,7 @@ export default function StoryEditPage() {
 
       const { data: post, error } = await supabase
         .from("post")
-        .select("id, title, content, category_id, user_id, slug, image_url, image_url_2, image_url_3, video_url")
+        .select("id, title, content, category_id, user_id, slug, image_url, image_url_2, image_url_3, video_url, stream_video_id")
         .eq("id", postId)
         .single();
 
@@ -90,6 +90,7 @@ export default function StoryEditPage() {
       setImageUrl2(post.image_url_2 ?? null);
       setImageUrl3(post.image_url_3 ?? null);
       setVideoUrl(post.video_url ?? null);
+      setExistingStreamVideoId(post.stream_video_id ?? null);
       setLoading(false);
     };
     init();
@@ -135,20 +136,35 @@ export default function StoryEditPage() {
         throw err;
       });
 
-      // 動画アップロード
-      let uploadedVideo: string | null = null;
+      // 動画アップロード（Cloudflare Stream）
+      let newStreamVideoId: string | null = null;
       if (newVideo) {
-        uploadedVideo = await uploadPostVideo(newVideo, user.id).catch((err) => {
-          alert(`動画アップロードに失敗しました: ${err.message}`);
+        try {
+          setVideoUploading(true);
+          setVideoUploadProgress(0);
+          const { uid } = await uploadVideoToStream(newVideo, {
+            type: "post",
+            onProgress: (ratio) => setVideoUploadProgress(ratio),
+          });
+          setVideoUploading(false);
+          setVideoProcessing(true);
+          await pollVideoReady(uid);
+          setVideoProcessing(false);
+          newStreamVideoId = uid;
+        } catch (err) {
+          setVideoUploading(false);
+          setVideoProcessing(false);
+          alert(`動画アップロードに失敗しました: ${err instanceof Error ? err.message : String(err)}`);
           throw err;
-        });
+        }
       }
 
       // 新しい画像がアップロードされた場合はそのURL、そうでなければ現在のURL
       const finalImageUrl1 = uploaded1 ?? imageUrl1;
       const finalImageUrl2 = uploaded2 ?? imageUrl2;
       const finalImageUrl3 = uploaded3 ?? imageUrl3;
-      const finalVideoUrl = uploadedVideo ?? videoUrl;
+      const finalStreamVideoId = newStreamVideoId ?? existingStreamVideoId;
+      const finalVideoUrl = newStreamVideoId ? null : videoUrl;
 
       const mergedContent = chapters
         .map((ch) => {
@@ -173,6 +189,7 @@ export default function StoryEditPage() {
           image_url_2: finalImageUrl2,
           image_url_3: finalImageUrl3,
           video_url: finalVideoUrl,
+          stream_video_id: finalStreamVideoId,
         }),
       });
 
@@ -278,14 +295,22 @@ export default function StoryEditPage() {
               <small style={{ fontSize: 10, color: "rgba(200,150,140,0.35)", lineHeight: 1.5 }}>
                 MP4/WebM/MOV、3分以内、75MB以内
               </small>
-              {(videoPreviewUrl || videoUrl) ? (
+              {(videoPreviewUrl || videoUrl || existingStreamVideoId) ? (
                 <div style={{ position: "relative", width: 135, aspectRatio: "9/16", borderRadius: 6, overflow: "hidden", background: "#000" }}>
-                  <video
-                    src={videoPreviewUrl || videoUrl!}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                    playsInline
-                    muted
-                  />
+                  {existingStreamVideoId && !videoPreviewUrl && !videoUrl ? (
+                    <img
+                      src={`https://${process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN}.cloudflarestream.com/${existingStreamVideoId}/thumbnails/thumbnail.jpg`}
+                      alt="Video thumbnail"
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    />
+                  ) : (
+                    <video
+                      src={videoPreviewUrl || videoUrl!}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                      playsInline
+                      muted
+                    />
+                  )}
                   <button
                     type="button"
                     style={imageRemoveBtn}
@@ -294,19 +319,29 @@ export default function StoryEditPage() {
                       if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
                       setVideoPreviewUrl(null);
                       setVideoUrl(null);
+                      setExistingStreamVideoId(null);
                     }}
                     title="動画を削除"
                   >
                     &times;
                   </button>
                 </div>
-              ) : videoConverting ? (
+              ) : (videoUploading || videoProcessing) ? (
                 <div style={{ width: 135, height: 240, aspectRatio: "9/16", borderRadius: 6, background: "#111", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, border: "1px solid rgba(161,102,108,0.18)" }}>
-                  <span style={{ fontSize: 12, color: "#aaa" }}>MOV→MP4 変換中...</span>
-                  <div style={{ width: 80, height: 4, background: "#333", borderRadius: 2, overflow: "hidden" }}>
-                    <div style={{ width: `${Math.round(videoConvertProgress * 100)}%`, height: "100%", background: "#a1666c", transition: "width 0.3s" }} />
-                  </div>
-                  <span style={{ fontSize: 11, color: "#666" }}>{Math.round(videoConvertProgress * 100)}%</span>
+                  <span style={{ fontSize: 12, color: "#aaa" }}>
+                    {videoUploading ? "アップロード中..." : "動画を処理中..."}
+                  </span>
+                  {videoUploading && (
+                    <>
+                      <div style={{ width: 80, height: 4, background: "#333", borderRadius: 2, overflow: "hidden" }}>
+                        <div style={{ width: `${Math.round(videoUploadProgress * 100)}%`, height: "100%", background: "#a1666c", transition: "width 0.3s" }} />
+                      </div>
+                      <span style={{ fontSize: 11, color: "#666" }}>{Math.round(videoUploadProgress * 100)}%</span>
+                    </>
+                  )}
+                  {videoProcessing && (
+                    <span style={{ fontSize: 11, color: "#666" }}>しばらくお待ちください...</span>
+                  )}
                 </div>
               ) : (
                 <label style={{ ...imageAddLabel, width: 135, height: 240, aspectRatio: "9/16" }}>
@@ -316,7 +351,7 @@ export default function StoryEditPage() {
                     type="file"
                     accept="video/mp4,video/webm,video/quicktime"
                     style={{ display: "none" }}
-                    onChange={async (e) => {
+                    onChange={(e) => {
                       const f = e.target.files?.[0] ?? null;
                       if (!f) return;
                       if (!["video/mp4", "video/webm", "video/quicktime"].includes(f.type)) {
@@ -325,27 +360,8 @@ export default function StoryEditPage() {
                       if (f.size > 75 * 1024 * 1024) {
                         alert("動画ファイルは75MB以内にしてください"); return;
                       }
-                      let videoFile = f;
-                      if (f.type === "video/quicktime") {
-                        try {
-                          setVideoConverting(true);
-                          setVideoConvertProgress(0);
-                          videoFile = await convertMovToMp4(f, (p) => setVideoConvertProgress(p));
-                        } catch {
-                          alert("MOV→MP4変換に失敗しました。MP4形式で再度お試しください。");
-                          setVideoConverting(false);
-                          return;
-                        } finally {
-                          setVideoConverting(false);
-                        }
-                      } else {
-                        const valid = await validateVideoFile(f);
-                        if (!valid) { alert("動画はMP4、WebMまたはMOV形式のみ対応しています"); return; }
-                      }
-                      const dur = await getVideoDuration(videoFile);
-                      if (dur > 180000) { alert("動画は3分以内にしてください"); return; }
-                      setNewVideo(videoFile);
-                      setVideoPreviewUrl(URL.createObjectURL(videoFile));
+                      setNewVideo(f);
+                      setVideoPreviewUrl(URL.createObjectURL(f));
                     }}
                   />
                 </label>

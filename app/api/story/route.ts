@@ -82,16 +82,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { media_url, media_type, duration_ms, text_overlays } = body as {
+  const { media_url, media_type, duration_ms, text_overlays, stream_video_id } = body as {
     media_url?: string;
     media_type?: string;
     duration_ms?: number;
     text_overlays?: unknown;
+    stream_video_id?: string;
   };
 
   // バリデーション
   if (!media_url || typeof media_url !== "string" || !media_url.startsWith("https://")) {
     return NextResponse.json({ error: "Invalid media_url" }, { status: 400 });
+  }
+  if (stream_video_id !== undefined && typeof stream_video_id !== "string") {
+    return NextResponse.json({ error: "Invalid stream_video_id" }, { status: 400 });
   }
   if (media_type !== "image" && media_type !== "video") {
     return NextResponse.json({ error: "media_type must be 'image' or 'video'" }, { status: 400 });
@@ -111,16 +115,21 @@ export async function POST(req: NextRequest) {
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
   // サービスロールで挿入（認証は上記getUserで検証済み）
+  const insertData: Record<string, unknown> = {
+    user_id: userData.user.id,
+    media_url,
+    media_type,
+    duration_ms: media_type === "video" ? duration_ms : null,
+    text_overlays: overlays,
+    expires_at: expiresAt,
+  };
+  if (stream_video_id) {
+    insertData.stream_video_id = stream_video_id;
+  }
+
   const { data: story, error: insertError } = await supabaseAdmin
     .from("user_stories")
-    .insert({
-      user_id: userData.user.id,
-      media_url,
-      media_type,
-      duration_ms: media_type === "video" ? duration_ms : null,
-      text_overlays: overlays,
-      expires_at: expiresAt,
-    })
+    .insert(insertData)
     .select("id, created_at, expires_at")
     .single();
 

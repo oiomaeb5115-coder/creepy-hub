@@ -113,6 +113,7 @@ type PostRow = {
   image_url_2: string | null;
   image_url_3: string | null;
   video_url: string | null;
+  stream_video_id: string | null;
   is_published: boolean | null;
   view_count: number | null;
   user_id: string | null;
@@ -160,7 +161,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   const { data, error } = await supabaseAdmin
     .from("post")
     .select(
-      "id, title, content, created_at, image_url, image_url_2, image_url_3, video_url, is_published, view_count, user_id, slug"
+      "id, title, content, created_at, image_url, image_url_2, image_url_3, video_url, stream_video_id, is_published, view_count, user_id, slug"
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -357,7 +358,26 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
           )}
 
           {/* Video */}
-          {post.video_url && (
+          {post.stream_video_id ? (
+            <div style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>
+              <div style={{
+                width: "100%",
+                maxWidth: 340,
+                aspectRatio: "9/16",
+                borderRadius: 8,
+                overflow: "hidden",
+                background: "#000",
+                border: "1px solid rgba(161,102,108,0.18)",
+              }}>
+                <iframe
+                  src={`https://${process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN}.cloudflarestream.com/${post.stream_video_id}/iframe`}
+                  style={{ width: "100%", height: "100%", border: "none" }}
+                  allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          ) : post.video_url ? (
             <div style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>
               <video
                 src={post.video_url}
@@ -374,7 +394,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                 }}
               />
             </div>
-          )}
+          ) : null}
 
           {/* Post content */}
           <div className={styles.postContent}>
