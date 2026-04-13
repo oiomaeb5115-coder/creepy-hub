@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { uploadStoryImage } from "@/lib/uploadStoryMedia";
 import { uploadVideoToStream } from "@/lib/uploadVideoToStream";
-import { pollVideoReady } from "@/lib/pollVideoReady";
 import { validateImageFile } from "@/lib/validateImageFile";
 import { getVideoDuration } from "@/lib/getVideoDuration";
 import styles from "./StoryCreator.module.css";
@@ -485,7 +484,6 @@ export default function StoryCreator({ locale, embedded }: Props) {
       } else {
         // 動画はCloudflare Stream経由
         const { uid } = await uploadVideoToStream(mediaFile, { type: "story" });
-        await pollVideoReady(uid);
         streamVideoId = uid;
       }
 

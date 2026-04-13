@@ -361,6 +361,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
           {post.stream_video_id ? (
             <div style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>
               <div style={{
+                position: "relative",
                 width: "100%",
                 maxWidth: 340,
                 aspectRatio: "9/16",
@@ -374,6 +375,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
                   style={{ width: "100%", height: "100%", border: "none" }}
                   allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
                   allowFullScreen
+                  loading="lazy"
                 />
               </div>
             </div>

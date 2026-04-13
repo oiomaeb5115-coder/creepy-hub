@@ -9,7 +9,6 @@ import { generateSlug, sanitizeSlug } from "@/lib/slug";
 import { postUrl } from "@/lib/postUrl";
 import { uploadImage } from "@/lib/uploadImage";
 import { uploadVideoToStream } from "@/lib/uploadVideoToStream";
-import { pollVideoReady } from "@/lib/pollVideoReady";
 import BackButton from "@/components/BackButton";
 import { getDictionary } from "@/lib/getDictionary";
 import type { Dictionary } from "@/lib/getDictionary";
@@ -46,7 +45,6 @@ export default function PostNewPage() {
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const [videoUploading, setVideoUploading] = useState(false);
   const [videoUploadProgress, setVideoUploadProgress] = useState(0);
-  const [videoProcessing, setVideoProcessing] = useState(false);
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -155,13 +153,9 @@ export default function PostNewPage() {
             onProgress: (ratio) => setVideoUploadProgress(ratio),
           });
           setVideoUploading(false);
-          setVideoProcessing(true);
-          await pollVideoReady(uid);
-          setVideoProcessing(false);
           streamVideoId = uid;
         } catch (err) {
           setVideoUploading(false);
-          setVideoProcessing(false);
           alert(`${labels.alertVideoFailed}${err instanceof Error ? err.message : String(err)}`);
           throw err;
         }
@@ -376,8 +370,9 @@ export default function PostNewPage() {
                   {videoPreviewUrl ? (
                     <div style={{ position: "relative", width: 135, aspectRatio: "9/16", borderRadius: 6, overflow: "hidden", background: "#000" }}>
                       <video
-                        src={videoPreviewUrl}
+                        src={`${videoPreviewUrl}#t=0.5`}
                         style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                        preload="metadata"
                         playsInline
                         muted
                       />
@@ -394,22 +389,15 @@ export default function PostNewPage() {
                         &times;
                       </button>
                     </div>
-                  ) : (videoUploading || videoProcessing) ? (
+                  ) : videoUploading ? (
                     <div style={{ width: 135, height: 240, aspectRatio: "9/16", borderRadius: 6, background: "#111", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, border: "1px solid rgba(161,102,108,0.18)" }}>
                       <span style={{ fontSize: 12, color: "#aaa" }}>
-                        {videoUploading ? (locale === "en" ? "Uploading..." : "アップロード中...") : (locale === "en" ? "Processing..." : "動画を処理中...")}
+                        {locale === "en" ? "Uploading..." : "アップロード中..."}
                       </span>
-                      {videoUploading && (
-                        <>
-                          <div style={{ width: 80, height: 4, background: "#333", borderRadius: 2, overflow: "hidden" }}>
-                            <div style={{ width: `${Math.round(videoUploadProgress * 100)}%`, height: "100%", background: "#a1666c", transition: "width 0.3s" }} />
-                          </div>
-                          <span style={{ fontSize: 11, color: "#666" }}>{Math.round(videoUploadProgress * 100)}%</span>
-                        </>
-                      )}
-                      {videoProcessing && (
-                        <span style={{ fontSize: 11, color: "#666" }}>{locale === "en" ? "Please wait..." : "しばらくお待ちください..."}</span>
-                      )}
+                      <div style={{ width: 80, height: 4, background: "#333", borderRadius: 2, overflow: "hidden" }}>
+                        <div style={{ width: `${Math.round(videoUploadProgress * 100)}%`, height: "100%", background: "#a1666c", transition: "width 0.3s" }} />
+                      </div>
+                      <span style={{ fontSize: 11, color: "#666" }}>{Math.round(videoUploadProgress * 100)}%</span>
                     </div>
                   ) : (
                     <label style={{ ...imageAddLabel, width: 135, height: 240, aspectRatio: "9/16" }}>
