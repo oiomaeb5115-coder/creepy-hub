@@ -206,8 +206,12 @@ export default function PostNewPage() {
       if (userId) localStorage.removeItem(`draft_post_${userId}`);
       const redirectUrl = postUrl(locale, data.id, data.slug);
       window.location.href = redirectUrl;
-    } catch {
-      // already alerted
+    } catch (err) {
+      console.error("[PostNew] submit error:", err);
+      // 未処理のエラーの場合はアラート表示
+      if (err instanceof Error && !err.message.includes("already")) {
+        alert(err.message);
+      }
     } finally {
       setIsSubmitting(false);
     }

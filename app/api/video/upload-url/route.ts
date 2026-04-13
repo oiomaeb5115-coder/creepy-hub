@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
   if (!cfRes.ok) {
     const errBody = await cfRes.text();
     console.error("[POST /api/video/upload-url] Cloudflare API error:", cfRes.status, errBody);
-    return NextResponse.json({ error: "Failed to create upload URL" }, { status: 502 });
+    return NextResponse.json({ error: `Cloudflare API error: ${cfRes.status}` }, { status: 502 });
   }
 
   const cfData = await cfRes.json();
