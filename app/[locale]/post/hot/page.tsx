@@ -47,6 +47,7 @@ export default async function HotPage({ params }: Props) {
       content,
       created_at,
       image_url,
+      stream_video_id,
       view_count,
       slug,
       vote_score,
@@ -121,11 +122,25 @@ export default async function HotPage({ params }: Props) {
                 <ImpressionTracker type="post" id={post.id}>
                 <article className={styles.postCard}>
                   {post.image_url ? (
-                    <img
-                      src={post.image_url}
-                      alt={safeTitle}
-                      className={styles.postCardImage}
-                    />
+                    <div style={{ position: "relative" }}>
+                      <img
+                        src={post.image_url}
+                        alt={safeTitle}
+                        className={styles.postCardImage}
+                      />
+                      {post.stream_video_id && (
+                        <span style={{ position: "absolute", bottom: 6, right: 6, background: "rgba(0,0,0,0.7)", color: "#fff", borderRadius: 4, padding: "2px 6px", fontSize: 11, lineHeight: 1 }}>▶ 動画</span>
+                      )}
+                    </div>
+                  ) : post.stream_video_id ? (
+                    <div style={{ position: "relative" }}>
+                      <img
+                        src={`https://${process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN}.cloudflarestream.com/${post.stream_video_id}/thumbnails/thumbnail.jpg?width=400&height=225&fit=crop`}
+                        alt={safeTitle}
+                        className={styles.postCardImage}
+                      />
+                      <span style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "rgba(0,0,0,0.6)", color: "#fff", borderRadius: "50%", width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>▶</span>
+                    </div>
                   ) : (
                     <div
                       className={`${styles.postCardImage} ${styles.postCardImagePlaceholder}`}

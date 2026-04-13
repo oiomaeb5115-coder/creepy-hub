@@ -68,7 +68,7 @@ export default function FollowingPostsPage() {
       // フォロー中ユーザーの投稿取得
       const { data: postData } = await supabase
         .from("post")
-        .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, slug, user_id")
+        .select("id, title, content, created_at, image_url, image_url_2, image_url_3, stream_video_id, view_count, slug, user_id")
         .eq("is_published", true)
         .in("user_id", followingIds)
         .order("created_at", { ascending: false })
@@ -187,8 +187,8 @@ export default function FollowingPostsPage() {
                         ? `${safeContent.slice(0, 400)}...`
                         : safeContent}
                     </p>
-                    {imageUrls.length > 0 && (
-                      <div className={`${styles.postImageWrap} ${imageUrls.length >= 2 ? styles.postImageGrid : ""}`}>
+                    {imageUrls.length > 0 ? (
+                      <div className={`${styles.postImageWrap} ${imageUrls.length >= 2 ? styles.postImageGrid : ""}`} style={{ position: "relative" }}>
                         {imageUrls.map((url, i) => (
                           <img
                             key={i}
@@ -198,8 +198,21 @@ export default function FollowingPostsPage() {
                             loading="lazy"
                           />
                         ))}
+                        {post.stream_video_id && (
+                          <span style={{ position: "absolute", bottom: 6, right: 6, background: "rgba(0,0,0,0.7)", color: "#fff", borderRadius: 4, padding: "2px 6px", fontSize: 11, lineHeight: 1 }}>▶ 動画</span>
+                        )}
                       </div>
-                    )}
+                    ) : post.stream_video_id ? (
+                      <div className={styles.postImageWrap} style={{ position: "relative" }}>
+                        <img
+                          src={`https://${process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN}.cloudflarestream.com/${post.stream_video_id}/thumbnails/thumbnail.jpg?width=400&height=225&fit=crop`}
+                          alt={safeTitle}
+                          className={styles.postImage}
+                          loading="lazy"
+                        />
+                        <span style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "rgba(0,0,0,0.6)", color: "#fff", borderRadius: "50%", width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>▶</span>
+                      </div>
+                    ) : null}
                     <div className={styles.postFooter}>
                       <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0}</span>
                     </div>

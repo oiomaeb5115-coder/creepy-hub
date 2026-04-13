@@ -89,6 +89,7 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
       image_url,
       image_url_2,
       image_url_3,
+      stream_video_id,
       view_count,
       user_id,
       slug,

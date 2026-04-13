@@ -145,7 +145,7 @@ export default function UserProfilePage() {
       const [{ data: postData }, { count: fcCount }, { count: fgCount }] = await Promise.all([
         supabase
           .from("post")
-          .select("id, title, content, image_url, view_count, created_at, slug")
+          .select("id, title, content, image_url, stream_video_id, view_count, created_at, slug")
           .eq("user_id", p.id)
           .eq("is_published", true)
           .order("created_at", { ascending: false })
@@ -399,9 +399,23 @@ export default function UserProfilePage() {
               className={styles.postRow}
             >
               <ImpressionTracker type="post" id={post.id}>
-              <div className={styles.thumbCol}>
+              <div className={styles.thumbCol} style={{ position: "relative" }}>
                 {post.image_url ? (
-                  <img src={post.image_url} alt={safeTitle} className={styles.thumb} />
+                  <>
+                    <img src={post.image_url} alt={safeTitle} className={styles.thumb} />
+                    {post.stream_video_id && (
+                      <span style={{ position: "absolute", bottom: 4, right: 4, background: "rgba(0,0,0,0.7)", color: "#fff", borderRadius: 3, padding: "1px 4px", fontSize: 10, lineHeight: 1 }}>▶</span>
+                    )}
+                  </>
+                ) : post.stream_video_id ? (
+                  <>
+                    <img
+                      src={`https://${process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN}.cloudflarestream.com/${post.stream_video_id}/thumbnails/thumbnail.jpg?width=200&height=200&fit=crop`}
+                      alt={safeTitle}
+                      className={styles.thumb}
+                    />
+                    <span style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "rgba(0,0,0,0.6)", color: "#fff", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>▶</span>
+                  </>
                 ) : (
                   <div className={styles.thumbPlaceholder}>NO IMAGE</div>
                 )}

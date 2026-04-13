@@ -64,12 +64,12 @@ export default async function StoryIndex({ params, searchParams }: Props) {
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
   const orderCol = isPopular ? "view_count" : "created_at";
 
-  let rawPosts: { id: number; title: string | null; content: string | null; created_at: string | null; image_url: string | null; image_url_2: string | null; image_url_3: string | null; view_count: number | null; slug: string | null; user_id: string | null; vote_score: number | null; comment_count: number | null }[] = [];
+  let rawPosts: { id: number; title: string | null; content: string | null; created_at: string | null; image_url: string | null; image_url_2: string | null; image_url_3: string | null; stream_video_id: string | null; view_count: number | null; slug: string | null; user_id: string | null; vote_score: number | null; comment_count: number | null }[] = [];
 
   {
     const { data, error: postError } = await supabaseAdmin
       .from("post_with_counts")
-      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, view_count, user_id, slug, vote_score, comment_count")
+      .select("id, title, content, created_at, image_url, image_url_2, image_url_3, stream_video_id, view_count, user_id, slug, vote_score, comment_count")
       .eq("is_published", true)
       .order(orderCol, { ascending: false })
       .limit(50);
@@ -265,8 +265,8 @@ export default async function StoryIndex({ params, searchParams }: Props) {
                         ? `${safeContent.slice(0, 400)}...`
                         : safeContent}
                     </p>
-                    {imageUrls.length > 0 && (
-                      <div className={`${styles.postImageWrap} ${imageUrls.length >= 2 ? styles.postImageGrid : ""}`}>
+                    {imageUrls.length > 0 ? (
+                      <div className={`${styles.postImageWrap} ${imageUrls.length >= 2 ? styles.postImageGrid : ""}`} style={{ position: "relative" }}>
                         {imageUrls.map((url, i) => (
                           <img
                             key={i}
@@ -276,8 +276,21 @@ export default async function StoryIndex({ params, searchParams }: Props) {
                             loading="lazy"
                           />
                         ))}
+                        {post.stream_video_id && (
+                          <span style={{ position: "absolute", bottom: 6, right: 6, background: "rgba(0,0,0,0.7)", color: "#fff", borderRadius: 4, padding: "2px 6px", fontSize: 11, lineHeight: 1 }}>▶ 動画</span>
+                        )}
                       </div>
-                    )}
+                    ) : post.stream_video_id ? (
+                      <div className={styles.postImageWrap} style={{ position: "relative" }}>
+                        <img
+                          src={`https://${process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN}.cloudflarestream.com/${post.stream_video_id}/thumbnails/thumbnail.jpg?width=400&height=225&fit=crop`}
+                          alt={safeTitle}
+                          className={styles.postImage}
+                          loading="lazy"
+                        />
+                        <span style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "rgba(0,0,0,0.6)", color: "#fff", borderRadius: "50%", width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>▶</span>
+                      </div>
+                    ) : null}
                     <div className={styles.postFooter}>
                       <InlineVoteButtons postId={post.id} initialScore={score} />
                       <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0} {dict.post.views}</span>
