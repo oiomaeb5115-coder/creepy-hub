@@ -30,18 +30,23 @@ export async function uploadVideoToStream(
   if (!token) throw new Error("ログインが必要です");
 
   // 1. サーバーからアップロードURL取得
-  const urlRes = await fetch("/api/video/upload-url", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ type: options.type }),
-  });
+  let urlRes: Response;
+  try {
+    urlRes = await fetch("/api/video/upload-url", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ type: options.type }),
+    });
+  } catch (err) {
+    throw new Error(`アップロードURL取得でネットワークエラー: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   if (!urlRes.ok) {
     const data = await urlRes.json().catch(() => ({}));
-    throw new Error(data.error || "アップロードURLの取得に失敗しました");
+    throw new Error(data.error || `アップロードURLの取得に失敗しました (${urlRes.status})`);
   }
 
   const { uploadURL, uid } = await urlRes.json();
@@ -67,7 +72,7 @@ export async function uploadVideoToStream(
         }
       });
 
-      xhr.addEventListener("error", () => reject(new Error("アップロードに失敗しました")));
+      xhr.addEventListener("error", () => reject(new Error(`Cloudflare Streamへのアップロードに失敗しました (XHR error)`)));
       xhr.addEventListener("abort", () => reject(new Error("アップロードがキャンセルされました")));
 
       const formData = new FormData();
@@ -85,7 +90,7 @@ export async function uploadVideoToStream(
     });
 
     if (!uploadRes.ok) {
-      throw new Error("動画のアップロードに失敗しました");
+      throw new Error(`Cloudflare Streamへのアップロードに失敗しました (${uploadRes.status})`);
     }
   }
 
