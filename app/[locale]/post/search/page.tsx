@@ -28,6 +28,7 @@ type StoryPost = {
   content: string | null;
   created_at: string | null;
   image_url: string | null;
+  stream_video_id: string | null;
   view_count: number | null;
   slug: string | null;
 };
@@ -86,6 +87,7 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
         content: tr?.content ?? p.content,
         created_at: p.created_at,
         image_url: p.image_url,
+        stream_video_id: p.stream_video_id,
         view_count: p.view_count,
         slug: p.slug,
       };

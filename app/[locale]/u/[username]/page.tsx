@@ -28,6 +28,7 @@ type PostRow = {
   title: string | null;
   content: string | null;
   image_url: string | null;
+  stream_video_id: string | null;
   view_count: number | null;
   created_at: string | null;
   slug: string | null;
