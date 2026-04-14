@@ -35,6 +35,13 @@
   max-height: 100%;
 }
 
+.streamIframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: none;
+}
+
 /* ── 下部グラデーション ── */
 
 .streamGradient {
@@ -193,6 +200,61 @@
   text-align: center;
 }
 
+/* ── コメントドロワー（ボトムシート） ── */
+
+.commentOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.commentDrawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 101;
+  height: 70dvh;
+  background: var(--bg-base, #0d0808);
+  border-top: 1px solid rgba(161, 102, 108, 0.3);
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.commentDrawerHandle {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 6px;
+  flex-shrink: 0;
+}
+
+.commentDrawerBar {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(161, 102, 108, 0.4);
+}
+
+.commentDrawerBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 24px;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ── レスポンシブ ── */
 
 /* PC (> 600px) — 9:16 比率で中央表示 */
@@ -203,6 +265,14 @@
     max-width: 100%;
     aspect-ratio: 9 / 16;
     object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .streamIframe {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    aspect-ratio: 9 / 16;
     border-radius: 8px;
   }
 }

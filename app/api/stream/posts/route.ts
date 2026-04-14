@@ -18,8 +18,8 @@ export async function GET(req: NextRequest) {
 
   let query = supabaseAdmin
     .from("post")
-    .select("id, title, video_url, created_at, user_id, slug, image_url")
-    .not("video_url", "is", null)
+    .select("id, title, video_url, stream_video_id, created_at, user_id, slug, image_url")
+    .or("video_url.not.is.null,stream_video_id.not.is.null")
     .eq("is_published", true)
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
@@ -55,6 +55,7 @@ export async function GET(req: NextRequest) {
     return {
       id: p.id,
       video_url: p.video_url,
+      stream_video_id: p.stream_video_id,
       title: p.title,
       created_at: p.created_at,
       user_id: p.user_id,

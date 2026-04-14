@@ -158,7 +158,10 @@ export default function StoryEditPage() {
       const finalImageUrl2 = uploaded2 ?? imageUrl2;
       const finalImageUrl3 = uploaded3 ?? imageUrl3;
       const finalStreamVideoId = newStreamVideoId ?? existingStreamVideoId;
-      const finalVideoUrl = newStreamVideoId ? null : videoUrl;
+      // 新しい動画がアップロードされた場合は HLS URL を生成
+      const finalVideoUrl = newStreamVideoId && process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN
+        ? `https://${process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN}.cloudflarestream.com/${newStreamVideoId}/manifest/video.m3u8`
+        : videoUrl;
 
       const mergedContent = chapters
         .map((ch) => {

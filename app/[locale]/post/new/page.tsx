@@ -164,6 +164,11 @@ export default function PostNewPage() {
       const rawSlug = sanitizeSlug(slugInput.trim());
       const slug = rawSlug || generateSlug(title.trim());
 
+      // stream_video_id がある場合、HLS URL を video_url にも保存
+      const videoUrl = streamVideoId && process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN
+        ? `https://${process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN}.cloudflarestream.com/${streamVideoId}/manifest/video.m3u8`
+        : null;
+
       const { data, error } = await supabase
         .from("post")
         .insert([{
@@ -177,6 +182,7 @@ export default function PostNewPage() {
           image_url_2: imageUrlUp2,
           image_url_3: imageUrlUp3,
           stream_video_id: streamVideoId,
+          video_url: videoUrl,
           slug,
         }])
         .select()

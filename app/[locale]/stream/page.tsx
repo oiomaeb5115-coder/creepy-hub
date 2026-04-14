@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { postUrl } from "@/lib/postUrl";
 import styles from "./page.module.css";
 
+const PostComments = dynamic(() => import("@/components/PostComments"), { ssr: false });
+
 type StreamPostItem = {
   id: number;
-  video_url: string;
+  video_url: string | null;
+  stream_video_id: string | null;
   title: string | null;
   created_at: string;
   user_id: string;
@@ -67,6 +71,17 @@ const VolumeIcon = () => (
   </svg>
 );
 
+/**
+ * Cloudflare Stream URL から subdomain と video UID を抽出する。
+ * 例: https://customer-xxx.cloudflarestream.com/abc123/manifest/video.m3u8
+ *   → { subdomain: "customer-xxx", uid: "abc123" }
+ */
+function parseCfStreamUrl(url: string | null): { subdomain: string; uid: string } | null {
+  if (!url) return null;
+  const m = url.match(/^https:\/\/([^.]+)\.cloudflarestream\.com\/([^/]+)\//);
+  return m ? { subdomain: m[1], uid: m[2] } : null;
+}
+
 function StreamItemView({
   item,
   isVisible,
@@ -79,27 +94,35 @@ function StreamItemView({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
 
+  // stream_video_id または video_url から Cloudflare Stream 情報を取得
+  const cfInfo = parseCfStreamUrl(item.video_url);
+  const streamUid = item.stream_video_id || cfInfo?.uid;
+  const streamSubdomain = process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN || cfInfo?.subdomain;
+  const useIframe = !!streamUid && !!streamSubdomain;
+
   // いいね（post_votes テーブル）
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
-  const [likeLoading, setLikeLoading] = useState(false);
+  const [likeSubmitting, setLikeSubmitting] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // コメント数
+  // コメント数 + ドロワー
   const [commentCount, setCommentCount] = useState(0);
+  const [commentOpen, setCommentOpen] = useState(false);
 
   // 共有
   const [shareLabel, setShareLabel] = useState("共有");
 
-  // 動画のオートプレイ/ポーズ
+  // 動画のオートプレイ/ポーズ（<video> 用）
   useEffect(() => {
-    if (!videoRef.current) return;
+    if (useIframe || !videoRef.current) return;
     if (isVisible) {
       videoRef.current.currentTime = 0;
       videoRef.current.play().catch(() => {});
     } else {
       videoRef.current.pause();
     }
-  }, [isVisible]);
+  }, [isVisible, useIframe]);
 
   // いいね・コメント数の初期化
   useEffect(() => {
@@ -118,6 +141,7 @@ function StreamItemView({
       // ユーザーのいいね状態
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || cancelled) return;
+      setCurrentUserId(user.id);
       const { data } = await supabase
         .from("post_votes")
         .select("vote_type")
@@ -140,6 +164,47 @@ function StreamItemView({
     initComments();
     return () => { cancelled = true; };
   }, [item.id]);
+
+  // いいねトグル
+  const applyVote = async () => {
+    if (!currentUserId) {
+      alert("評価するにはログインが必要です。");
+      return;
+    }
+    if (likeSubmitting) return;
+    setLikeSubmitting(true);
+    try {
+      if (liked) {
+        const { error } = await supabase
+          .from("post_votes")
+          .delete()
+          .eq("post_id", item.id)
+          .eq("user_id", currentUserId);
+        if (error) return;
+        setLikeCount((prev) => prev - 1);
+        setLiked(false);
+      } else {
+        const { error } = await supabase.from("post_votes").upsert([
+          { post_id: item.id, user_id: currentUserId, vote_type: 1 },
+        ]);
+        if (error) return;
+        setLikeCount((prev) => prev + 1);
+        setLiked(true);
+      }
+    } finally {
+      setLikeSubmitting(false);
+    }
+  };
+
+  // コメントドロワー: Escape で閉じる
+  useEffect(() => {
+    if (!commentOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setCommentOpen(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [commentOpen]);
 
   // 共有
   const handleShare = async () => {
@@ -165,39 +230,58 @@ function StreamItemView({
 
   const detailHref = postUrl(locale, item.id, item.slug);
 
+  const iframeSrc = useIframe
+    ? `https://${streamSubdomain}.cloudflarestream.com/${streamUid}/iframe?autoplay=${isVisible}&loop=true&muted=${muted}&controls=false&preload=true`
+    : undefined;
+
   return (
     <div className={styles.streamItem}>
-      <video
-        ref={videoRef}
-        src={item.video_url}
-        className={styles.streamMedia}
-        playsInline
-        muted={muted}
-        loop
-        preload="metadata"
-      />
+      {useIframe ? (
+        <iframe
+          src={iframeSrc}
+          className={styles.streamIframe}
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowFullScreen
+        />
+      ) : item.video_url ? (
+        <video
+          ref={videoRef}
+          src={item.video_url}
+          className={styles.streamMedia}
+          playsInline
+          muted={muted}
+          loop
+          preload="metadata"
+        />
+      ) : null}
 
       {/* 下部グラデーション */}
       <div className={styles.streamGradient} />
 
       {/* 右サイドアクションバー */}
       <div className={styles.actionBar}>
-        {/* いいね（投稿詳細ページへ） */}
+        {/* いいね（インライン投票） */}
         <div className={styles.actionItem}>
-          <Link
-            href={detailHref}
+          <button
+            type="button"
             className={`${styles.actionBtn} ${liked ? styles.actionBtnActive : ""}`}
+            onClick={applyVote}
+            disabled={likeSubmitting}
           >
             <ThumbUpIcon />
-          </Link>
+          </button>
           <span className={styles.actionLabel}>{likeCount > 0 ? likeCount : "--"}</span>
         </div>
 
-        {/* コメント（投稿詳細ページへ） */}
+        {/* コメント（ドロワーを開く） */}
         <div className={styles.actionItem}>
-          <Link href={detailHref} className={styles.actionBtn}>
+          <button
+            type="button"
+            className={styles.actionBtn}
+            onClick={() => setCommentOpen(true)}
+          >
             <CommentIcon />
-          </Link>
+          </button>
           <span className={styles.actionLabel}>{commentCount > 0 ? commentCount : "--"}</span>
         </div>
 
@@ -218,8 +302,9 @@ function StreamItemView({
           <button
             className={styles.actionBtn}
             onClick={() => {
-              setMuted((prev) => !prev);
-              if (videoRef.current) videoRef.current.muted = !videoRef.current.muted;
+              const next = !muted;
+              setMuted(next);
+              if (videoRef.current) videoRef.current.muted = next;
             }}
             type="button"
           >
@@ -269,6 +354,24 @@ function StreamItemView({
           )}
         </div>
       </div>
+
+      {/* コメントドロワー */}
+      {commentOpen && (
+        <>
+          <div
+            className={styles.commentOverlay}
+            onClick={() => setCommentOpen(false)}
+          />
+          <div className={styles.commentDrawer}>
+            <div className={styles.commentDrawerHandle}>
+              <div className={styles.commentDrawerBar} />
+            </div>
+            <div className={styles.commentDrawerBody}>
+              <PostComments postId={item.id} locale={locale} />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
