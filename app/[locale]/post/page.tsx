@@ -41,6 +41,7 @@ type StoryPost = {
   image_url: string | null;
   image_url_2: string | null;
   image_url_3: string | null;
+  stream_video_id: string | null;
   view_count: number | null;
   slug: string | null;
   vote_score: number | null;
