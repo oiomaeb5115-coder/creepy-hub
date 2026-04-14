@@ -99,6 +99,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
         image_url: p.image_url,
         image_url_2: p.image_url_2,
         image_url_3: p.image_url_3,
+        stream_video_id: p.stream_video_id,
         view_count: p.view_count,
         slug: p.slug as string | null,
         user_id: p.user_id as string | null,

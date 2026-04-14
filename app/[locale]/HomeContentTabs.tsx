@@ -87,6 +87,7 @@ function StoryCardGrid({
   storyLabel: string;
   unknownDate: string;
 }) {
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const safeTitle = post.title ?? storyLabel;
   const safeContent = post.content ?? "";
   const safeCreatedAt = post.created_at ?? "";
@@ -99,6 +100,8 @@ function StoryCardGrid({
     .slice(0, 4);
 
   const authorName = post.author?.display_name || post.author?.username || null;
+
+  const streamSubdomain = process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN;
 
   return (
     <Link href={postUrl(locale, post.id, post.slug)} className={styles.gridCardLink}>
@@ -126,8 +129,8 @@ function StoryCardGrid({
           </p>
         </div>
 
-        {imageUrls.length > 0 ? (
-          <div className={`${styles.gridCardImageWrap} ${imageUrls.length >= 2 ? styles.gridCardImageGrid : ""}`} style={{ position: "relative" }}>
+        {imageUrls.length > 0 && (
+          <div className={`${styles.gridCardImageWrap} ${imageUrls.length >= 2 ? styles.gridCardImageGrid : ""}`}>
             {imageUrls.map((url, i) => (
               <img
                 key={i}
@@ -137,21 +140,38 @@ function StoryCardGrid({
                 loading="lazy"
               />
             ))}
-            {post.stream_video_id && (
-              <span style={{ position: "absolute", bottom: 6, right: 6, background: "rgba(0,0,0,0.7)", color: "#fff", borderRadius: 4, padding: "2px 6px", fontSize: 11, lineHeight: 1 }}>▶ 動画</span>
+          </div>
+        )}
+
+        {post.stream_video_id && (
+          <div
+            className={styles.gridCardVideoWrap}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setVideoPlaying(true);
+            }}
+          >
+            {videoPlaying ? (
+              <iframe
+                src={`https://${streamSubdomain}.cloudflarestream.com/${post.stream_video_id}/iframe?autoplay=true&muted=true`}
+                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+                className={styles.gridCardVideo}
+              />
+            ) : (
+              <>
+                <img
+                  src={`https://${streamSubdomain}.cloudflarestream.com/${post.stream_video_id}/thumbnails/thumbnail.jpg?width=400&height=225&fit=crop`}
+                  alt={safeTitle}
+                  className={styles.gridCardVideo}
+                  loading="lazy"
+                />
+                <span className={styles.gridCardPlayButton}>▶</span>
+              </>
             )}
           </div>
-        ) : post.stream_video_id ? (
-          <div className={styles.gridCardImageWrap} style={{ position: "relative" }}>
-            <img
-              src={`https://${process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN}.cloudflarestream.com/${post.stream_video_id}/thumbnails/thumbnail.jpg?width=400&height=225&fit=crop`}
-              alt={safeTitle}
-              className={styles.gridCardImage}
-              loading="lazy"
-            />
-            <span style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "rgba(0,0,0,0.6)", color: "#fff", borderRadius: "50%", width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>▶</span>
-          </div>
-        ) : null}
+        )}
 
         <div className={styles.gridCardFooter}>
           <InlineVoteButtons postId={post.id} initialScore={score} />

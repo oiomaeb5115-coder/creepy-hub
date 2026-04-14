@@ -29,6 +29,7 @@ type StoryPost = {
   image_url: string | null;
   image_url_2: string | null;
   image_url_3: string | null;
+  stream_video_id: string | null;
   view_count: number | null;
   slug: string | null;
   vote_score: number | null;
@@ -181,6 +182,7 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
       image_url: p.image_url,
       image_url_2: p.image_url_2,
       image_url_3: p.image_url_3,
+      stream_video_id: p.stream_video_id,
       view_count: p.view_count,
       slug: p.slug as string | null,
       user_id: p.user_id as string | null,
