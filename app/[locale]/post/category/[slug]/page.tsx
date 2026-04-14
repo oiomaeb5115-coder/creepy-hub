@@ -145,6 +145,7 @@ export default async function StoryCategoryPage({
       image_url: p.image_url,
       image_url_2: p.image_url_2,
       image_url_3: p.image_url_3,
+      stream_video_id: p.stream_video_id,
       view_count: p.view_count,
       category_id: p.category_id,
       slug: p.slug as string | null,
