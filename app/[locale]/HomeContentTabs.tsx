@@ -152,23 +152,16 @@ function StoryCardGrid({
               setVideoPlaying(true);
             }}
           >
-            {videoPlaying ? (
-              <iframe
-                src={`https://${streamSubdomain}.cloudflarestream.com/${post.stream_video_id}/iframe?autoplay=true&muted=true`}
-                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-                className={styles.gridCardVideo}
-              />
-            ) : (
-              <>
-                <img
-                  src={`https://${streamSubdomain}.cloudflarestream.com/${post.stream_video_id}/thumbnails/thumbnail.jpg?width=400&height=225&fit=crop`}
-                  alt={safeTitle}
-                  className={styles.gridCardVideo}
-                  loading="lazy"
-                />
-                <span className={styles.gridCardPlayButton}>▶</span>
-              </>
+            <iframe
+              src={`https://${streamSubdomain}.cloudflarestream.com/${post.stream_video_id}/iframe?preload=true${videoPlaying ? "&autoplay=true&muted=true" : ""}`}
+              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+              className={styles.gridCardVideo}
+              style={videoPlaying ? undefined : { pointerEvents: "none" }}
+              loading="lazy"
+            />
+            {!videoPlaying && (
+              <span className={styles.gridCardPlayButton}>▶</span>
             )}
           </div>
         )}
