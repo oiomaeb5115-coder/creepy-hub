@@ -6,6 +6,7 @@ import HomeAuthButtons from "./HomeAuthButtons";
 import HomeContentTabs from "./HomeContentTabs";
 import AdminPendingSection from "@/components/AdminPendingSection";
 import { ResponsiveAd } from "@/components/NinjaAd";
+import HeroLogo from "./HeroLogo";
 
 
 export const revalidate = 300;
@@ -216,11 +217,7 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
           </div>
 
           <div className={styles.heroInner}>
-            <img
-              src="/images/ui/auth-logo_2.webp"
-              alt=""
-              className={styles.heroLogo}
-            />
+            <HeroLogo />
             <div className={styles.siteTitleWrap}>
               <h1 className={styles.siteTitleText}>
                 CREEPY HUB

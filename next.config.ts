@@ -22,6 +22,8 @@ const nextConfig: NextConfig = {
       // iframe: 自サイトからの埋め込みのみ許可（広告用）
       "frame-src 'self' blob: https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.shinobi.jp https://*.criteo.com https://*.amossp-sp.in https://*.cloudflarestream.com",
       "frame-ancestors 'self'",
+      // 音声・動画ソース（Supabase Storage の VOICEROID 音声等）
+      "media-src 'self' https://*.supabase.co",
       // object タグを禁止
       "object-src 'none'",
     ].join("; ");

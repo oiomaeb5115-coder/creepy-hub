@@ -701,6 +701,25 @@ export default function AdminPage() {
           </Link>
         </header>
 
+        {/* ノベル管理へのリンク */}
+        <Link
+          href={`/${locale}/admin/novel`}
+          style={{
+            display: "block",
+            padding: "12px 16px",
+            marginBottom: 16,
+            borderRadius: 8,
+            border: "1px solid var(--border, #333)",
+            background: "linear-gradient(135deg, #1a0000, #330000)",
+            color: "#e0e0e0",
+            textDecoration: "none",
+            fontWeight: 600,
+            fontSize: 14,
+          }}
+        >
+          {dict.novelAdmin.title} &rarr;
+        </Link>
+
         {/* 管理者プロフィール */}
         <section style={profileSectionStyle}>
           <h2 style={sectionTitleStyle}>ADMIN PROFILE</h2>
