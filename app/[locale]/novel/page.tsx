@@ -53,6 +53,7 @@ export default async function NovelPage({ params }: Props) {
       dict={dict.novel}
       speakingCharUrl="/images/novel/char/eiko_1.png"
       storyHref={storyHref}
+      speakerName="映子"
     />
   );
 }

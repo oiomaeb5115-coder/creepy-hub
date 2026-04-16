@@ -19,6 +19,7 @@ type Props = {
   };
   speakingCharUrl?: string;
   storyHref?: string;
+  speakerName?: string;
 };
 
 const greetings = [
@@ -50,7 +51,7 @@ const tapLines = [
   "……そろそろ、始めようか。",
 ];
 
-export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl, storyHref }: Props) {
+export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl, storyHref, speakerName }: Props) {
   const [phase, setPhase] = useState<"loading" | "greeting" | "idle" | "tap">("loading");
   const [displayedText, setDisplayedText] = useState("");
   const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
@@ -293,6 +294,19 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
             zIndex: layers.length + 5,
           }}
         >
+          {speakerName && (
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "var(--accent, #c62828)",
+                marginBottom: 6,
+                letterSpacing: 1,
+              }}
+            >
+              {speakerName}
+            </div>
+          )}
           <div
             style={{
               fontSize: 16,
