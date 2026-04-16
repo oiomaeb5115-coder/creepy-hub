@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 type Layer = {
   type: "bg" | "char";
   image_url: string;
+  role?: "shadow";
 };
 
 type Props = {
@@ -15,6 +16,7 @@ type Props = {
     subtitle: string;
     backToList: string;
   };
+  speakingCharUrl?: string;
 };
 
 const greetings = [
@@ -46,28 +48,33 @@ const tapLines = [
   "……そろそろ、始めようか。",
 ];
 
-export default function NovelIdleScreen({ layers, locale, dict }: Props) {
+export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl }: Props) {
   const [phase, setPhase] = useState<"loading" | "greeting" | "idle" | "tap">("loading");
   const [displayedText, setDisplayedText] = useState("");
   const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
   const [isTyping, setIsTyping] = useState(false);
   const lastTapLineRef = useRef(-1);
   const [loadedCount, setLoadedCount] = useState(0);
-  const totalImages = layers.length;
   const transitionStarted = useRef(false);
 
-  // Preload all images
+  // Preload all images (including speaking character)
+  const allImageUrls = [
+    ...layers.map((l) => l.image_url),
+    ...(speakingCharUrl ? [speakingCharUrl] : []),
+  ];
+  const totalImages = allImageUrls.length;
+
   useEffect(() => {
     let count = 0;
-    layers.forEach((layer) => {
+    allImageUrls.forEach((url) => {
       const img = new Image();
       img.onload = img.onerror = () => {
         count++;
         setLoadedCount(count);
       };
-      img.src = layer.image_url;
+      img.src = url;
     });
-  }, [layers]);
+  }, [layers, speakingCharUrl]);
 
   // Transition from loading to greeting once all images loaded
   useEffect(() => {
@@ -194,22 +201,29 @@ export default function NovelIdleScreen({ layers, locale, dict }: Props) {
           transition: "opacity 0.8s ease",
         }}
       >
-        {layers.map((layer, i) => (
-          <img
-            key={i}
-            src={layer.image_url}
-            alt=""
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              zIndex: i + 1,
-              pointerEvents: "none",
-            }}
-          />
-        ))}
+        {layers.map((layer, i) => {
+          const isSpeaking = phase === "greeting" || phase === "tap";
+          const isMainChar = layer.type === "char" && layer.role !== "shadow";
+          const src = isMainChar && isSpeaking && speakingCharUrl
+            ? speakingCharUrl
+            : layer.image_url;
+          return (
+            <img
+              key={i}
+              src={src}
+              alt=""
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                zIndex: i + 1,
+                pointerEvents: "none",
+              }}
+            />
+          );
+        })}
       </div>
 
       {/* Dark overlay */}
