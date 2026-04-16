@@ -30,11 +30,28 @@ const greetings = [
   "今夜は、どんな話がいい？",
 ];
 
+const tapLines = [
+  "……なに？",
+  "触らないで。",
+  "……用があるの？",
+  "ふぅん……。",
+  "そんなに見つめないで。",
+  "……退屈？",
+  "私に何か聞きたいことでも？",
+  "……べ、別に嬉しくないから。",
+  "静かにして……集中できない。",
+  "……もう。",
+  "なんでもない、って顔してる。",
+  "話なら、いくらでもあるけど。",
+  "……そろそろ、始めようか。",
+];
+
 export default function NovelIdleScreen({ layers, locale, dict }: Props) {
-  const [phase, setPhase] = useState<"loading" | "greeting" | "idle">("loading");
+  const [phase, setPhase] = useState<"loading" | "greeting" | "idle" | "tap">("loading");
   const [displayedText, setDisplayedText] = useState("");
   const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
   const [isTyping, setIsTyping] = useState(false);
+  const lastTapLineRef = useRef(-1);
   const [loadedCount, setLoadedCount] = useState(0);
   const totalImages = layers.length;
   const transitionStarted = useRef(false);
@@ -87,19 +104,34 @@ export default function NovelIdleScreen({ layers, locale, dict }: Props) {
     }
   }, [phase, greeting, startTypewriter]);
 
-  // Greeting → idle
+  // Greeting / tap → idle
   useEffect(() => {
-    if (phase === "greeting" && !isTyping && displayedText === greeting) {
+    if ((phase === "greeting" || phase === "tap") && !isTyping && displayedText.length > 0) {
       const timer = setTimeout(() => setPhase("idle"), 2500);
       return () => clearTimeout(timer);
     }
-  }, [phase, isTyping, displayedText, greeting]);
+  }, [phase, isTyping, displayedText]);
 
   const handleTap = () => {
     if (phase === "greeting" && isTyping) {
       setDisplayedText(greeting);
       setIsTyping(false);
     } else if (phase === "greeting") {
+      setPhase("idle");
+    } else if (phase === "idle") {
+      // Pick a random tap line (avoid repeating the same one)
+      let idx: number;
+      do {
+        idx = Math.floor(Math.random() * tapLines.length);
+      } while (idx === lastTapLineRef.current && tapLines.length > 1);
+      lastTapLineRef.current = idx;
+      setPhase("tap");
+      startTypewriter(tapLines[idx]);
+    } else if (phase === "tap" && isTyping) {
+      // Skip typewriter on tap during tap phase
+      setDisplayedText(tapLines[lastTapLineRef.current]);
+      setIsTyping(false);
+    } else if (phase === "tap") {
       setPhase("idle");
     }
   };
@@ -113,7 +145,7 @@ export default function NovelIdleScreen({ layers, locale, dict }: Props) {
         background: "#000",
         zIndex: 9999,
         overflow: "hidden",
-        cursor: phase === "greeting" ? "pointer" : "default",
+        cursor: phase === "loading" ? "default" : "pointer",
         touchAction: "manipulation",
       }}
     >
@@ -219,8 +251,8 @@ export default function NovelIdleScreen({ layers, locale, dict }: Props) {
         </a>
       )}
 
-      {/* Greeting text box */}
-      {phase === "greeting" && (
+      {/* Text box (greeting & tap) */}
+      {(phase === "greeting" || phase === "tap") && (
         <div
           style={{
             position: "absolute",
