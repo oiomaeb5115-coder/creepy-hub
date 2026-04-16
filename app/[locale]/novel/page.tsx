@@ -9,9 +9,10 @@ type Props = {
 
 /** 背景画像レイヤー（エピソードがないときのソシャゲホーム風表示用） */
 const idleLayers = [
-  { type: "bg" as const, image_url: "/images/novel/スマホ用　背景-3.png" },
-  { type: "bg" as const, image_url: "/images/novel/スマホ用　背景-2.png" },
-  { type: "bg" as const, image_url: "/images/novel/スマホ用　背景-1.png" },
+  { type: "char" as const, image_url: "/images/novel/char/eiko_1.png", position: "center" as const },
+  { type: "bg" as const, image_url: "/images/novel/bg/スマホ用　背景-3.png" },
+  { type: "bg" as const, image_url: "/images/novel/bg/スマホ用　背景-2.png" },
+  { type: "bg" as const, image_url: "/images/novel/bg/スマホ用　背景-1.png" },
 ];
 
 export default async function NovelPage({ params }: Props) {
@@ -76,23 +77,48 @@ export default async function NovelPage({ params }: Props) {
         overflow: "hidden",
       }}
     >
-      {/* Background layers */}
-      {idleLayers.map((layer, i) => (
-        <img
-          key={i}
-          src={layer.image_url}
-          alt=""
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            zIndex: i + 1,
-            pointerEvents: "none",
-          }}
-        />
-      ))}
+      {/* Layers */}
+      {idleLayers.map((layer, i) => {
+        if (layer.type === "char") {
+          const pos = "position" in layer ? layer.position : "center";
+          return (
+            <img
+              key={i}
+              src={layer.image_url}
+              alt=""
+              style={{
+                position: "absolute",
+                bottom: "28%",
+                left: pos === "left" ? "5%" : pos === "right" ? "auto" : "50%",
+                right: pos === "right" ? "5%" : "auto",
+                transform: pos === "center" ? "translateX(-50%)" : "none",
+                maxHeight: "55%",
+                maxWidth: "50%",
+                objectFit: "contain",
+                zIndex: i + 1,
+                pointerEvents: "none",
+                filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.5))",
+              }}
+            />
+          );
+        }
+        return (
+          <img
+            key={i}
+            src={layer.image_url}
+            alt=""
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              zIndex: i + 1,
+              pointerEvents: "none",
+            }}
+          />
+        );
+      })}
 
       {/* Dark overlay */}
       <div
