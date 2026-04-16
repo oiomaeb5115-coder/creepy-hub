@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 type Layer = {
   type: "bg" | "char";
@@ -17,7 +17,6 @@ type Props = {
   };
 };
 
-/** キャラのランダムセリフ */
 const greetings = [
   "……いらっしゃい。",
   "今日も来てくれたんだ。",
@@ -32,12 +31,38 @@ const greetings = [
 ];
 
 export default function NovelIdleScreen({ layers, locale, dict }: Props) {
-  const [phase, setPhase] = useState<"greeting" | "idle">("greeting");
+  const [phase, setPhase] = useState<"loading" | "greeting" | "idle">("loading");
   const [displayedText, setDisplayedText] = useState("");
   const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
   const [isTyping, setIsTyping] = useState(false);
+  const [loadedCount, setLoadedCount] = useState(0);
+  const totalImages = layers.length;
+  const transitionStarted = useRef(false);
 
-  // Typewriter effect
+  // Preload all images
+  useEffect(() => {
+    let count = 0;
+    layers.forEach((layer) => {
+      const img = new Image();
+      img.onload = img.onerror = () => {
+        count++;
+        setLoadedCount(count);
+      };
+      img.src = layer.image_url;
+    });
+  }, [layers]);
+
+  // Transition from loading to greeting once all images loaded
+  useEffect(() => {
+    if (phase === "loading" && loadedCount >= totalImages && !transitionStarted.current) {
+      transitionStarted.current = true;
+      // Short delay for smooth transition
+      const timer = setTimeout(() => setPhase("greeting"), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [phase, loadedCount, totalImages]);
+
+  // Typewriter
   const startTypewriter = useCallback((text: string) => {
     setIsTyping(true);
     setDisplayedText("");
@@ -54,31 +79,27 @@ export default function NovelIdleScreen({ layers, locale, dict }: Props) {
     requestAnimationFrame(tick);
   }, []);
 
-  // Start greeting on mount
+  // Start greeting
   useEffect(() => {
-    const timer = setTimeout(() => {
-      startTypewriter(greeting);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [greeting, startTypewriter]);
+    if (phase === "greeting") {
+      const timer = setTimeout(() => startTypewriter(greeting), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [phase, greeting, startTypewriter]);
 
-  // Transition to idle after greeting finishes
+  // Greeting → idle
   useEffect(() => {
     if (phase === "greeting" && !isTyping && displayedText === greeting) {
-      const timer = setTimeout(() => {
-        setPhase("idle");
-      }, 2500);
+      const timer = setTimeout(() => setPhase("idle"), 2500);
       return () => clearTimeout(timer);
     }
   }, [phase, isTyping, displayedText, greeting]);
 
   const handleTap = () => {
     if (phase === "greeting" && isTyping) {
-      // Skip typewriter
       setDisplayedText(greeting);
       setIsTyping(false);
     } else if (phase === "greeting") {
-      // Skip wait, go to idle
       setPhase("idle");
     }
   };
@@ -96,23 +117,68 @@ export default function NovelIdleScreen({ layers, locale, dict }: Props) {
         touchAction: "manipulation",
       }}
     >
-      {/* Layers */}
-      {layers.map((layer, i) => (
+      {/* Loading screen with logo */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 100,
+          background: "#000",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: phase === "loading" ? 1 : 0,
+          transition: "opacity 0.8s ease",
+          pointerEvents: phase === "loading" ? "auto" : "none",
+        }}
+      >
         <img
-          key={i}
-          src={layer.image_url}
+          src="/images/ui/auth-logo_2.webp"
           alt=""
           style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            zIndex: i + 1,
-            pointerEvents: "none",
+            width: 80,
+            height: "auto",
+            animation: "novel-logo-pulse 2s ease-in-out infinite",
           }}
         />
-      ))}
+        <p
+          style={{
+            marginTop: 16,
+            fontSize: 13,
+            color: "rgba(255,255,255,0.4)",
+            fontFamily: "'SoukouMincho', serif",
+            letterSpacing: 3,
+          }}
+        >
+          {dict.title}
+        </p>
+      </div>
+
+      {/* Layers (always rendered for preloading, fade in when ready) */}
+      <div
+        style={{
+          opacity: phase !== "loading" ? 1 : 0,
+          transition: "opacity 0.8s ease",
+        }}
+      >
+        {layers.map((layer, i) => (
+          <img
+            key={i}
+            src={layer.image_url}
+            alt=""
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              zIndex: i + 1,
+              pointerEvents: "none",
+            }}
+          />
+        ))}
+      </div>
 
       {/* Dark overlay */}
       <div
@@ -122,31 +188,36 @@ export default function NovelIdleScreen({ layers, locale, dict }: Props) {
           background: "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.15) 70%, rgba(0,0,0,0.5) 100%)",
           zIndex: layers.length + 1,
           pointerEvents: "none",
+          opacity: phase !== "loading" ? 1 : 0,
+          transition: "opacity 0.8s ease",
         }}
       />
 
       {/* Home button */}
-      <a
-        href={`/${locale}`}
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          position: "absolute",
-          top: 12,
-          left: 12,
-          zIndex: layers.length + 10,
-          color: "#fff",
-          textDecoration: "none",
-          fontSize: 14,
-          padding: "6px 14px",
-          background: "rgba(0,0,0,0.6)",
-          borderRadius: 8,
-          border: "1px solid rgba(255,255,255,0.2)",
-          backdropFilter: "blur(4px)",
-          WebkitBackdropFilter: "blur(4px)",
-        }}
-      >
-        &larr; {dict.backToList}
-      </a>
+      {phase !== "loading" && (
+        <a
+          href={`/${locale}`}
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: "absolute",
+            top: 12,
+            left: 12,
+            zIndex: layers.length + 10,
+            color: "#fff",
+            textDecoration: "none",
+            fontSize: 14,
+            padding: "6px 14px",
+            background: "rgba(0,0,0,0.6)",
+            borderRadius: 8,
+            border: "1px solid rgba(255,255,255,0.2)",
+            backdropFilter: "blur(4px)",
+            WebkitBackdropFilter: "blur(4px)",
+            animation: "novel-fade-in 0.5s ease",
+          }}
+        >
+          &larr; {dict.backToList}
+        </a>
+      )}
 
       {/* Greeting text box */}
       {phase === "greeting" && (
@@ -163,7 +234,6 @@ export default function NovelIdleScreen({ layers, locale, dict }: Props) {
             flexDirection: "column",
             justifyContent: "flex-start",
             zIndex: layers.length + 5,
-            transition: "opacity 0.5s ease",
           }}
         >
           <div
@@ -194,7 +264,7 @@ export default function NovelIdleScreen({ layers, locale, dict }: Props) {
         </div>
       )}
 
-      {/* Idle: title overlay at bottom */}
+      {/* Idle title */}
       {phase === "idle" && (
         <div
           style={{
@@ -208,24 +278,10 @@ export default function NovelIdleScreen({ layers, locale, dict }: Props) {
             animation: "novel-fade-in 0.8s ease",
           }}
         >
-          <p
-            style={{
-              fontSize: 20,
-              color: "rgba(255,255,255,0.6)",
-              fontFamily: "'SoukouMincho', serif",
-              fontWeight: 700,
-              letterSpacing: 3,
-            }}
-          >
+          <p style={{ fontSize: 20, color: "rgba(255,255,255,0.6)", fontFamily: "'SoukouMincho', serif", fontWeight: 700, letterSpacing: 3 }}>
             {dict.title}
           </p>
-          <p
-            style={{
-              fontSize: 12,
-              color: "rgba(255,255,255,0.35)",
-              marginTop: 4,
-            }}
-          >
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>
             {dict.subtitle}
           </p>
         </div>
@@ -239,6 +295,10 @@ export default function NovelIdleScreen({ layers, locale, dict }: Props) {
         @keyframes novel-fade-in {
           from { opacity: 0; }
           to { opacity: 1; }
+        }
+        @keyframes novel-logo-pulse {
+          0%, 100% { opacity: 0.4; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.05); }
         }
       `}</style>
     </div>
