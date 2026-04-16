@@ -9,9 +9,9 @@ type Props = {
 
 /** 背景画像レイヤー（エピソードがないときのソシャゲホーム風表示用） */
 const idleLayers = [
-  { type: "char" as const, image_url: "/images/novel/char/eiko_1.png", position: "center" as const },
   { type: "bg" as const, image_url: "/images/novel/bg/スマホ用　背景-3.png" },
   { type: "bg" as const, image_url: "/images/novel/bg/スマホ用　背景-2.png" },
+  { type: "char" as const, image_url: "/images/novel/char/eiko_1.png", position: "center" as const },
   { type: "bg" as const, image_url: "/images/novel/bg/スマホ用　背景-1.png" },
 ];
 
