@@ -9,9 +9,9 @@ type Props = {
 
 /** 背景画像レイヤー（エピソードがないときのソシャゲホーム風表示用） */
 const idleLayers = [
-  { type: "bg" as const, image_url: "/images/novel/スマホ用　背景-1.png" },
-  { type: "bg" as const, image_url: "/images/novel/スマホ用　背景-2.png" },
   { type: "bg" as const, image_url: "/images/novel/スマホ用　背景-3.png" },
+  { type: "bg" as const, image_url: "/images/novel/スマホ用　背景-2.png" },
+  { type: "bg" as const, image_url: "/images/novel/スマホ用　背景-1.png" },
 ];
 
 export default async function NovelPage({ params }: Props) {
