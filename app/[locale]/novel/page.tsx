@@ -80,7 +80,7 @@ export default async function NovelPage({ params }: Props) {
       {/* Layers */}
       {idleLayers.map((layer, i) => {
         if (layer.type === "char") {
-          const pos = "position" in layer ? layer.position : "center";
+          const pos: string = "position" in layer ? (layer.position ?? "center") : "center";
           return (
             <img
               key={i}
