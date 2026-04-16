@@ -51,12 +51,32 @@ const tapLines = [
   "……そろそろ、始めようか。",
 ];
 
+type ScriptTopic = {
+  label: string;
+  lines: string[];
+};
+
+const scriptTopics: ScriptTopic[] = [
+  {
+    label: "最近の投稿について",
+    lines: [
+      "そういえば、最近このような投稿が増えたような気がするの",
+      "えーと...そうこれ",
+      "tiktokホラーmovie",
+      "縦画面の動画が中心となっているのだけれど、その中でも特に特徴的なのが『1982年』のテイストが用いられているということよ",
+      "これの意味するところがどういうことか...わかるでしょう？",
+    ],
+  },
+];
+
 export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl, storyHref, speakerName }: Props) {
-  const [phase, setPhase] = useState<"loading" | "greeting" | "idle" | "tap">("loading");
+  const [phase, setPhase] = useState<"loading" | "greeting" | "idle" | "tap" | "script">("loading");
   const [displayedText, setDisplayedText] = useState("");
   const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
   const [isTyping, setIsTyping] = useState(false);
   const lastTapLineRef = useRef(-1);
+  const [activeScript, setActiveScript] = useState<ScriptTopic | null>(null);
+  const [scriptIndex, setScriptIndex] = useState(0);
   const [loadedCount, setLoadedCount] = useState(0);
   const transitionStarted = useRef(false);
 
@@ -122,6 +142,13 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
     }
   }, [phase, isTyping, displayedText]);
 
+  const startScript = (topic: ScriptTopic) => {
+    setActiveScript(topic);
+    setScriptIndex(0);
+    setPhase("script");
+    startTypewriter(topic.lines[0]);
+  };
+
   const handleTap = () => {
     if (phase === "greeting" && isTyping) {
       setDisplayedText(greeting);
@@ -130,7 +157,6 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
       setPhase("idle");
     } else if (phase === "idle") {
       if (storyHref) {
-        // Navigate to the story
         window.location.href = storyHref;
         return;
       }
@@ -143,11 +169,26 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
       setPhase("tap");
       startTypewriter(tapLines[idx]);
     } else if (phase === "tap" && isTyping) {
-      // Skip typewriter on tap during tap phase
       setDisplayedText(tapLines[lastTapLineRef.current]);
       setIsTyping(false);
     } else if (phase === "tap") {
       setPhase("idle");
+    } else if (phase === "script" && activeScript) {
+      if (isTyping) {
+        // Reveal all text
+        setDisplayedText(activeScript.lines[scriptIndex]);
+        setIsTyping(false);
+      } else if (scriptIndex < activeScript.lines.length - 1) {
+        // Advance to next line
+        const next = scriptIndex + 1;
+        setScriptIndex(next);
+        startTypewriter(activeScript.lines[next]);
+      } else {
+        // Script finished — return to idle
+        setActiveScript(null);
+        setScriptIndex(0);
+        setPhase("idle");
+      }
     }
   };
 
@@ -210,7 +251,7 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
         }}
       >
         {layers.map((layer, i) => {
-          const isSpeaking = phase === "greeting" || phase === "tap";
+          const isSpeaking = phase === "greeting" || phase === "tap" || phase === "script";
           const isMainChar = layer.type === "char" && layer.role !== "shadow";
           const src = isMainChar && isSpeaking && speakingCharUrl
             ? speakingCharUrl
@@ -277,8 +318,8 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
         </a>
       )}
 
-      {/* Text box (greeting & tap) */}
-      {(phase === "greeting" || phase === "tap") && (
+      {/* Text box (greeting, tap & script) */}
+      {(phase === "greeting" || phase === "tap" || phase === "script") && (
         <div
           style={{
             position: "absolute",
@@ -335,23 +376,52 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
         </div>
       )}
 
-      {/* Tap to start hint (idle with story available) */}
-      {phase === "idle" && storyHref && (
+      {/* Idle: topic buttons + tap-to-start hint */}
+      {phase === "idle" && (
         <div
           style={{
             position: "absolute",
-            bottom: 32,
+            bottom: 24,
             left: 0,
             right: 0,
-            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 10,
             zIndex: layers.length + 5,
-            pointerEvents: "none",
             animation: "novel-fade-in 0.8s ease",
           }}
         >
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", fontFamily: "'SoukouMincho', serif", letterSpacing: 2 }}>
-            {dict.tapToContinue ?? "タップで始める"}
-          </p>
+          {scriptTopics.map((topic, i) => (
+            <button
+              key={i}
+              onClick={(e) => {
+                e.stopPropagation();
+                startScript(topic);
+              }}
+              style={{
+                background: "rgba(0,0,0,0.7)",
+                border: "1px solid rgba(255,255,255,0.25)",
+                borderRadius: 8,
+                padding: "10px 24px",
+                color: "rgba(255,255,255,0.8)",
+                fontSize: 14,
+                fontFamily: "'SoukouMincho', serif",
+                letterSpacing: 1,
+                cursor: "pointer",
+                backdropFilter: "blur(4px)",
+                WebkitBackdropFilter: "blur(4px)",
+                transition: "background 0.2s ease, border-color 0.2s ease",
+              }}
+            >
+              {topic.label}
+            </button>
+          ))}
+          {storyHref && (
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", fontFamily: "'SoukouMincho', serif", letterSpacing: 2, marginTop: 4 }}>
+              {dict.tapToContinue ?? "タップで始める"}
+            </p>
+          )}
         </div>
       )}
 
