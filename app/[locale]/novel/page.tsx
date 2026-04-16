@@ -80,7 +80,6 @@ export default async function NovelPage({ params }: Props) {
       {/* Layers */}
       {idleLayers.map((layer, i) => {
         if (layer.type === "char") {
-          const pos: string = "position" in layer ? (layer.position ?? "center") : "center";
           return (
             <img
               key={i}
@@ -88,16 +87,12 @@ export default async function NovelPage({ params }: Props) {
               alt=""
               style={{
                 position: "absolute",
-                bottom: "28%",
-                left: pos === "left" ? "5%" : pos === "right" ? "auto" : "50%",
-                right: pos === "right" ? "5%" : "auto",
-                transform: pos === "center" ? "translateX(-50%)" : "none",
-                maxHeight: "55%",
-                maxWidth: "50%",
-                objectFit: "contain",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
                 zIndex: i + 1,
                 pointerEvents: "none",
-                filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.5))",
               }}
             />
           );
