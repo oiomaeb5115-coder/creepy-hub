@@ -51,9 +51,15 @@ const tapLines = [
   "……そろそろ、始めようか。",
 ];
 
+type ScriptChoice = {
+  label: string;
+  lines: string[];
+};
+
 type ScriptTopic = {
   label: string;
   lines: string[];
+  choices?: ScriptChoice[];
 };
 
 const scriptTopics: ScriptTopic[] = [
@@ -66,17 +72,40 @@ const scriptTopics: ScriptTopic[] = [
       "縦画面の動画が中心となっているのだけれど、その中でも特に特徴的なのが『1982年』のテイストが用いられているということよ",
       "これの意味するところがどういうことか...わかるでしょう？",
     ],
+    choices: [
+      {
+        label: "レトロホラーの流行？",
+        lines: [
+          "……そう、正解。よくわかったわね",
+          "VHSのノイズや粗いフィルム感……あの時代特有の不気味さが、今の世代には新鮮に映るみたい",
+          "でもね、それだけじゃないの。あの頃のホラーには……『説明しすぎない恐怖』があったのよ",
+          "……今の投稿者たちも、それを本能的に理解しているのかもしれないわね",
+        ],
+      },
+      {
+        label: "よくわからない",
+        lines: [
+          "……そう。まあ、無理もないわね",
+          "簡単に言うと、1982年頃のホラー映画の雰囲気……VHSの質感やフィルムの粗さを、わざと再現しているの",
+          "なぜかって？　それはね……『本物の記録映像』に見せかけるため",
+          "作り物だとわかっていても、あのノイズが走った瞬間……背筋が凍るでしょう？",
+          "……それが、この手法の狙いよ",
+        ],
+      },
+    ],
   },
 ];
 
 export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl, storyHref, speakerName }: Props) {
-  const [phase, setPhase] = useState<"loading" | "greeting" | "idle" | "tap" | "script">("loading");
+  const [phase, setPhase] = useState<"loading" | "greeting" | "idle" | "tap" | "script" | "choice" | "branch">("loading");
   const [displayedText, setDisplayedText] = useState("");
   const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
   const [isTyping, setIsTyping] = useState(false);
   const lastTapLineRef = useRef(-1);
   const [activeScript, setActiveScript] = useState<ScriptTopic | null>(null);
   const [scriptIndex, setScriptIndex] = useState(0);
+  const [activeBranch, setActiveBranch] = useState<ScriptChoice | null>(null);
+  const [branchIndex, setBranchIndex] = useState(0);
   const [loadedCount, setLoadedCount] = useState(0);
   const transitionStarted = useRef(false);
 
@@ -175,21 +204,45 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
       setPhase("idle");
     } else if (phase === "script" && activeScript) {
       if (isTyping) {
-        // Reveal all text
         setDisplayedText(activeScript.lines[scriptIndex]);
         setIsTyping(false);
       } else if (scriptIndex < activeScript.lines.length - 1) {
-        // Advance to next line
         const next = scriptIndex + 1;
         setScriptIndex(next);
         startTypewriter(activeScript.lines[next]);
+      } else if (activeScript.choices && activeScript.choices.length > 0) {
+        // Show choices
+        setPhase("choice");
       } else {
-        // Script finished — return to idle
+        // No choices — return to idle
         setActiveScript(null);
         setScriptIndex(0);
         setPhase("idle");
       }
+    } else if (phase === "branch" && activeBranch) {
+      if (isTyping) {
+        setDisplayedText(activeBranch.lines[branchIndex]);
+        setIsTyping(false);
+      } else if (branchIndex < activeBranch.lines.length - 1) {
+        const next = branchIndex + 1;
+        setBranchIndex(next);
+        startTypewriter(activeBranch.lines[next]);
+      } else {
+        // Branch finished — return to idle
+        setActiveScript(null);
+        setActiveBranch(null);
+        setScriptIndex(0);
+        setBranchIndex(0);
+        setPhase("idle");
+      }
     }
+  };
+
+  const selectChoice = (choice: ScriptChoice) => {
+    setActiveBranch(choice);
+    setBranchIndex(0);
+    setPhase("branch");
+    startTypewriter(choice.lines[0]);
   };
 
   return (
@@ -251,7 +304,7 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
         }}
       >
         {layers.map((layer, i) => {
-          const isSpeaking = phase === "greeting" || phase === "tap" || phase === "script";
+          const isSpeaking = phase === "greeting" || phase === "tap" || phase === "script" || phase === "choice" || phase === "branch";
           const isMainChar = layer.type === "char" && layer.role !== "shadow";
           const src = isMainChar && isSpeaking && speakingCharUrl
             ? speakingCharUrl
@@ -318,8 +371,8 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
         </a>
       )}
 
-      {/* Text box (greeting, tap & script) */}
-      {(phase === "greeting" || phase === "tap" || phase === "script") && (
+      {/* Text box (greeting, tap, script & branch) */}
+      {(phase === "greeting" || phase === "tap" || phase === "script" || phase === "branch") && (
         <div
           style={{
             position: "absolute",
@@ -373,6 +426,53 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
               />
             )}
           </div>
+        </div>
+      )}
+
+      {/* Choice: branching options */}
+      {phase === "choice" && activeScript?.choices && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: "20px 16px 40px",
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.92))",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 12,
+            zIndex: layers.length + 5,
+            animation: "novel-fade-in 0.5s ease",
+          }}
+        >
+          {activeScript.choices.map((choice, i) => (
+            <button
+              key={i}
+              onClick={(e) => {
+                e.stopPropagation();
+                selectChoice(choice);
+              }}
+              style={{
+                width: "100%",
+                maxWidth: 320,
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.3)",
+                borderRadius: 8,
+                padding: "12px 20px",
+                color: "#e0e0e0",
+                fontSize: 15,
+                fontFamily: "'SoukouMincho', serif",
+                letterSpacing: 1,
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "background 0.2s ease, border-color 0.2s ease",
+              }}
+            >
+              {choice.label}
+            </button>
+          ))}
         </div>
       )}
 
