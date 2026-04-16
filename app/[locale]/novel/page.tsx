@@ -1,7 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
 import { headers } from "next/headers";
-import NovelPlayer from "./[episodeId]/NovelPlayer";
 import NovelIdleScreen from "./NovelIdleScreen";
 
 type Props = {
@@ -38,41 +37,22 @@ export default async function NovelPage({ params }: Props) {
   // Fetch first published episode with scenes
   const { data: episodes } = await supabase
     .from("novel_episodes")
-    .select("*")
+    .select("id")
     .eq("is_published", true)
     .order("sort_order", { ascending: true })
     .limit(1);
 
   const episode = episodes?.[0];
+  const storyHref = episode ? `/${locale}/novel/${episode.id}` : undefined;
 
-  if (episode) {
-    const { data: scenes } = await supabase
-      .from("novel_scenes")
-      .select("*")
-      .eq("episode_id", episode.id)
-      .order("scene_order", { ascending: true });
-
-    if (scenes && scenes.length > 0) {
-      const title = locale === "en" && episode.title_en ? episode.title_en : episode.title_ja;
-      return (
-        <NovelPlayer
-          scenes={scenes}
-          locale={locale}
-          episodeTitle={title}
-          backHref={`/${locale}`}
-          dict={dict.novel}
-        />
-      );
-    }
-  }
-
-  // No episodes — idle screen with greeting
+  // Always show idle screen as lobby — tap to start story
   return (
     <NovelIdleScreen
       layers={idleLayers}
       locale={locale}
       dict={dict.novel}
       speakingCharUrl="/images/novel/char/eiko_1.png"
+      storyHref={storyHref}
     />
   );
 }

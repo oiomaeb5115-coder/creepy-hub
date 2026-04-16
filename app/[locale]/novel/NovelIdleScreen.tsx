@@ -15,8 +15,10 @@ type Props = {
     title: string;
     subtitle: string;
     backToList: string;
+    tapToContinue?: string;
   };
   speakingCharUrl?: string;
+  storyHref?: string;
 };
 
 const greetings = [
@@ -48,7 +50,7 @@ const tapLines = [
   "……そろそろ、始めようか。",
 ];
 
-export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl }: Props) {
+export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl, storyHref }: Props) {
   const [phase, setPhase] = useState<"loading" | "greeting" | "idle" | "tap">("loading");
   const [displayedText, setDisplayedText] = useState("");
   const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
@@ -126,7 +128,12 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl 
     } else if (phase === "greeting") {
       setPhase("idle");
     } else if (phase === "idle") {
-      // Pick a random tap line (avoid repeating the same one)
+      if (storyHref) {
+        // Navigate to the story
+        window.location.href = storyHref;
+        return;
+      }
+      // No story available — show random tap line
       let idx: number;
       do {
         idx = Math.floor(Math.random() * tapLines.length);
@@ -239,7 +246,7 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl 
         }}
       />
 
-      {/* Home button */}
+      {/* Home button (icon) */}
       {phase !== "loading" && (
         <a
           href={`/${locale}`}
@@ -249,19 +256,23 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl 
             top: 12,
             left: 12,
             zIndex: layers.length + 10,
-            color: "#fff",
-            textDecoration: "none",
-            fontSize: 14,
-            padding: "6px 14px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 40,
+            height: 40,
             background: "rgba(0,0,0,0.6)",
-            borderRadius: 8,
+            borderRadius: "50%",
             border: "1px solid rgba(255,255,255,0.2)",
             backdropFilter: "blur(4px)",
             WebkitBackdropFilter: "blur(4px)",
             animation: "novel-fade-in 0.5s ease",
           }}
         >
-          &larr; {dict.backToList}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
         </a>
       )}
 
@@ -310,8 +321,8 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl 
         </div>
       )}
 
-      {/* Idle title */}
-      {phase === "idle" && (
+      {/* Tap to start hint (idle with story available) */}
+      {phase === "idle" && storyHref && (
         <div
           style={{
             position: "absolute",
@@ -324,11 +335,8 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl 
             animation: "novel-fade-in 0.8s ease",
           }}
         >
-          <p style={{ fontSize: 20, color: "rgba(255,255,255,0.6)", fontFamily: "'SoukouMincho', serif", fontWeight: 700, letterSpacing: 3 }}>
-            {dict.title}
-          </p>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>
-            {dict.subtitle}
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", fontFamily: "'SoukouMincho', serif", letterSpacing: 2 }}>
+            {dict.tapToContinue ?? "タップで始める"}
           </p>
         </div>
       )}
