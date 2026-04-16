@@ -11,8 +11,8 @@ type Props = {
 /** 背景画像レイヤー（アイドル画面用） */
 const idleLayers = [
   { type: "bg" as const, image_url: "/images/novel/bg/スマホ用　背景-3.png" },
-  { type: "bg" as const, image_url: "/images/novel/bg/スマホ用　背景-2.png" },
   { type: "char" as const, image_url: "/images/novel/char/eiko_1.png" },
+  { type: "bg" as const, image_url: "/images/novel/bg/スマホ用　背景-2.png" },
   { type: "bg" as const, image_url: "/images/novel/bg/スマホ用　背景-1.png" },
 ];
 
