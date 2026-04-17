@@ -76,6 +76,80 @@ const tapLines: Line[] = [
   { text: "……そろそろ、始めようか。", expr: EXPR.smile1 },
 ];
 
+const controlBtnStyle: React.CSSProperties = {
+  background: "rgba(255,255,255,0.08)",
+  border: "1px solid rgba(255,255,255,0.25)",
+  borderRadius: 6,
+  padding: "4px 12px",
+  color: "rgba(255,255,255,0.85)",
+  fontSize: 11,
+  letterSpacing: 1,
+  cursor: "pointer",
+  fontFamily: "'SoukouMincho', serif",
+};
+
+const settingsLabel: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  fontSize: 13,
+  color: "#e0e0e0",
+  marginBottom: 6,
+  fontFamily: "'SoukouMincho', serif",
+  letterSpacing: 1,
+};
+
+const settingsValue: React.CSSProperties = {
+  fontSize: 12,
+  color: "rgba(255,255,255,0.55)",
+};
+
+const segBtnStyle: React.CSSProperties = {
+  flex: 1,
+  background: "rgba(255,255,255,0.08)",
+  border: "1px solid rgba(255,255,255,0.25)",
+  borderRadius: 6,
+  padding: "6px 0",
+  color: "rgba(255,255,255,0.85)",
+  fontSize: 13,
+  cursor: "pointer",
+  fontFamily: "'SoukouMincho', serif",
+};
+
+function IconButton({
+  onClick,
+  title,
+  children,
+}: {
+  onClick: (e: React.MouseEvent) => void;
+  title?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: 40,
+        height: 40,
+        background: "rgba(0,0,0,0.6)",
+        borderRadius: "50%",
+        border: "1px solid rgba(255,255,255,0.2)",
+        backdropFilter: "blur(4px)",
+        WebkitBackdropFilter: "blur(4px)",
+        cursor: "pointer",
+        padding: 0,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 type ScriptChoice = {
   label: string;
   lines: Line[];
@@ -135,6 +209,59 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
   const [loadedCount, setLoadedCount] = useState(0);
   const transitionStarted = useRef(false);
 
+  // UI preferences (persisted)
+  const [muted, setMuted] = useState(false);
+  const [autoPlay, setAutoPlay] = useState(false);
+  const [textSpeed, setTextSpeed] = useState<0.5 | 1 | 2>(1);
+  const [fontSize, setFontSize] = useState(16);
+  const [volume, setVolume] = useState(1);
+  const [prefsLoaded, setPrefsLoaded] = useState(false);
+
+  // UI modals
+  const [showBacklog, setShowBacklog] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Backlog — all displayed lines
+  const [backlog, setBacklog] = useState<Array<{ speaker: string; text: string; expr: string }>>([]);
+
+  // Load preferences once
+  useEffect(() => {
+    try {
+      const m = localStorage.getItem("creepyhub_novel_muted");
+      const a = localStorage.getItem("creepyhub_novel_autoplay");
+      const s = localStorage.getItem("creepyhub_novel_textspeed");
+      const f = localStorage.getItem("creepyhub_novel_fontsize");
+      const v = localStorage.getItem("creepyhub_novel_volume");
+      if (m !== null) setMuted(m === "1");
+      if (a !== null) setAutoPlay(a === "1");
+      if (s !== null) {
+        const n = Number(s);
+        if (n === 0.5 || n === 1 || n === 2) setTextSpeed(n);
+      }
+      if (f !== null) {
+        const n = Number(f);
+        if (!Number.isNaN(n) && n >= 12 && n <= 22) setFontSize(n);
+      }
+      if (v !== null) {
+        const n = Number(v);
+        if (!Number.isNaN(n) && n >= 0 && n <= 1) setVolume(n);
+      }
+    } catch {}
+    setPrefsLoaded(true);
+  }, []);
+
+  // Persist preferences
+  useEffect(() => {
+    if (!prefsLoaded) return;
+    try {
+      localStorage.setItem("creepyhub_novel_muted", muted ? "1" : "0");
+      localStorage.setItem("creepyhub_novel_autoplay", autoPlay ? "1" : "0");
+      localStorage.setItem("creepyhub_novel_textspeed", String(textSpeed));
+      localStorage.setItem("creepyhub_novel_fontsize", String(fontSize));
+      localStorage.setItem("creepyhub_novel_volume", String(volume));
+    } catch {}
+  }, [muted, autoPlay, textSpeed, fontSize, volume, prefsLoaded]);
+
   // Preload all images (layers + all expressions)
   const allImageUrls = [
     ...layers.map((l) => l.image_url),
@@ -164,14 +291,29 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
     }
   }, [phase, loadedCount, totalImages]);
 
-  // Typewriter — sets expression while text is displayed
+  // Typewriter — sets expression, respects textSpeed, and records backlog
+  const textSpeedRef = useRef(textSpeed);
+  useEffect(() => {
+    textSpeedRef.current = textSpeed;
+  }, [textSpeed]);
+
   const startTypewriter = useCallback((line: Line) => {
     setCurrentExpr(line.expr);
     setIsTyping(true);
     setDisplayedText("");
+    setBacklog((prev) => [...prev, { speaker: speakerName ?? "", text: line.text, expr: line.expr }]);
     let i = 0;
+    let frame = 0;
     const tick = () => {
-      i++;
+      const speed = textSpeedRef.current;
+      frame++;
+      // 0.5x: advance every 2 frames; 1x: every frame; 2x: 2 chars per frame
+      if (speed === 0.5 && frame % 2 !== 0) {
+        requestAnimationFrame(tick);
+        return;
+      }
+      const step = speed === 2 ? 2 : 1;
+      i = Math.min(i + step, line.text.length);
       setDisplayedText(line.text.slice(0, i));
       if (i < line.text.length) {
         requestAnimationFrame(tick);
@@ -180,7 +322,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
       }
     };
     requestAnimationFrame(tick);
-  }, []);
+  }, [speakerName]);
 
   // Start greeting
   useEffect(() => {
@@ -201,6 +343,30 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
     }
   }, [phase, isTyping, displayedText]);
 
+  // Auto-advance for script/branch when autoPlay is enabled
+  useEffect(() => {
+    if (!autoPlay) return;
+    if (isTyping) return;
+    if (!(phase === "script" || phase === "branch")) return;
+    if (displayedText.length === 0) return;
+    const timer = setTimeout(() => {
+      handleTapRef.current?.();
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [autoPlay, isTyping, phase, displayedText]);
+
+  // ESC closes modals
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (showSettings) setShowSettings(false);
+        else if (showBacklog) setShowBacklog(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showSettings, showBacklog]);
+
   const startScript = (topic: ScriptTopic) => {
     setActiveScript(topic);
     setScriptIndex(0);
@@ -208,7 +374,11 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
     startTypewriter(topic.lines[0]);
   };
 
+  const handleTapRef = useRef<(() => void) | null>(null);
+
   const handleTap = () => {
+    // Don't advance while any modal is open
+    if (showBacklog || showSettings) return;
     if (phase === "greeting" && isTyping) {
       setDisplayedText(greeting.text);
       setIsTyping(false);
@@ -273,6 +443,27 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
     setBranchIndex(0);
     setPhase("branch");
     startTypewriter(choice.lines[0]);
+  };
+
+  // Keep latest handleTap in ref for use in effects
+  handleTapRef.current = handleTap;
+
+  // Skip — complete current typing instantly (only relevant during isTyping)
+  const skipTyping = () => {
+    if (!isTyping) return;
+    if (phase === "greeting") {
+      setDisplayedText(greeting.text);
+      setIsTyping(false);
+    } else if (phase === "tap") {
+      setDisplayedText(tapLines[lastTapLineRef.current].text);
+      setIsTyping(false);
+    } else if (phase === "script" && activeScript) {
+      setDisplayedText(activeScript.lines[scriptIndex].text);
+      setIsTyping(false);
+    } else if (phase === "branch" && activeBranch) {
+      setDisplayedText(activeBranch.lines[branchIndex].text);
+      setIsTyping(false);
+    }
   };
 
   return (
@@ -402,6 +593,71 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
         </a>
       )}
 
+      {/* Top-right control icons */}
+      {phase !== "loading" && (
+        <div
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            display: "flex",
+            gap: 8,
+            zIndex: layers.length + 10,
+            animation: "novel-fade-in 0.5s ease",
+          }}
+        >
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              setMuted((m) => !m);
+            }}
+            title={muted ? "音声ON" : "音声OFF"}
+          >
+            {muted ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <line x1="23" y1="9" x2="17" y2="15" />
+                <line x1="17" y1="9" x2="23" y2="15" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+              </svg>
+            )}
+          </IconButton>
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowBacklog(true);
+            }}
+            title="履歴"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="8" y1="6" x2="21" y2="6" />
+              <line x1="8" y1="12" x2="21" y2="12" />
+              <line x1="8" y1="18" x2="21" y2="18" />
+              <line x1="3" y1="6" x2="3.01" y2="6" />
+              <line x1="3" y1="12" x2="3.01" y2="12" />
+              <line x1="3" y1="18" x2="3.01" y2="18" />
+            </svg>
+          </IconButton>
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowSettings(true);
+            }}
+            title="設定"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </IconButton>
+        </div>
+      )}
+
       {/* Text box (greeting, tap, script & branch) */}
       {(phase === "greeting" || phase === "tap" || phase === "script" || phase === "branch") && (
         <div
@@ -434,7 +690,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
           )}
           <div
             style={{
-              fontSize: 16,
+              fontSize: fontSize,
               lineHeight: 1.8,
               color: "#e0e0e0",
               fontFamily: "'SoukouMincho', serif",
@@ -456,6 +712,40 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
                 }}
               />
             )}
+          </div>
+          {/* Skip / Auto controls */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 8,
+              marginTop: 8,
+            }}
+          >
+            {isTyping && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  skipTyping();
+                }}
+                style={controlBtnStyle}
+              >
+                &gt;&gt; SKIP
+              </button>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setAutoPlay((a) => !a);
+              }}
+              style={{
+                ...controlBtnStyle,
+                background: autoPlay ? "rgba(198,40,40,0.7)" : controlBtnStyle.background,
+                borderColor: autoPlay ? "rgba(255,100,100,0.6)" : controlBtnStyle.borderColor,
+              }}
+            >
+              {autoPlay ? "■ AUTO" : "▶ AUTO"}
+            </button>
           </div>
         </div>
       )}
@@ -553,6 +843,200 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
               {dict.tapToContinue ?? "タップで始める"}
             </p>
           )}
+        </div>
+      )}
+
+      {/* Backlog modal */}
+      {showBacklog && (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowBacklog(false);
+          }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(0,0,0,0.85)",
+            zIndex: layers.length + 50,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            animation: "novel-fade-in 0.2s ease",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "90%",
+              maxWidth: 480,
+              maxHeight: "80vh",
+              background: "rgba(10,5,8,0.95)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              borderRadius: 12,
+              padding: "20px 20px 16px",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <h3 style={{ margin: 0, color: "#e0e0e0", fontSize: 16, fontFamily: "'SoukouMincho', serif", letterSpacing: 2 }}>
+                履歴
+              </h3>
+              <button
+                onClick={() => setShowBacklog(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "rgba(255,255,255,0.6)",
+                  fontSize: 20,
+                  cursor: "pointer",
+                  padding: 0,
+                  width: 28,
+                  height: 28,
+                }}
+                aria-label="閉じる"
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ overflowY: "auto", flex: 1, paddingRight: 4 }}>
+              {backlog.length === 0 ? (
+                <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, textAlign: "center", padding: "40px 0" }}>
+                  まだセリフがありません
+                </p>
+              ) : (
+                backlog.map((entry, i) => (
+                  <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                    {entry.speaker && (
+                      <div style={{ fontSize: 11, color: "var(--accent, #c62828)", fontWeight: 700, marginBottom: 2, letterSpacing: 1 }}>
+                        {entry.speaker}
+                      </div>
+                    )}
+                    <div style={{ fontSize: 14, color: "#e0e0e0", lineHeight: 1.7, fontFamily: "'SoukouMincho', serif" }}>
+                      {entry.text}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings modal */}
+      {showSettings && (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowSettings(false);
+          }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(0,0,0,0.85)",
+            zIndex: layers.length + 50,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            animation: "novel-fade-in 0.2s ease",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "90%",
+              maxWidth: 380,
+              background: "rgba(10,5,8,0.95)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              borderRadius: 12,
+              padding: "20px 20px 16px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h3 style={{ margin: 0, color: "#e0e0e0", fontSize: 16, fontFamily: "'SoukouMincho', serif", letterSpacing: 2 }}>
+                設定
+              </h3>
+              <button
+                onClick={() => setShowSettings(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "rgba(255,255,255,0.6)",
+                  fontSize: 20,
+                  cursor: "pointer",
+                  padding: 0,
+                  width: 28,
+                  height: 28,
+                }}
+                aria-label="閉じる"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Text speed */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={settingsLabel}>
+                テキスト速度
+                <span style={settingsValue}>
+                  {textSpeed === 0.5 ? "遅い" : textSpeed === 2 ? "速い" : "標準"}
+                </span>
+              </label>
+              <div style={{ display: "flex", gap: 6 }}>
+                {[0.5, 1, 2].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setTextSpeed(s as 0.5 | 1 | 2)}
+                    style={{
+                      ...segBtnStyle,
+                      background: textSpeed === s ? "rgba(198,40,40,0.7)" : segBtnStyle.background,
+                      borderColor: textSpeed === s ? "rgba(255,100,100,0.6)" : segBtnStyle.borderColor,
+                    }}
+                  >
+                    {s === 0.5 ? "遅" : s === 2 ? "速" : "中"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Font size */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={settingsLabel}>
+                フォントサイズ
+                <span style={settingsValue}>{fontSize}px</span>
+              </label>
+              <input
+                type="range"
+                min={12}
+                max={22}
+                step={1}
+                value={fontSize}
+                onChange={(e) => setFontSize(Number(e.target.value))}
+                style={{ width: "100%" }}
+              />
+            </div>
+
+            {/* Volume */}
+            <div style={{ marginBottom: 8 }}>
+              <label style={settingsLabel}>
+                音量
+                <span style={settingsValue}>{Math.round(volume * 100)}%</span>
+              </label>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={1}
+                value={Math.round(volume * 100)}
+                onChange={(e) => setVolume(Number(e.target.value) / 100)}
+                style={{ width: "100%" }}
+                disabled={muted}
+              />
+              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>
+                {muted ? "ミュート中" : "※ 音声機能は今後追加予定"}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
