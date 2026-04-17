@@ -164,7 +164,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
     }
   }, [phase, loadedCount, totalImages]);
 
-  // Typewriter — accepts a Line and updates expression
+  // Typewriter — shows line expression while speaking, reverts to normal when done
   const startTypewriter = useCallback((line: Line) => {
     setCurrentExpr(line.expr);
     setIsTyping(true);
@@ -177,6 +177,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
         requestAnimationFrame(tick);
       } else {
         setIsTyping(false);
+        setCurrentExpr(EXPR.normal);
       }
     };
     requestAnimationFrame(tick);
@@ -212,6 +213,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
     if (phase === "greeting" && isTyping) {
       setDisplayedText(greeting.text);
       setIsTyping(false);
+      setCurrentExpr(EXPR.normal);
     } else if (phase === "greeting") {
       setPhase("idle");
     } else if (phase === "idle") {
@@ -230,12 +232,14 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
     } else if (phase === "tap" && isTyping) {
       setDisplayedText(tapLines[lastTapLineRef.current].text);
       setIsTyping(false);
+      setCurrentExpr(EXPR.normal);
     } else if (phase === "tap") {
       setPhase("idle");
     } else if (phase === "script" && activeScript) {
       if (isTyping) {
         setDisplayedText(activeScript.lines[scriptIndex].text);
         setIsTyping(false);
+        setCurrentExpr(EXPR.normal);
       } else if (scriptIndex < activeScript.lines.length - 1) {
         const next = scriptIndex + 1;
         setScriptIndex(next);
@@ -252,6 +256,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
       if (isTyping) {
         setDisplayedText(activeBranch.lines[branchIndex].text);
         setIsTyping(false);
+        setCurrentExpr(EXPR.normal);
       } else if (branchIndex < activeBranch.lines.length - 1) {
         const next = branchIndex + 1;
         setBranchIndex(next);
