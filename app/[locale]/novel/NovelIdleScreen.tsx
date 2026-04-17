@@ -17,48 +17,73 @@ type Props = {
     backToList: string;
     tapToContinue?: string;
   };
-  speakingCharUrl?: string;
   storyHref?: string;
   speakerName?: string;
 };
 
-const greetings = [
-  "……いらっしゃい。",
-  "今日も来てくれたんだ。",
-  "……何か、怖い話でも聞きたいの？",
-  "ふぅん……暇なの？",
-  "あら、また会ったわね。",
-  "……静かな夜ね。",
-  "怖い話、聞かせてあげようか。",
-  "ここに座って。……話があるの。",
-  "……こんばんは。",
-  "今夜は、どんな話がいい？",
+const CHAR_BASE = "/images/novel/char";
+const EXPR = {
+  normal: `${CHAR_BASE}/eiko_normal.png`,
+  talk1: `${CHAR_BASE}/eiko_talk_1.png`,
+  talk2: `${CHAR_BASE}/eiko_talk_2.png`,
+  talkConfuse1: `${CHAR_BASE}/eiko_talk_confuse_1.png`,
+  talkConfuse2: `${CHAR_BASE}/eiko_talk_confuse_2.png`,
+  talkEyeclose1: `${CHAR_BASE}/eiko_talk_eyeclose_1.png`,
+  talkEyeclose2: `${CHAR_BASE}/eiko_talk_eyeclose_2.png`,
+  talkEyecloseConfuse1: `${CHAR_BASE}/eiko_talk_eyeclose_confuse_1.png`,
+  talkEyecloseConfuse2: `${CHAR_BASE}/eiko_talk_eyeclose_confuse_2.png`,
+  smile1: `${CHAR_BASE}/eiko_smile_1.png`,
+  smile2: `${CHAR_BASE}/eiko_smile_2.png`,
+  smile3: `${CHAR_BASE}/eiko_smile_3.png`,
+  smileConfuse1: `${CHAR_BASE}/eiko_smile_confuse_1.png`,
+  smileEyeclose1: `${CHAR_BASE}/eiko_smile_eyeclose_1.png`,
+  smileEyeclose2: `${CHAR_BASE}/eiko_smile_eyeclose_2.png`,
+  smileEyeclose3: `${CHAR_BASE}/eiko_smile_eyeclose_3.png`,
+  smileEyecloseConfuse1: `${CHAR_BASE}/eiko_smile_eyeclose_confuse_1.png`,
+  smileEyecloseConfuse2: `${CHAR_BASE}/eiko_smile_eyeclose_confuse_2.png`,
+  smileEyecloseConfuse3: `${CHAR_BASE}/eiko_smile_eyecloe_confuse_3.png`,
+  normalEyecloseConfuse1: `${CHAR_BASE}/eiko_normal_eyeclose_confuse_1.png`,
+} as const;
+
+type Line = { text: string; expr: string };
+
+const greetings: Line[] = [
+  { text: "……いらっしゃい。", expr: EXPR.talk1 },
+  { text: "今日も来てくれたんだ。", expr: EXPR.smile1 },
+  { text: "……何か、怖い話でも聞きたいの？", expr: EXPR.talkConfuse1 },
+  { text: "ふぅん……暇なの？", expr: EXPR.smile2 },
+  { text: "あら、また会ったわね。", expr: EXPR.smile1 },
+  { text: "……静かな夜ね。", expr: EXPR.talkEyeclose1 },
+  { text: "怖い話、聞かせてあげようか。", expr: EXPR.smile3 },
+  { text: "ここに座って。……話があるの。", expr: EXPR.talk2 },
+  { text: "……こんばんは。", expr: EXPR.talk1 },
+  { text: "今夜は、どんな話がいい？", expr: EXPR.smile1 },
 ];
 
-const tapLines = [
-  "……なに？",
-  "触らないで。",
-  "……用があるの？",
-  "ふぅん……。",
-  "そんなに見つめないで。",
-  "……退屈？",
-  "私に何か聞きたいことでも？",
-  "……べ、別に嬉しくないから。",
-  "静かにして……集中できない。",
-  "……もう。",
-  "なんでもない、って顔してる。",
-  "話なら、いくらでもあるけど。",
-  "……そろそろ、始めようか。",
+const tapLines: Line[] = [
+  { text: "……なに？", expr: EXPR.talkConfuse1 },
+  { text: "触らないで。", expr: EXPR.talk2 },
+  { text: "……用があるの？", expr: EXPR.talkConfuse2 },
+  { text: "ふぅん……。", expr: EXPR.talkEyeclose1 },
+  { text: "そんなに見つめないで。", expr: EXPR.smileConfuse1 },
+  { text: "……退屈？", expr: EXPR.smileEyeclose1 },
+  { text: "私に何か聞きたいことでも？", expr: EXPR.smile1 },
+  { text: "……べ、別に嬉しくないから。", expr: EXPR.smileEyecloseConfuse1 },
+  { text: "静かにして……集中できない。", expr: EXPR.normalEyecloseConfuse1 },
+  { text: "……もう。", expr: EXPR.smileEyecloseConfuse2 },
+  { text: "なんでもない、って顔してる。", expr: EXPR.smile2 },
+  { text: "話なら、いくらでもあるけど。", expr: EXPR.smile3 },
+  { text: "……そろそろ、始めようか。", expr: EXPR.smile1 },
 ];
 
 type ScriptChoice = {
   label: string;
-  lines: string[];
+  lines: Line[];
 };
 
 type ScriptTopic = {
   label: string;
-  lines: string[];
+  lines: Line[];
   choices?: ScriptChoice[];
 };
 
@@ -66,37 +91,37 @@ const scriptTopics: ScriptTopic[] = [
   {
     label: "最近の投稿について",
     lines: [
-      "そういえば、最近このような投稿が増えたような気がするの",
-      "えーと...そうこれ",
-      "tiktokホラーmovie",
-      "縦画面の動画が中心となっているのだけれど、その中でも特に特徴的なのが『1982年』のテイストが用いられているということよ",
-      "これの意味するところがどういうことか...わかるでしょう？",
+      { text: "そういえば、最近このような投稿が増えたような気がするの", expr: EXPR.talk1 },
+      { text: "えーと...そうこれ", expr: EXPR.talkEyecloseConfuse1 },
+      { text: "tiktokホラーmovie", expr: EXPR.talk2 },
+      { text: "縦画面の動画が中心となっているのだけれど、その中でも特に特徴的なのが『1982年』のテイストが用いられているということよ", expr: EXPR.talk1 },
+      { text: "これの意味するところがどういうことか...わかるでしょう？", expr: EXPR.smile1 },
     ],
     choices: [
       {
         label: "レトロホラーの流行？",
         lines: [
-          "……そう、正解。よくわかったわね",
-          "VHSのノイズや粗いフィルム感……あの時代特有の不気味さが、今の世代には新鮮に映るみたい",
-          "でもね、それだけじゃないの。あの頃のホラーには……『説明しすぎない恐怖』があったのよ",
-          "……今の投稿者たちも、それを本能的に理解しているのかもしれないわね",
+          { text: "……そう、正解。よくわかったわね", expr: EXPR.smile2 },
+          { text: "VHSのノイズや粗いフィルム感……あの時代特有の不気味さが、今の世代には新鮮に映るみたい", expr: EXPR.talk1 },
+          { text: "でもね、それだけじゃないの。あの頃のホラーには……『説明しすぎない恐怖』があったのよ", expr: EXPR.talk2 },
+          { text: "……今の投稿者たちも、それを本能的に理解しているのかもしれないわね", expr: EXPR.smileEyeclose1 },
         ],
       },
       {
         label: "よくわからない",
         lines: [
-          "……そう。まあ、無理もないわね",
-          "簡単に言うと、1982年頃のホラー映画の雰囲気……VHSの質感やフィルムの粗さを、わざと再現しているの",
-          "なぜかって？　それはね……『本物の記録映像』に見せかけるため",
-          "作り物だとわかっていても、あのノイズが走った瞬間……背筋が凍るでしょう？",
-          "……それが、この手法の狙いよ",
+          { text: "……そう。まあ、無理もないわね", expr: EXPR.normalEyecloseConfuse1 },
+          { text: "簡単に言うと、1982年頃のホラー映画の雰囲気……VHSの質感やフィルムの粗さを、わざと再現しているの", expr: EXPR.talk1 },
+          { text: "なぜかって？　それはね……『本物の記録映像』に見せかけるため", expr: EXPR.talkEyeclose2 },
+          { text: "作り物だとわかっていても、あのノイズが走った瞬間……背筋が凍るでしょう？", expr: EXPR.smile1 },
+          { text: "……それが、この手法の狙いよ", expr: EXPR.smileEyeclose1 },
         ],
       },
     ],
   },
 ];
 
-export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl, storyHref, speakerName }: Props) {
+export default function NovelIdleScreen({ layers, locale, dict, storyHref, speakerName }: Props) {
   const [phase, setPhase] = useState<"loading" | "greeting" | "idle" | "tap" | "script" | "choice" | "branch">("loading");
   const [displayedText, setDisplayedText] = useState("");
   const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
@@ -106,13 +131,14 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
   const [scriptIndex, setScriptIndex] = useState(0);
   const [activeBranch, setActiveBranch] = useState<ScriptChoice | null>(null);
   const [branchIndex, setBranchIndex] = useState(0);
+  const [currentExpr, setCurrentExpr] = useState<string>(EXPR.normal);
   const [loadedCount, setLoadedCount] = useState(0);
   const transitionStarted = useRef(false);
 
-  // Preload all images (including speaking character)
+  // Preload all images (layers + all expressions)
   const allImageUrls = [
     ...layers.map((l) => l.image_url),
-    ...(speakingCharUrl ? [speakingCharUrl] : []),
+    ...Object.values(EXPR),
   ];
   const totalImages = allImageUrls.length;
 
@@ -126,7 +152,7 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
       };
       img.src = url;
     });
-  }, [layers, speakingCharUrl]);
+  }, [layers]);
 
   // Transition from loading to greeting once all images loaded
   useEffect(() => {
@@ -138,15 +164,16 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
     }
   }, [phase, loadedCount, totalImages]);
 
-  // Typewriter
-  const startTypewriter = useCallback((text: string) => {
+  // Typewriter — accepts a Line and updates expression
+  const startTypewriter = useCallback((line: Line) => {
+    setCurrentExpr(line.expr);
     setIsTyping(true);
     setDisplayedText("");
     let i = 0;
     const tick = () => {
       i++;
-      setDisplayedText(text.slice(0, i));
-      if (i < text.length) {
+      setDisplayedText(line.text.slice(0, i));
+      if (i < line.text.length) {
         requestAnimationFrame(tick);
       } else {
         setIsTyping(false);
@@ -166,7 +193,10 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
   // Greeting / tap → idle
   useEffect(() => {
     if ((phase === "greeting" || phase === "tap") && !isTyping && displayedText.length > 0) {
-      const timer = setTimeout(() => setPhase("idle"), 2500);
+      const timer = setTimeout(() => {
+        setCurrentExpr(EXPR.normal);
+        setPhase("idle");
+      }, 2500);
       return () => clearTimeout(timer);
     }
   }, [phase, isTyping, displayedText]);
@@ -180,7 +210,7 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
 
   const handleTap = () => {
     if (phase === "greeting" && isTyping) {
-      setDisplayedText(greeting);
+      setDisplayedText(greeting.text);
       setIsTyping(false);
     } else if (phase === "greeting") {
       setPhase("idle");
@@ -198,41 +228,40 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
       setPhase("tap");
       startTypewriter(tapLines[idx]);
     } else if (phase === "tap" && isTyping) {
-      setDisplayedText(tapLines[lastTapLineRef.current]);
+      setDisplayedText(tapLines[lastTapLineRef.current].text);
       setIsTyping(false);
     } else if (phase === "tap") {
       setPhase("idle");
     } else if (phase === "script" && activeScript) {
       if (isTyping) {
-        setDisplayedText(activeScript.lines[scriptIndex]);
+        setDisplayedText(activeScript.lines[scriptIndex].text);
         setIsTyping(false);
       } else if (scriptIndex < activeScript.lines.length - 1) {
         const next = scriptIndex + 1;
         setScriptIndex(next);
         startTypewriter(activeScript.lines[next]);
       } else if (activeScript.choices && activeScript.choices.length > 0) {
-        // Show choices
         setPhase("choice");
       } else {
-        // No choices — return to idle
         setActiveScript(null);
         setScriptIndex(0);
+        setCurrentExpr(EXPR.normal);
         setPhase("idle");
       }
     } else if (phase === "branch" && activeBranch) {
       if (isTyping) {
-        setDisplayedText(activeBranch.lines[branchIndex]);
+        setDisplayedText(activeBranch.lines[branchIndex].text);
         setIsTyping(false);
       } else if (branchIndex < activeBranch.lines.length - 1) {
         const next = branchIndex + 1;
         setBranchIndex(next);
         startTypewriter(activeBranch.lines[next]);
       } else {
-        // Branch finished — return to idle
         setActiveScript(null);
         setActiveBranch(null);
         setScriptIndex(0);
         setBranchIndex(0);
+        setCurrentExpr(EXPR.normal);
         setPhase("idle");
       }
     }
@@ -304,11 +333,9 @@ export default function NovelIdleScreen({ layers, locale, dict, speakingCharUrl,
         }}
       >
         {layers.map((layer, i) => {
-          const isSpeaking = phase === "greeting" || phase === "tap" || phase === "script" || phase === "choice" || phase === "branch";
           const isMainChar = layer.type === "char" && layer.role !== "shadow";
-          const src = isMainChar && isSpeaking && speakingCharUrl
-            ? speakingCharUrl
-            : layer.image_url;
+          // Main character always uses currentExpr (defaults to normal)
+          const src = isMainChar ? currentExpr : layer.image_url;
           return (
             <img
               key={i}

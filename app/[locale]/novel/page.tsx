@@ -51,7 +51,6 @@ export default async function NovelPage({ params }: Props) {
       layers={idleLayers}
       locale={locale}
       dict={dict.novel}
-      speakingCharUrl="/images/novel/char/eiko_1.png"
       storyHref={storyHref}
       speakerName="映子"
     />
