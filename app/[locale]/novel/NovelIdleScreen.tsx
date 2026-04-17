@@ -41,7 +41,7 @@ const EXPR = {
   smileEyeclose3: `${CHAR_BASE}/eiko_smile_eyeclose_3.png`,
   smileEyecloseConfuse1: `${CHAR_BASE}/eiko_smile_eyeclose_confuse_1.png`,
   smileEyecloseConfuse2: `${CHAR_BASE}/eiko_smile_eyeclose_confuse_2.png`,
-  smileEyecloseConfuse3: `${CHAR_BASE}/eiko_smile_eyecloe_confuse_3.png`,
+  smileEyecloseConfuse3: `${CHAR_BASE}/eiko_smile_eyeclose_confuse_3.png`,
   normalEyecloseConfuse1: `${CHAR_BASE}/eiko_normal_eyeclose_confuse_1.png`,
 } as const;
 
