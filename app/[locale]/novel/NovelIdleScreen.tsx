@@ -335,8 +335,11 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
       >
         {layers.map((layer, i) => {
           const isMainChar = layer.type === "char" && layer.role !== "shadow";
-          // Main character always uses currentExpr (defaults to normal)
-          const src = isMainChar ? currentExpr : layer.image_url;
+          // Only show expression while the text box is visible; otherwise normal
+          const isTextVisible =
+            (phase === "greeting" || phase === "tap" || phase === "script" || phase === "branch");
+          const displayExpr = isTextVisible ? currentExpr : EXPR.normal;
+          const src = isMainChar ? displayExpr : layer.image_url;
           return (
             <img
               key={i}
