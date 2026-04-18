@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   // posts_with_location ビューを叩く（is_published + 未削除 + 位置あり）
   let query = supabase
     .from("posts_with_location")
-    .select("id, title, slug, category_id, user_id, lat, lng, location_name, location_precision, created_at")
+    .select("id, title, slug, content, image_url, image_url_2, image_url_3, category_id, user_id, lat, lng, location_name, location_precision, created_at")
     .gte("lat", south)
     .lte("lat", north)
     .order("created_at", { ascending: false })
