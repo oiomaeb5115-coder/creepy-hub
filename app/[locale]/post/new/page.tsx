@@ -12,6 +12,11 @@ import { uploadVideoToStream } from "@/lib/uploadVideoToStream";
 import BackButton from "@/components/BackButton";
 import { getDictionary } from "@/lib/getDictionary";
 import type { Dictionary } from "@/lib/getDictionary";
+import {
+  canUseNativeLocationPicker,
+  openNativeLocationPicker,
+} from "@/lib/locationPicker";
+import { roundLocation, type LocationPrecision } from "@/lib/roundLocation";
 import tabStyles from "./page.module.css";
 
 export default function PostNewPage() {
@@ -46,6 +51,15 @@ export default function PostNewPage() {
   const [videoUploading, setVideoUploading] = useState(false);
   const [videoUploadProgress, setVideoUploadProgress] = useState(0);
 
+  // ── 位置情報（iOS ネイティブピッカー経由）──
+  // スマホアプリ内でのみ UI を出す。Web からは触れない。
+  const [canPickLocation, setCanPickLocation] = useState(false);
+  const [locLat, setLocLat] = useState<number | null>(null);
+  const [locLng, setLocLng] = useState<number | null>(null);
+  const [locName, setLocName] = useState<string | null>(null);
+  const [locPrecision, setLocPrecision] = useState<LocationPrecision | null>(null);
+  const [locPicking, setLocPicking] = useState(false);
+
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -53,6 +67,39 @@ export default function PostNewPage() {
   useEffect(() => {
     getDictionary(locale).then((dict) => setLabels(dict.postDrawer));
   }, [locale]);
+
+  // iOS アプリ内でのみネイティブ位置ピッカーを出せるようにする
+  useEffect(() => {
+    setCanPickLocation(canUseNativeLocationPicker());
+  }, []);
+
+  const handlePickLocation = async () => {
+    if (locPicking) return;
+    setLocPicking(true);
+    try {
+      const picked = await openNativeLocationPicker();
+      if (!picked) return; // キャンセル
+      const rounded = roundLocation({
+        lat: picked.lat,
+        lng: picked.lng,
+        precision: picked.precision,
+        locationName: picked.locationName ?? undefined,
+      });
+      setLocLat(rounded.lat);
+      setLocLng(rounded.lng);
+      setLocName(rounded.locationName);
+      setLocPrecision(picked.precision);
+    } finally {
+      setLocPicking(false);
+    }
+  };
+
+  const clearLocation = () => {
+    setLocLat(null);
+    setLocLng(null);
+    setLocName(null);
+    setLocPrecision(null);
+  };
 
   // Auth check + categories fetch
   useEffect(() => {
@@ -184,6 +231,10 @@ export default function PostNewPage() {
           stream_video_id: streamVideoId,
           video_url: videoUrl,
           slug,
+          lat: locLat,
+          lng: locLng,
+          location_name: locName,
+          location_precision: locPrecision,
         }])
         .select()
         .single();
@@ -430,6 +481,50 @@ export default function PostNewPage() {
                   )}
                 </div>
 
+                {/* 位置情報（iOS アプリ内のみ） */}
+                {canPickLocation && (
+                  <div style={groupStyle}>
+                    <label style={labelStyle}>
+                      {locale === "en" ? "Location (optional)" : "場所（任意）"}
+                    </label>
+                    {locLat !== null && locLng !== null ? (
+                      <div style={locationCardStyle}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, color: "#e8d8d0" }}>
+                            {locName ?? `${locLat.toFixed(4)}, ${locLng.toFixed(4)}`}
+                          </div>
+                          <div style={{ fontSize: 10, color: "rgba(200,150,140,0.5)", marginTop: 2 }}>
+                            {locPrecision === "exact"
+                              ? (locale === "en" ? "Exact" : "正確な位置")
+                              : locPrecision === "town"
+                              ? (locale === "en" ? "Town-level (randomised ±300m)" : "町単位（±300mランダム）")
+                              : (locale === "en" ? "Prefecture only" : "都道府県のみ")}
+                          </div>
+                        </div>
+                        <button type="button" style={locationRemoveBtn} onClick={clearLocation}>
+                          {locale === "en" ? "Remove" : "削除"}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        style={locationAddBtn}
+                        onClick={handlePickLocation}
+                        disabled={locPicking}
+                      >
+                        {locPicking
+                          ? (locale === "en" ? "Opening map..." : "地図を開いています…")
+                          : (locale === "en" ? "＋ Add location" : "＋ 場所を追加")}
+                      </button>
+                    )}
+                    <small style={slugHintStyle}>
+                      {locale === "en"
+                        ? "Pick on a map. Town/Prefecture options blur the exact coordinates before saving."
+                        : "地図タップで位置を指定。町/県を選ぶと保存前に座標をぼかします。"}
+                    </small>
+                  </div>
+                )}
+
                 {/* 本文 */}
                 <div style={groupStyle}>
                   <label style={labelStyle}>{labels.bodyLabel}</label>
@@ -490,3 +585,6 @@ const imageSlotStyle: React.CSSProperties = { width: 100, height: 100, borderRad
 const imagePreviewStyle: React.CSSProperties = { width: 100, height: 100, objectFit: "cover", display: "block", borderRadius: 6 };
 const imageRemoveBtn: React.CSSProperties = { position: "absolute", top: 2, right: 2, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.7)", color: "#fff", border: "none", cursor: "pointer", fontSize: 14, lineHeight: "20px", textAlign: "center", padding: 0 };
 const imageAddLabel: React.CSSProperties = { width: 100, height: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "rgba(20,8,10,0.8)", border: "1px dashed rgba(180,100,110,0.4)", borderRadius: 6, color: "#a09080", cursor: "pointer" };
+const locationAddBtn: React.CSSProperties = { padding: "10px 14px", background: "rgba(20,8,10,0.8)", border: "1px dashed rgba(180,100,110,0.4)", color: "#c0a090", borderRadius: 4, cursor: "pointer", fontSize: 13, textAlign: "left" };
+const locationCardStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 12, background: "rgba(30,10,15,0.8)", border: "1px solid rgba(180,100,110,0.3)", padding: "10px 14px", borderRadius: 4 };
+const locationRemoveBtn: React.CSSProperties = { background: "none", border: "1px solid rgba(200,60,60,0.35)", color: "rgba(200,100,100,0.75)", fontSize: 11, padding: "4px 10px", borderRadius: 3, cursor: "pointer", flexShrink: 0 };
