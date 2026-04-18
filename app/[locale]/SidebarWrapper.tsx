@@ -172,6 +172,36 @@ export default function SidebarWrapper({ locale, labels }: Props) {
           </svg>
         </Link>
       )}
+      {ios && (
+        <Link
+          href={`/${locale}/map`}
+          style={{
+            position: "fixed",
+            top: 162,
+            left: 14,
+            zIndex: 100,
+            width: 40,
+            height: 40,
+            borderRadius: "50%",
+            border: "2px solid rgba(var(--accent-rgb), 0.4)",
+            background: "var(--bg-surface)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            textDecoration: "none",
+            color: "var(--accent, #c62828)",
+            fontSize: 18,
+            transition: "border-color 0.2s, box-shadow 0.2s",
+            pointerEvents: "auto",
+          }}
+          aria-label="Spot Map"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+        </Link>
+      )}
       <SidebarDrawer
         locale={locale}
         isOpen={isOpen}
