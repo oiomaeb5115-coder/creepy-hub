@@ -9,6 +9,10 @@ import { validateImageFile } from "@/lib/validateImageFile";
 import { compressImage } from "@/lib/compressImage";
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
+import { roundLocation, type LocationPrecision } from "@/lib/roundLocation";
+import LocationPickerModal from "@/components/map/LocationPickerModal";
+import type { SpotCategory } from "@/lib/mapPalettes";
+import { MAP_PUBLIC_TO_WEB } from "@/lib/isCreepyHubApp";
 
 type Category = { id: number; slug: string; name: string };
 
@@ -110,6 +114,46 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
     { id: 1, title: "", body: "", imageFile: null, imagePreview: "" },
   ]);
   const [uploadingChapter, setUploadingChapter] = useState<number | null>(null);
+
+  // 位置情報
+  const canPickLocation = MAP_PUBLIC_TO_WEB || (typeof window !== "undefined" && (
+    (window as unknown as Record<string, unknown>).__CREEPYHUB_IOS__ === true ||
+    (window as unknown as Record<string, unknown>).__CREEPYHUB_ANDROID__ === true
+  ));
+  const [locLat, setLocLat] = useState<number | null>(null);
+  const [locLng, setLocLng] = useState<number | null>(null);
+  const [locName, setLocName] = useState<string | null>(null);
+  const [locPrecision, setLocPrecision] = useState<LocationPrecision | null>(null);
+  const [mapCategory, setMapCategory] = useState<SpotCategory | null>(null);
+  const [locPickerOpen, setLocPickerOpen] = useState(false);
+
+  const handleLocationConfirm = ({
+    lat,
+    lng,
+    precision,
+    mapCategory: cat,
+  }: {
+    lat: number;
+    lng: number;
+    precision: LocationPrecision;
+    mapCategory: SpotCategory;
+  }) => {
+    const rounded = roundLocation({ lat, lng, precision });
+    setLocLat(rounded.lat);
+    setLocLng(rounded.lng);
+    setLocName(rounded.locationName);
+    setLocPrecision(precision);
+    setMapCategory(cat);
+    setLocPickerOpen(false);
+  };
+
+  const clearLocation = () => {
+    setLocLat(null);
+    setLocLng(null);
+    setLocName(null);
+    setLocPrecision(null);
+    setMapCategory(null);
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -362,6 +406,11 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
         published_at: isPublished ? new Date().toISOString() : null,
         view_count: 0,
         image_url: thumbnailUrl,
+        lat: locLat,
+        lng: locLng,
+        location_name: locName,
+        location_precision: locPrecision,
+        map_category: mapCategory,
       };
 
       const { data, error } = await supabase
@@ -544,6 +593,45 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
               />
             </div>
 
+            {canPickLocation && (
+              <>
+                <div className={styles.divider} />
+                <div className={styles.field}>
+                  <label>場所（任意）</label>
+                  {locLat !== null && locLng !== null ? (
+                    <div style={wikiLocCardStyle}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, color: "#e8d8d0" }}>
+                          {locName ?? `${locLat.toFixed(4)}, ${locLng.toFixed(4)}`}
+                        </div>
+                        <div style={{ fontSize: 10, color: "rgba(200,150,140,0.5)", marginTop: 2 }}>
+                          {locPrecision === "exact" ? "正確な位置" : locPrecision === "town" ? "町単位（±300mランダム）" : "都道府県のみ"}
+                          {mapCategory && (
+                            <>
+                              {" ・ "}
+                              {mapCategory === "haunted" && "心霊"}
+                              {mapCategory === "horror" && "恐怖"}
+                              {mapCategory === "sightseeing" && "観光"}
+                              {mapCategory === "legend" && "伝承"}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <button type="button" style={wikiLocEditBtnStyle} onClick={() => setLocPickerOpen(true)}>変更</button>
+                      <button type="button" style={wikiLocRemoveBtnStyle} onClick={clearLocation}>削除</button>
+                    </div>
+                  ) : (
+                    <button type="button" style={wikiLocAddBtnStyle} onClick={() => setLocPickerOpen(true)}>
+                      ＋ 場所を追加
+                    </button>
+                  )}
+                  <small style={{ fontSize: 10, color: "rgba(200,150,140,0.35)", lineHeight: 1.5 }}>
+                    地図タップで位置を指定。町/県を選ぶと保存前に座標をぼかします。
+                  </small>
+                </div>
+              </>
+            )}
+
             <div className={styles.divider} />
             <div className={styles.sectionToolbar}>
               <h3>{labels.chapterSection}</h3>
@@ -639,6 +727,19 @@ export default function WikiSubmitClient({ locale, labels }: Props) {
           </form>
         </section>
       </div>
+
+      <LocationPickerModal
+        isOpen={locPickerOpen}
+        onConfirm={handleLocationConfirm}
+        onCancel={() => setLocPickerOpen(false)}
+        initialCenter={locLat !== null && locLng !== null ? [locLng, locLat] : undefined}
+        initialZoom={locLat !== null && locLng !== null ? 12 : undefined}
+      />
     </main>
   );
 }
+
+const wikiLocAddBtnStyle: React.CSSProperties = { padding: "10px 14px", background: "rgba(20,8,10,0.8)", border: "1px dashed rgba(180,100,110,0.4)", color: "#c0a090", borderRadius: 4, cursor: "pointer", fontSize: 13, textAlign: "left" };
+const wikiLocCardStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, background: "rgba(30,10,15,0.8)", border: "1px solid rgba(180,100,110,0.3)", padding: "10px 14px", borderRadius: 4 };
+const wikiLocEditBtnStyle: React.CSSProperties = { background: "none", border: "1px solid rgba(200,150,140,0.35)", color: "rgba(200,180,170,0.85)", fontSize: 11, padding: "4px 10px", borderRadius: 3, cursor: "pointer", flexShrink: 0 };
+const wikiLocRemoveBtnStyle: React.CSSProperties = { background: "none", border: "1px solid rgba(200,60,60,0.35)", color: "rgba(200,100,100,0.75)", fontSize: 11, padding: "4px 10px", borderRadius: 3, cursor: "pointer", flexShrink: 0 };

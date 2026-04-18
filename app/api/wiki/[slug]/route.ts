@@ -57,7 +57,19 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { title, subtitle, summary, content, category_ids, image_url } = body;
+  const {
+    title,
+    subtitle,
+    summary,
+    content,
+    category_ids,
+    image_url,
+    lat,
+    lng,
+    location_name,
+    location_precision,
+    map_category,
+  } = body;
 
   if (typeof title === "string" && title.length > 200) {
     return NextResponse.json(
@@ -90,6 +102,33 @@ export async function PATCH(
     );
   }
 
+  // 位置情報のバリデーション
+  for (const [key, val] of [
+    ["lat", lat] as const,
+    ["lng", lng] as const,
+  ]) {
+    if (val !== undefined && val !== null && (typeof val !== "number" || !Number.isFinite(val))) {
+      return NextResponse.json({ error: `${key} が不正です` }, { status: 400 });
+    }
+  }
+  if (location_name !== undefined && location_name !== null && typeof location_name !== "string") {
+    return NextResponse.json({ error: "location_name が不正です" }, { status: 400 });
+  }
+  if (
+    location_precision !== undefined &&
+    location_precision !== null &&
+    !["exact", "town", "prefecture"].includes(location_precision)
+  ) {
+    return NextResponse.json({ error: "location_precision が不正です" }, { status: 400 });
+  }
+  if (
+    map_category !== undefined &&
+    map_category !== null &&
+    !["haunted", "horror", "sightseeing", "legend"].includes(map_category)
+  ) {
+    return NextResponse.json({ error: "map_category が不正です" }, { status: 400 });
+  }
+
   if (image_url !== undefined && image_url !== null) {
     try {
       const parsed = new URL(image_url);
@@ -120,6 +159,11 @@ export async function PATCH(
     updated_at: new Date().toISOString(),
   };
   if (image_url !== undefined) updatePayload.image_url = image_url;
+  if (lat !== undefined) updatePayload.lat = lat;
+  if (lng !== undefined) updatePayload.lng = lng;
+  if (location_name !== undefined) updatePayload.location_name = location_name;
+  if (location_precision !== undefined) updatePayload.location_precision = location_precision;
+  if (map_category !== undefined) updatePayload.map_category = map_category;
 
   const { error } = await adminSupabase
     .from("wiki_pages")

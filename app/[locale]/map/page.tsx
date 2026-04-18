@@ -4,9 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import type { PinVariant } from "@/lib/mapPins";
-import MapCanvas, { type SpotDatum, type PostDatum } from "@/components/map/MapCanvas";
+import MapCanvas, { type SpotDatum, type PostDatum, type WikiDatum } from "@/components/map/MapCanvas";
 import SpotDetailDialog from "@/components/map/SpotDetailDialog";
 import PostDetailDialog from "@/components/map/PostDetailDialog";
+import WikiDetailDialog from "@/components/map/WikiDetailDialog";
 import MapFilterBar, {
   DEFAULT_FILTER,
   type MapFilterState,
@@ -33,8 +34,10 @@ export default function MapPage() {
 
   const [spots, setSpots] = useState<SpotDatum[]>([]);
   const [posts, setPosts] = useState<PostDatum[]>([]);
+  const [wikis, setWikis] = useState<WikiDatum[]>([]);
   const [selectedSpot, setSelectedSpot] = useState<SpotDatum | null>(null);
   const [selectedPost, setSelectedPost] = useState<PostDatum | null>(null);
+  const [selectedWiki, setSelectedWiki] = useState<WikiDatum | null>(null);
   const [filter, setFilter] = useState<MapFilterState>(DEFAULT_FILTER);
   const lastBboxRef = useRef<{ north: number; south: number; east: number; west: number } | null>(
     null
@@ -106,40 +109,73 @@ export default function MapPage() {
     []
   );
 
-  // bbox 変化時に投稿を取得
+  // wiki fetch 本体
+  const fetchWikis = useCallback(
+    (
+      bbox: { north: number; south: number; east: number; west: number },
+      period: MapFilterState["period"]
+    ) => {
+      const q = new URLSearchParams({
+        north: String(bbox.north),
+        south: String(bbox.south),
+        east: String(bbox.east),
+        west: String(bbox.west),
+        limit: "300",
+      });
+      if (period !== "all") q.set("since", period);
+      fetch(`/api/wiki/map?${q.toString()}`)
+        .then((r) => (r.ok ? r.json() : { wikis: [] }))
+        .then((data: { wikis?: WikiDatum[] }) => setWikis(data.wikis ?? []))
+        .catch(() => setWikis([]));
+    },
+    []
+  );
+
+  // bbox 変化時に投稿と wiki を並行取得
   const handleRegionChange = useCallback(
     (bbox: { north: number; south: number; east: number; west: number }) => {
       lastBboxRef.current = bbox;
       fetchPosts(bbox, filter.period);
+      fetchWikis(bbox, filter.period);
     },
-    [fetchPosts, filter.period]
+    [fetchPosts, fetchWikis, filter.period]
   );
 
   // period が変わった時、最新bboxで再取得
   useEffect(() => {
-    if (lastBboxRef.current) fetchPosts(lastBboxRef.current, filter.period);
-  }, [filter.period, fetchPosts]);
+    if (lastBboxRef.current) {
+      fetchPosts(lastBboxRef.current, filter.period);
+      fetchWikis(lastBboxRef.current, filter.period);
+    }
+  }, [filter.period, fetchPosts, fetchWikis]);
 
   // カテゴリ + ソースフィルタを適用
+  // source: "all" は全部表示、それ以外はそのソースだけ
   const filteredSpots = useMemo(() => {
-    if (filter.source === "posts") return [];
+    if (filter.source !== "all" && filter.source !== "spots") return [];
     return spots.filter((s) => filter.categories.has(s.category));
   }, [spots, filter.source, filter.categories]);
 
   const filteredPosts = useMemo(() => {
-    if (filter.source === "spots") return [];
-    // 投稿のカテゴリは map_category 未設定なら "haunted" に揃える
+    if (filter.source !== "all" && filter.source !== "posts") return [];
     return posts.filter((p) => filter.categories.has(p.map_category ?? "haunted"));
   }, [posts, filter.source, filter.categories]);
+
+  const filteredWikis = useMemo(() => {
+    if (filter.source !== "all" && filter.source !== "wikis") return [];
+    return wikis.filter((w) => filter.categories.has(w.map_category ?? "haunted"));
+  }, [wikis, filter.source, filter.categories]);
 
   return (
     <div style={wrap}>
       <MapCanvas
         spots={filteredSpots}
         posts={filteredPosts}
+        wikis={filteredWikis}
         onRegionChange={handleRegionChange}
         onSelectSpot={setSelectedSpot}
         onSelectPost={setSelectedPost}
+        onSelectWiki={setSelectedWiki}
         pinVariant={pinVariant}
       />
 
@@ -165,6 +201,9 @@ export default function MapPage() {
       )}
       {selectedPost && (
         <PostDetailDialog post={selectedPost} onClose={() => setSelectedPost(null)} />
+      )}
+      {selectedWiki && (
+        <WikiDetailDialog wiki={selectedWiki} onClose={() => setSelectedWiki(null)} />
       )}
     </div>
   );

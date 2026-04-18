@@ -8,6 +8,10 @@ import { getIsAdmin, getAccessToken } from "@/lib/auth";
 import { compressImage } from "@/lib/compressImage";
 import { validateImageFile } from "@/lib/validateImageFile";
 import BackButton from "@/components/BackButton";
+import { roundLocation, type LocationPrecision } from "@/lib/roundLocation";
+import LocationPickerModal from "@/components/map/LocationPickerModal";
+import type { SpotCategory } from "@/lib/mapPalettes";
+import { MAP_PUBLIC_TO_WEB } from "@/lib/isCreepyHubApp";
 
 type Chapter = { id: number; title: string; body: string; imageFile: File | null; imagePreview: string; existingImageUrl: string };
 type Category = { id: number; slug: string; name: string };
@@ -34,7 +38,7 @@ function parseChapters(content: string): Chapter[] {
 export default function WikiEditPage() {
   const params = useParams<{ locale: string; slug: string }>();
   const locale = params?.locale ?? "ja";
-  const slug = params?.slug ?? "";
+  const slug = decodeURIComponent(params?.slug ?? "");
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -51,6 +55,19 @@ export default function WikiEditPage() {
   const [thumbnailPreview, setThumbnailPreview] = useState("");
   const [existingThumbnailUrl, setExistingThumbnailUrl] = useState("");
 
+  // 位置情報
+  const canPickLocation = MAP_PUBLIC_TO_WEB || (typeof window !== "undefined" && (
+    (window as unknown as Record<string, unknown>).__CREEPYHUB_IOS__ === true ||
+    (window as unknown as Record<string, unknown>).__CREEPYHUB_ANDROID__ === true
+  ));
+  const [locLat, setLocLat] = useState<number | null>(null);
+  const [locLng, setLocLng] = useState<number | null>(null);
+  const [locName, setLocName] = useState<string | null>(null);
+  const [locPrecision, setLocPrecision] = useState<LocationPrecision | null>(null);
+  const [mapCategory, setMapCategory] = useState<SpotCategory | null>(null);
+  const [locPickerOpen, setLocPickerOpen] = useState(false);
+  const [locationDirty, setLocationDirty] = useState(false);
+
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -58,7 +75,7 @@ export default function WikiEditPage() {
 
       const { data: page, error } = await supabase
         .from("wiki_pages")
-        .select("id, title, subtitle, summary, content, author_id, image_url")
+        .select("id, title, subtitle, summary, content, author_id, image_url, lat, lng, location_name, location_precision, map_category")
         .eq("slug", slug)
         .eq("locale", "ja")
         .single();
@@ -75,6 +92,11 @@ export default function WikiEditPage() {
       setSummary(page.summary ?? "");
       setChapters(parseChapters(page.content ?? ""));
       setExistingThumbnailUrl(page.image_url ?? "");
+      setLocLat(page.lat ?? null);
+      setLocLng(page.lng ?? null);
+      setLocName(page.location_name ?? null);
+      setLocPrecision((page.location_precision as LocationPrecision | null) ?? null);
+      setMapCategory((page.map_category as SpotCategory | null) ?? null);
 
       const [joinsResult, catsResult] = await Promise.all([
         supabase.from("wiki_page_categories").select("category_id").eq("wiki_page_id", page.id),
@@ -108,6 +130,36 @@ export default function WikiEditPage() {
 
   const updateChapter = (i: number, key: "title" | "body", val: string) =>
     setChapters((prev) => prev.map((c, idx) => idx === i ? { ...c, [key]: val } : c));
+
+  const handleLocationConfirm = ({
+    lat,
+    lng,
+    precision,
+    mapCategory: cat,
+  }: {
+    lat: number;
+    lng: number;
+    precision: LocationPrecision;
+    mapCategory: SpotCategory;
+  }) => {
+    const rounded = roundLocation({ lat, lng, precision });
+    setLocLat(rounded.lat);
+    setLocLng(rounded.lng);
+    setLocName(rounded.locationName);
+    setLocPrecision(precision);
+    setMapCategory(cat);
+    setLocationDirty(true);
+    setLocPickerOpen(false);
+  };
+
+  const clearLocation = () => {
+    setLocLat(null);
+    setLocLng(null);
+    setLocName(null);
+    setLocPrecision(null);
+    setMapCategory(null);
+    setLocationDirty(true);
+  };
 
   const uploadImage = async (file: File, uid: string, suffix: string): Promise<string> => {
     const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -209,6 +261,13 @@ export default function WikiEditPage() {
           content,
           category_ids: selectedCategoryIds,
           image_url: imageUrl,
+          ...(locationDirty ? {
+            lat: locLat,
+            lng: locLng,
+            location_name: locName,
+            location_precision: locPrecision,
+            map_category: mapCategory,
+          } : {}),
         }),
       });
 
@@ -322,6 +381,40 @@ export default function WikiEditPage() {
               )}
             </div>
 
+            {/* 位置情報 */}
+            {canPickLocation && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <label style={{ fontSize: 12, color: "#a09080", letterSpacing: "0.05em" }}>場所（任意）</label>
+                {locLat !== null && locLng !== null ? (
+                  <div style={wikiEditLocCardStyle}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, color: "#e8d8d0" }}>
+                        {locName ?? `${locLat.toFixed(4)}, ${locLng.toFixed(4)}`}
+                      </div>
+                      <div style={{ fontSize: 10, color: "rgba(200,150,140,0.5)", marginTop: 2 }}>
+                        {locPrecision === "exact" ? "正確な位置" : locPrecision === "town" ? "町単位（±300mランダム）" : locPrecision === "prefecture" ? "都道府県のみ" : "精度未設定"}
+                        {mapCategory && (
+                          <>
+                            {" ・ "}
+                            {mapCategory === "haunted" && "心霊"}
+                            {mapCategory === "horror" && "恐怖"}
+                            {mapCategory === "sightseeing" && "観光"}
+                            {mapCategory === "legend" && "伝承"}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <button type="button" style={wikiEditLocEditBtnStyle} onClick={() => setLocPickerOpen(true)}>変更</button>
+                    <button type="button" style={wikiEditLocRemoveBtnStyle} onClick={clearLocation}>削除</button>
+                  </div>
+                ) : (
+                  <button type="button" style={wikiEditLocAddBtnStyle} onClick={() => setLocPickerOpen(true)}>
+                    ＋ 場所を追加
+                  </button>
+                )}
+              </div>
+            )}
+
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h3 style={{ margin: 0, fontSize: 14, color: "#c8b8b0" }}>章構成</h3>
             </div>
@@ -382,9 +475,22 @@ export default function WikiEditPage() {
           </form>
         </section>
       </div>
+
+      <LocationPickerModal
+        isOpen={locPickerOpen}
+        onConfirm={handleLocationConfirm}
+        onCancel={() => setLocPickerOpen(false)}
+        initialCenter={locLat !== null && locLng !== null ? [locLng, locLat] : undefined}
+        initialZoom={locLat !== null && locLng !== null ? 12 : undefined}
+      />
     </main>
   );
 }
+
+const wikiEditLocAddBtnStyle: React.CSSProperties = { padding: "10px 14px", background: "rgba(20,8,10,0.8)", border: "1px dashed rgba(180,100,110,0.4)", color: "#c0a090", borderRadius: 4, cursor: "pointer", fontSize: 13, textAlign: "left" };
+const wikiEditLocCardStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, background: "rgba(30,10,15,0.8)", border: "1px solid rgba(180,100,110,0.3)", padding: "10px 14px", borderRadius: 4 };
+const wikiEditLocEditBtnStyle: React.CSSProperties = { background: "none", border: "1px solid rgba(200,150,140,0.35)", color: "rgba(200,180,170,0.85)", fontSize: 11, padding: "4px 10px", borderRadius: 3, cursor: "pointer", flexShrink: 0 };
+const wikiEditLocRemoveBtnStyle: React.CSSProperties = { background: "none", border: "1px solid rgba(200,60,60,0.35)", color: "rgba(200,100,100,0.75)", fontSize: 11, padding: "4px 10px", borderRadius: 3, cursor: "pointer", flexShrink: 0 };
 
 const pageStyle: React.CSSProperties = { minHeight: "100vh", background: "#0d0808", color: "#c8b8b0", padding: "0 16px 80px" };
 const shellStyle: React.CSSProperties = { maxWidth: 800, margin: "0 auto", paddingTop: 24 };

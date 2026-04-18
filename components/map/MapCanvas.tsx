@@ -34,12 +34,30 @@ export interface PostDatum {
   created_at: string | null;
 }
 
+export interface WikiDatum {
+  id: number | string;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+  summary: string | null;
+  image_url: string | null;
+  locale: string | null;
+  lat: number;
+  lng: number;
+  location_name: string | null;
+  location_precision: "exact" | "town" | "prefecture" | null;
+  map_category: SpotCategory | null;
+  published_at: string | null;
+}
+
 interface Props {
   spots: SpotDatum[];
   posts: PostDatum[];
+  wikis?: WikiDatum[];
   onRegionChange?: (bbox: { north: number; south: number; east: number; west: number }) => void;
   onSelectSpot?: (s: SpotDatum) => void;
   onSelectPost?: (p: PostDatum) => void;
+  onSelectWiki?: (w: WikiDatum) => void;
   initialCenter?: [number, number];
   initialZoom?: number;
   showControls?: boolean;
@@ -80,9 +98,11 @@ const CARTO_STYLE = {
 export default function MapCanvas({
   spots,
   posts,
+  wikis = [],
   onRegionChange,
   onSelectSpot,
   onSelectPost,
+  onSelectWiki,
   initialCenter = [138, 36.5],
   initialZoom = 5,
   showControls = true,
@@ -92,6 +112,7 @@ export default function MapCanvas({
   const mapRef = useRef<MLMap | null>(null);
   const spotMarkers = useRef<Marker[]>([]);
   const postMarkers = useRef<Marker[]>([]);
+  const wikiMarkers = useRef<Marker[]>([]);
   const moveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // MapLibre 初期化
@@ -217,6 +238,31 @@ export default function MapCanvas({
       postMarkers.current.push(marker);
     }
   }, [posts, onSelectPost, pinVariant]);
+
+  // wiki マーカー同期
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    wikiMarkers.current.forEach((m) => m.remove());
+    wikiMarkers.current = [];
+    for (const w of wikis) {
+      const el = document.createElement("div");
+      el.style.cursor = "pointer";
+      // wiki ピンもスポット/投稿と同じ 4 カテゴリピンで描画。やや小さめにして post と差別化
+      const cat: SpotCategory = w.map_category ?? "haunted";
+      el.innerHTML = renderSpotPin(cat, 34, pinVariant);
+      // wiki ピンは半透明枠で post と区別（CSS だけで軽く付与）
+      el.style.filter = "drop-shadow(0 0 3px rgba(255,255,255,0.35))";
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        onSelectWiki?.(w);
+      });
+      const marker = new maplibregl.Marker({ element: el, anchor: "bottom" })
+        .setLngLat([w.lng, w.lat])
+        .addTo(map);
+      wikiMarkers.current.push(marker);
+    }
+  }, [wikis, onSelectWiki, pinVariant]);
 
   return (
     <div

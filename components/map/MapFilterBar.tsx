@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { BLOOD_SCORCHED, CATEGORY_LABEL, type SpotCategory } from "@/lib/mapPalettes";
 
-export type SourceKind = "all" | "spots" | "posts";
+export type SourceKind = "all" | "spots" | "posts" | "wikis";
 export type PeriodKind = "all" | "7" | "30";
 
 export interface MapFilterState {
@@ -80,6 +80,7 @@ export default function MapFilterBar({ value, onChange }: Props) {
               { v: "all", label: "すべて" },
               { v: "spots", label: "スポット" },
               { v: "posts", label: "投稿" },
+              { v: "wikis", label: "Wiki" },
             ]}
           />
           <SegControl<PeriodKind>
