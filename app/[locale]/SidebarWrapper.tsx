@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { getAccessToken, getIsAdmin } from "@/lib/auth";
-import { isIOSApp } from "@/lib/isIOSApp";
+import { isCreepyHubApp } from "@/lib/isCreepyHubApp";
 import UserAvatarButton from "./UserAvatarButton";
 import SidebarDrawer from "./SidebarDrawer";
 
@@ -92,7 +92,7 @@ export default function SidebarWrapper({ locale, labels }: Props) {
   }, []);
 
   useEffect(() => {
-    setIos(isIOSApp());
+    setIos(isCreepyHubApp());
     fetchUserData();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {

@@ -1,0 +1,242 @@
+[
+  {
+    "id": "inunaki-pass",
+    "name": "犬鳴峠（旧犬鳴トンネル）",
+    "category": "haunted",
+    "lat": 33.7369,
+    "lng": 130.4986,
+    "prefecture": "福岡県",
+    "description": "九州屈指の心霊スポットとして知られる旧道のトンネル。現在は封鎖されており進入不可。",
+    "tags": ["トンネル", "封鎖"]
+  },
+  {
+    "id": "kyu-komine-tunnel",
+    "name": "旧小峰トンネル",
+    "category": "haunted",
+    "lat": 35.7287,
+    "lng": 139.2067,
+    "prefecture": "東京都",
+    "description": "八王子市にある旧道トンネル。関東圏で有名な心霊スポットとして語られてきた。",
+    "tags": ["トンネル"]
+  },
+  {
+    "id": "ikeda-lake",
+    "name": "池田湖",
+    "category": "haunted",
+    "lat": 31.2303,
+    "lng": 130.5672,
+    "prefecture": "鹿児島県",
+    "description": "指宿のカルデラ湖。未確認生物「イッシー」目撃譚でも有名で、怪奇伝承が多い。",
+    "tags": ["湖", "UMA"]
+  },
+  {
+    "id": "joumon-tunnel",
+    "name": "常紋トンネル",
+    "category": "haunted",
+    "lat": 44.0111,
+    "lng": 143.6739,
+    "prefecture": "北海道",
+    "description": "建設工事のタコ部屋労働で犠牲者を出した歴史を持つ鉄道トンネル。",
+    "tags": ["トンネル", "鉄道"]
+  },
+  {
+    "id": "shirayama-tunnel",
+    "name": "白山トンネル",
+    "category": "haunted",
+    "lat": 36.1833,
+    "lng": 136.7333,
+    "prefecture": "石川県",
+    "description": "霊峰白山付近のトンネル。怪奇現象の噂が絶えない。",
+    "tags": ["トンネル"]
+  },
+  {
+    "id": "kiyotaki-tunnel",
+    "name": "清滝トンネル",
+    "category": "haunted",
+    "lat": 35.0419,
+    "lng": 135.6739,
+    "prefecture": "京都府",
+    "description": "京都屈指の心霊トンネル。信号と怪奇現象にまつわる噂が多い。",
+    "tags": ["トンネル"]
+  },
+  {
+    "id": "jomon-sugi-area",
+    "name": "樹海（青木ヶ原樹海）",
+    "category": "horror",
+    "lat": 35.4712,
+    "lng": 138.6211,
+    "prefecture": "山梨県",
+    "description": "富士山北西麓に広がる広大な樹海。磁気異常や遭難事故にまつわる話が多い。",
+    "tags": ["樹海", "富士"]
+  },
+  {
+    "id": "osorezan",
+    "name": "恐山 菩提寺",
+    "category": "horror",
+    "lat": 41.3289,
+    "lng": 141.0947,
+    "prefecture": "青森県",
+    "description": "日本三大霊場のひとつ。火山性の荒涼とした風景とイタコの口寄せで知られる。",
+    "tags": ["霊場", "寺"]
+  },
+  {
+    "id": "gunkanjima",
+    "name": "軍艦島（端島）",
+    "category": "horror",
+    "lat": 32.6278,
+    "lng": 129.7383,
+    "prefecture": "長崎県",
+    "description": "炭鉱閉山後に無人化した廃墟の島。近代化産業遺産であり世界遺産でもある。",
+    "tags": ["廃墟", "島"]
+  },
+  {
+    "id": "okunoshima",
+    "name": "大久野島（毒ガス島）",
+    "category": "horror",
+    "lat": 34.3103,
+    "lng": 133.0056,
+    "prefecture": "広島県",
+    "description": "戦時中に毒ガス製造が行われた島。現在はうさぎの島として観光地化。",
+    "tags": ["島", "戦跡"]
+  },
+  {
+    "id": "sado-kinzan",
+    "name": "佐渡金山",
+    "category": "horror",
+    "lat": 38.0459,
+    "lng": 138.2567,
+    "prefecture": "新潟県",
+    "description": "江戸期の金山跡。坑道の暗闇と労働者の歴史にまつわる重い空気感。",
+    "tags": ["鉱山"]
+  },
+  {
+    "id": "fushimi-inari",
+    "name": "伏見稲荷大社",
+    "category": "sightseeing",
+    "lat": 34.9671,
+    "lng": 135.7727,
+    "prefecture": "京都府",
+    "description": "千本鳥居で世界的に有名な稲荷神社の総本宮。",
+    "tags": ["神社", "鳥居"]
+  },
+  {
+    "id": "koyasan-okunoin",
+    "name": "高野山 奥之院",
+    "category": "sightseeing",
+    "lat": 34.2153,
+    "lng": 135.5989,
+    "prefecture": "和歌山県",
+    "description": "空海入定の地。樹齢数百年の杉並木と無数の墓碑が並ぶ聖地。",
+    "tags": ["寺", "霊場"]
+  },
+  {
+    "id": "izumo-taisha",
+    "name": "出雲大社",
+    "category": "sightseeing",
+    "lat": 35.4017,
+    "lng": 132.6853,
+    "prefecture": "島根県",
+    "description": "縁結びの神として名高い古社。神無月(神在月)の神事で知られる。",
+    "tags": ["神社"]
+  },
+  {
+    "id": "hiei-enryakuji",
+    "name": "比叡山 延暦寺",
+    "category": "sightseeing",
+    "lat": 35.0703,
+    "lng": 135.8411,
+    "prefecture": "滋賀県",
+    "description": "天台宗の総本山。平安以来の歴史を持ち、世界遺産でもある。",
+    "tags": ["寺"]
+  },
+  {
+    "id": "ise-jingu",
+    "name": "伊勢神宮（内宮）",
+    "category": "sightseeing",
+    "lat": 34.4549,
+    "lng": 136.7256,
+    "prefecture": "三重県",
+    "description": "天照大御神を祀る、日本の総氏神。",
+    "tags": ["神社"]
+  },
+  {
+    "id": "itsukushima",
+    "name": "厳島神社",
+    "category": "sightseeing",
+    "lat": 34.2959,
+    "lng": 132.3197,
+    "prefecture": "広島県",
+    "description": "海上に浮かぶ大鳥居が象徴的な世界遺産。",
+    "tags": ["神社", "世界遺産"]
+  },
+  {
+    "id": "nikko-toshogu",
+    "name": "日光東照宮",
+    "category": "sightseeing",
+    "lat": 36.7579,
+    "lng": 139.5989,
+    "prefecture": "栃木県",
+    "description": "徳川家康を祀る壮麗な社殿群。",
+    "tags": ["神社", "世界遺産"]
+  },
+  {
+    "id": "tono-folk",
+    "name": "遠野（遠野物語の舞台）",
+    "category": "legend",
+    "lat": 39.3272,
+    "lng": 141.5347,
+    "prefecture": "岩手県",
+    "description": "柳田國男『遠野物語』の舞台。カッパ淵・座敷童子伝承の地として知られる。",
+    "tags": ["民俗", "伝承"]
+  },
+  {
+    "id": "oiwa-inari",
+    "name": "於岩稲荷田宮神社",
+    "category": "legend",
+    "lat": 35.6928,
+    "lng": 139.7236,
+    "prefecture": "東京都",
+    "description": "四谷怪談のお岩さんを祀る神社。怪談の舞台として語り継がれる。",
+    "tags": ["怪談", "神社"]
+  },
+  {
+    "id": "ushigome-tsukitsugi",
+    "name": "番町皿屋敷 伝承地（牛込周辺）",
+    "category": "legend",
+    "lat": 35.6931,
+    "lng": 139.7394,
+    "prefecture": "東京都",
+    "description": "お菊伝説で知られる「皿屋敷」怪談の舞台とされる地。",
+    "tags": ["怪談"]
+  },
+  {
+    "id": "himeji-okiku-well",
+    "name": "姫路城 お菊井戸",
+    "category": "legend",
+    "lat": 34.8394,
+    "lng": 134.6939,
+    "prefecture": "兵庫県",
+    "description": "播州皿屋敷のお菊伝説にちなむ井戸が姫路城内に残る。",
+    "tags": ["怪談", "城"]
+  },
+  {
+    "id": "awashima-ningyo",
+    "name": "淡嶋神社",
+    "category": "legend",
+    "lat": 34.2669,
+    "lng": 135.1614,
+    "prefecture": "和歌山県",
+    "description": "大量の人形供養で知られる神社。独特の雰囲気で有名。",
+    "tags": ["神社", "人形"]
+  },
+  {
+    "id": "nanatsu-ike",
+    "name": "七ツ釜（柿田川源流）",
+    "category": "legend",
+    "lat": 35.1175,
+    "lng": 138.9031,
+    "prefecture": "静岡県",
+    "description": "湧水の滝つぼにまつわる土地の伝承が残る。",
+    "tags": ["自然", "伝承"]
+  }
+]

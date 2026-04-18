@@ -12,11 +12,9 @@ import { uploadVideoToStream } from "@/lib/uploadVideoToStream";
 import BackButton from "@/components/BackButton";
 import { getDictionary } from "@/lib/getDictionary";
 import type { Dictionary } from "@/lib/getDictionary";
-import {
-  canUseNativeLocationPicker,
-  openNativeLocationPicker,
-} from "@/lib/locationPicker";
+import { isCreepyHubApp } from "@/lib/isCreepyHubApp";
 import { roundLocation, type LocationPrecision } from "@/lib/roundLocation";
+import LocationPickerModal from "@/components/map/LocationPickerModal";
 import tabStyles from "./page.module.css";
 
 export default function PostNewPage() {
@@ -51,14 +49,13 @@ export default function PostNewPage() {
   const [videoUploading, setVideoUploading] = useState(false);
   const [videoUploadProgress, setVideoUploadProgress] = useState(0);
 
-  // ── 位置情報（iOS ネイティブピッカー経由）──
-  // スマホアプリ内でのみ UI を出す。Web からは触れない。
+  // ── 位置情報（Web 地図ピッカー。iOS/Android アプリ内でのみ UI を出す）──
   const [canPickLocation, setCanPickLocation] = useState(false);
   const [locLat, setLocLat] = useState<number | null>(null);
   const [locLng, setLocLng] = useState<number | null>(null);
   const [locName, setLocName] = useState<string | null>(null);
   const [locPrecision, setLocPrecision] = useState<LocationPrecision | null>(null);
-  const [locPicking, setLocPicking] = useState(false);
+  const [locPickerOpen, setLocPickerOpen] = useState(false);
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -68,30 +65,26 @@ export default function PostNewPage() {
     getDictionary(locale).then((dict) => setLabels(dict.postDrawer));
   }, [locale]);
 
-  // iOS アプリ内でのみネイティブ位置ピッカーを出せるようにする
+  // iOS/Android アプリ内でのみ位置ピッカー UI を出す
   useEffect(() => {
-    setCanPickLocation(canUseNativeLocationPicker());
+    setCanPickLocation(isCreepyHubApp());
   }, []);
 
-  const handlePickLocation = async () => {
-    if (locPicking) return;
-    setLocPicking(true);
-    try {
-      const picked = await openNativeLocationPicker();
-      if (!picked) return; // キャンセル
-      const rounded = roundLocation({
-        lat: picked.lat,
-        lng: picked.lng,
-        precision: picked.precision,
-        locationName: picked.locationName ?? undefined,
-      });
-      setLocLat(rounded.lat);
-      setLocLng(rounded.lng);
-      setLocName(rounded.locationName);
-      setLocPrecision(picked.precision);
-    } finally {
-      setLocPicking(false);
-    }
+  const handleLocationConfirm = ({
+    lat,
+    lng,
+    precision,
+  }: {
+    lat: number;
+    lng: number;
+    precision: LocationPrecision;
+  }) => {
+    const rounded = roundLocation({ lat, lng, precision });
+    setLocLat(rounded.lat);
+    setLocLng(rounded.lng);
+    setLocName(rounded.locationName);
+    setLocPrecision(precision);
+    setLocPickerOpen(false);
   };
 
   const clearLocation = () => {
@@ -509,12 +502,9 @@ export default function PostNewPage() {
                       <button
                         type="button"
                         style={locationAddBtn}
-                        onClick={handlePickLocation}
-                        disabled={locPicking}
+                        onClick={() => setLocPickerOpen(true)}
                       >
-                        {locPicking
-                          ? (locale === "en" ? "Opening map..." : "地図を開いています…")
-                          : (locale === "en" ? "＋ Add location" : "＋ 場所を追加")}
+                        {locale === "en" ? "＋ Add location" : "＋ 場所を追加"}
                       </button>
                     )}
                     <small style={slugHintStyle}>
@@ -560,6 +550,13 @@ export default function PostNewPage() {
               </form>
             </section>
           </div>
+
+          {/* 位置ピッカーモーダル（MapLibre） */}
+          <LocationPickerModal
+            isOpen={locPickerOpen}
+            onConfirm={handleLocationConfirm}
+            onCancel={() => setLocPickerOpen(false)}
+          />
     </div>
   );
 }
