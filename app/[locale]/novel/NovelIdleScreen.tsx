@@ -8,6 +8,14 @@ type Layer = {
   role?: "shadow";
 };
 
+type EpisodeSummary = {
+  id: string;
+  title_ja: string;
+  title_en: string | null;
+  description_ja: string | null;
+  description_en: string | null;
+};
+
 type Props = {
   layers: Layer[];
   locale: string;
@@ -19,6 +27,7 @@ type Props = {
   };
   storyHref?: string;
   speakerName?: string;
+  episodes?: EpisodeSummary[];
 };
 
 const CHAR_BASE = "/images/novel/char";
@@ -195,7 +204,7 @@ const scriptTopics: ScriptTopic[] = [
   },
 ];
 
-export default function NovelIdleScreen({ layers, locale, dict, storyHref, speakerName }: Props) {
+export default function NovelIdleScreen({ layers, locale, dict, storyHref, speakerName, episodes = [] }: Props) {
   const [phase, setPhase] = useState<"loading" | "greeting" | "idle" | "tap" | "script" | "choice" | "branch">("loading");
   const [displayedText, setDisplayedText] = useState("");
   const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
@@ -220,6 +229,9 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
   // UI modals
   const [showBacklog, setShowBacklog] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
+  // Navigation fade-out overlay
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Backlog — all displayed lines
   const [backlog, setBacklog] = useState<Array<{ speaker: string; text: string; expr: string }>>([]);
@@ -385,7 +397,9 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
     } else if (phase === "greeting") {
       setPhase("idle");
     } else if (phase === "idle") {
-      if (storyHref) {
+      // When episodes are available, tapping the body should NOT auto-start —
+      // the user needs to pick an episode from the list.
+      if (storyHref && episodes.length === 0) {
         window.location.href = storyHref;
         return;
       }
@@ -447,6 +461,19 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
 
   // Keep latest handleTap in ref for use in effects
   handleTapRef.current = handleTap;
+
+  // Navigate to episode with fade-out transition
+  const goToEpisode = useCallback(
+    (episodeId: string) => {
+      if (isNavigating) return;
+      setIsNavigating(true);
+      // Wait for fade-to-black (600ms) before navigation so the jump is not abrupt
+      setTimeout(() => {
+        window.location.href = `/${locale}/novel/${episodeId}`;
+      }, 600);
+    },
+    [isNavigating, locale]
+  );
 
   // Skip — complete current typing instantly (only relevant during isTyping)
   const skipTyping = () => {
@@ -797,7 +824,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
         </div>
       )}
 
-      {/* Idle: topic buttons + tap-to-start hint */}
+      {/* Idle: episode list + topic buttons */}
       {phase === "idle" && (
         <div
           style={{
@@ -811,39 +838,146 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
             gap: 10,
             zIndex: layers.length + 5,
             animation: "novel-fade-in 0.8s ease",
+            maxHeight: "70vh",
+            overflowY: "auto",
+            padding: "0 16px",
           }}
         >
-          {scriptTopics.map((topic, i) => (
-            <button
-              key={i}
-              onClick={(e) => {
-                e.stopPropagation();
-                startScript(topic);
-              }}
-              style={{
-                background: "rgba(0,0,0,0.7)",
-                border: "1px solid rgba(255,255,255,0.25)",
-                borderRadius: 8,
-                padding: "10px 24px",
-                color: "rgba(255,255,255,0.8)",
-                fontSize: 14,
-                fontFamily: "'SoukouMincho', serif",
-                letterSpacing: 1,
-                cursor: "pointer",
-                backdropFilter: "blur(4px)",
-                WebkitBackdropFilter: "blur(4px)",
-                transition: "background 0.2s ease, border-color 0.2s ease",
-              }}
-            >
-              {topic.label}
-            </button>
-          ))}
-          {storyHref && (
+          {/* Episode list (new) */}
+          {episodes.length > 0 && (
+            <>
+              <p
+                style={{
+                  fontSize: 10,
+                  letterSpacing: 3,
+                  color: "rgba(255,255,255,0.4)",
+                  fontFamily: "'SoukouMincho', serif",
+                  margin: "0 0 4px",
+                  textTransform: "uppercase",
+                }}
+              >
+                Episodes
+              </p>
+              {episodes.map((ep) => {
+                const title = locale === "en" && ep.title_en ? ep.title_en : ep.title_ja;
+                const desc = locale === "en" && ep.description_en ? ep.description_en : ep.description_ja;
+                return (
+                  <button
+                    key={ep.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      goToEpisode(ep.id);
+                    }}
+                    style={{
+                      width: "100%",
+                      maxWidth: 360,
+                      background: "rgba(10,5,8,0.78)",
+                      border: "1px solid rgba(var(--accent-rgb, 200,40,50), 0.45)",
+                      borderRadius: 8,
+                      padding: "12px 18px",
+                      color: "rgba(255,255,255,0.92)",
+                      fontSize: 15,
+                      fontFamily: "'SoukouMincho', serif",
+                      letterSpacing: 1,
+                      cursor: "pointer",
+                      backdropFilter: "blur(6px)",
+                      WebkitBackdropFilter: "blur(6px)",
+                      transition: "all 0.2s ease",
+                      textAlign: "left",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                    }}
+                  >
+                    <span style={{ fontWeight: 700, letterSpacing: 2 }}>{title}</span>
+                    {desc && (
+                      <span
+                        style={{
+                          fontSize: 11,
+                          color: "rgba(255,255,255,0.55)",
+                          letterSpacing: 0.5,
+                          overflow: "hidden",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                        }}
+                      >
+                        {desc}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </>
+          )}
+
+          {/* Existing scripted topics (dialogue branches) */}
+          {scriptTopics.length > 0 && (
+            <>
+              {episodes.length > 0 && (
+                <p
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: 3,
+                    color: "rgba(255,255,255,0.4)",
+                    fontFamily: "'SoukouMincho', serif",
+                    margin: "8px 0 4px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Talk
+                </p>
+              )}
+              {scriptTopics.map((topic, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startScript(topic);
+                  }}
+                  style={{
+                    width: "100%",
+                    maxWidth: 360,
+                    background: "rgba(0,0,0,0.7)",
+                    border: "1px solid rgba(255,255,255,0.25)",
+                    borderRadius: 8,
+                    padding: "10px 24px",
+                    color: "rgba(255,255,255,0.8)",
+                    fontSize: 14,
+                    fontFamily: "'SoukouMincho', serif",
+                    letterSpacing: 1,
+                    cursor: "pointer",
+                    backdropFilter: "blur(4px)",
+                    WebkitBackdropFilter: "blur(4px)",
+                    transition: "background 0.2s ease, border-color 0.2s ease",
+                  }}
+                >
+                  {topic.label}
+                </button>
+              ))}
+            </>
+          )}
+          {storyHref && episodes.length === 0 && (
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", fontFamily: "'SoukouMincho', serif", letterSpacing: 2, marginTop: 4 }}>
               {dict.tapToContinue ?? "タップで始める"}
             </p>
           )}
         </div>
+      )}
+
+      {/* Navigation fade-out overlay */}
+      {isNavigating && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "#000",
+            zIndex: 99999,
+            opacity: 0,
+            animation: "novel-fade-to-black 0.6s forwards ease-out",
+            pointerEvents: "all",
+          }}
+        />
       )}
 
       {/* Backlog modal */}
@@ -1052,6 +1186,10 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
         @keyframes novel-logo-pulse {
           0%, 100% { opacity: 0.4; transform: scale(1); }
           50% { opacity: 1; transform: scale(1.05); }
+        }
+        @keyframes novel-fade-to-black {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
       `}</style>
     </div>

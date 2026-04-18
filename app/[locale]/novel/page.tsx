@@ -34,16 +34,23 @@ export default async function NovelPage({ params }: Props) {
     );
   }
 
-  // Fetch first published episode with scenes
-  const { data: episodes } = await supabase
+  // Fetch all published episodes for lobby list
+  const { data: episodesData } = await supabase
     .from("novel_episodes")
-    .select("id")
+    .select("id, title_ja, title_en, description_ja, description_en")
     .eq("is_published", true)
     .order("sort_order", { ascending: true })
-    .limit(1);
+    .order("created_at", { ascending: true });
 
-  const episode = episodes?.[0];
-  const storyHref = episode ? `/${locale}/novel/${episode.id}` : undefined;
+  const episodes = (episodesData ?? []).map((e) => ({
+    id: e.id as string,
+    title_ja: e.title_ja as string,
+    title_en: (e.title_en as string | null) ?? null,
+    description_ja: (e.description_ja as string | null) ?? null,
+    description_en: (e.description_en as string | null) ?? null,
+  }));
+
+  const storyHref = episodes[0] ? `/${locale}/novel/${episodes[0].id}` : undefined;
 
   // Always show idle screen as lobby — tap to start story
   return (
@@ -53,6 +60,7 @@ export default async function NovelPage({ params }: Props) {
       dict={dict.novel}
       storyHref={storyHref}
       speakerName="映子"
+      episodes={episodes}
     />
   );
 }

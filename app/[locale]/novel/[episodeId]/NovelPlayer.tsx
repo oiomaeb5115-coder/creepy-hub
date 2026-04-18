@@ -39,10 +39,49 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
   const [isCompleted, setIsCompleted] = useState(false);
   const [layerTransition, setLayerTransition] = useState(false);
 
+  // Loading phase: preload all scene layer images before showing first scene
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadedCount, setLoadedCount] = useState(0);
+  const transitionStarted = useRef(false);
+
   const audioRef = useRef<HTMLAudioElement>(null);
   const typeTimerRef = useRef<number | null>(null);
 
   const scene = scenes[currentIndex];
+
+  // Gather unique image URLs across all scenes
+  const allImageUrls = Array.from(
+    new Set(
+      scenes.flatMap((s) => (Array.isArray(s.layers) ? s.layers.map((l) => l.image_url) : []))
+    )
+  );
+  const totalImages = allImageUrls.length;
+
+  // Preload all layer images
+  useEffect(() => {
+    if (totalImages === 0) {
+      setIsLoading(false);
+      return;
+    }
+    let count = 0;
+    allImageUrls.forEach((url) => {
+      const img = new Image();
+      img.onload = img.onerror = () => {
+        count++;
+        setLoadedCount(count);
+      };
+      img.src = url;
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fade out loading once images are ready
+  useEffect(() => {
+    if (isLoading && loadedCount >= totalImages && !transitionStarted.current) {
+      transitionStarted.current = true;
+      const timer = setTimeout(() => setIsLoading(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, loadedCount, totalImages]);
 
   const getText = useCallback(
     (s: Scene) => (locale === "en" && s.text_en ? s.text_en : s.text_ja),
@@ -98,17 +137,19 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
   }, [currentIndex, scenes]);
 
   const handleTap = useCallback(() => {
+    if (isLoading) return;
     if (isCompleted) return;
     if (isTyping) {
       revealAll();
     } else {
       advance();
     }
-  }, [isTyping, isCompleted, revealAll, advance]);
+  }, [isLoading, isTyping, isCompleted, revealAll, advance]);
 
-  // Play audio and start typewriter when scene changes
+  // Play audio and start typewriter when scene changes (waits for loading to finish)
   useEffect(() => {
     if (!scene) return;
+    if (isLoading) return; // gate until all images are preloaded
     startTypewriter(getText(scene));
     if (audioRef.current) {
       if (scene.audio_url) {
@@ -120,7 +161,7 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
       }
     }
     setLayerTransition(false);
-  }, [currentIndex, scene, getText, startTypewriter]);
+  }, [currentIndex, scene, getText, startTypewriter, isLoading]);
 
   useEffect(() => {
     return () => {
@@ -149,6 +190,46 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
       }}
     >
       <audio ref={audioRef} preload="auto" />
+
+      {/* Loading overlay — fades out when all layer images are ready */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 9000,
+          background: "#000",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: isLoading ? 1 : 0,
+          transition: "opacity 0.6s ease",
+          pointerEvents: isLoading ? "auto" : "none",
+        }}
+      >
+        <img
+          src="/images/ui/auth-logo_2.webp"
+          alt=""
+          style={{
+            width: 72,
+            height: "auto",
+            animation: "novel-player-logo-pulse 1.6s ease-in-out infinite",
+          }}
+        />
+        <p
+          style={{
+            marginTop: 14,
+            fontSize: 11,
+            color: "rgba(255,255,255,0.5)",
+            fontFamily: "'SoukouMincho', serif",
+            letterSpacing: 3,
+          }}
+        >
+          {totalImages > 0
+            ? `LOADING ${Math.min(loadedCount, totalImages)} / ${totalImages}`
+            : "LOADING"}
+        </p>
+      </div>
 
       {/* Progress bar */}
       <div
@@ -364,6 +445,10 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
         @keyframes novel-tap-pulse {
           0%, 100% { opacity: 0.4; }
           50% { opacity: 0.8; }
+        }
+        @keyframes novel-player-logo-pulse {
+          0%, 100% { opacity: 0.4; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.05); }
         }
       `}</style>
     </div>
