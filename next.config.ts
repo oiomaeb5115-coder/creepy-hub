@@ -14,7 +14,8 @@ const nextConfig: NextConfig = {
       // Supabase Storage・外部画像・アバタークロッパー用 blob: を許可
       "img-src 'self' https: blob:",
       // Supabase API・Cloudflare Workers AI への接続を許可
-      "connect-src 'self' https://*.supabase.co https://api.cloudflare.com https://unpkg.com https://*.shinobi.jp https://*.criteo.com https://*.amossp-sp.in https://*.cloudflarestream.com https://upload.videodelivery.net blob:",
+      // MapLibre の CARTO dark basemap タイル取得用に basemaps.cartocdn.com を追加
+      "connect-src 'self' https://*.supabase.co https://api.cloudflare.com https://unpkg.com https://*.shinobi.jp https://*.criteo.com https://*.amossp-sp.in https://*.cloudflarestream.com https://upload.videodelivery.net https://*.basemaps.cartocdn.com blob:",
       // browser-image-compression の Web Worker 用
       "worker-src 'self' blob:",
       // フォント（必要に応じて追加）

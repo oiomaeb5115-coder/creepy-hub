@@ -88,6 +88,8 @@ const wrap: React.CSSProperties = {
   inset: 0,
   background: "#0b0b0e",
   overflow: "hidden",
+  // Sidebar のフローティングアイコンや下部タブナビより上に出す
+  zIndex: 2000,
 };
 const backBtn: React.CSSProperties = {
   position: "absolute",
