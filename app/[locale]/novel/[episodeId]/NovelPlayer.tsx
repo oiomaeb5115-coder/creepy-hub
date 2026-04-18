@@ -32,10 +32,15 @@ type NovelPlayerProps = {
   };
 };
 
+// Auto-advance delay based on last punctuation in text
+function pauseAfterMs(text: string): number {
+  const last = text.trim().slice(-1);
+  if (last === "。" || last === "、") return 1000;
+  return 500;
+}
+
 export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, dict }: NovelPlayerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [displayedText, setDisplayedText] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [layerTransition, setLayerTransition] = useState(false);
 
@@ -45,7 +50,7 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
   const transitionStarted = useRef(false);
 
   const audioRef = useRef<HTMLAudioElement>(null);
-  const typeTimerRef = useRef<number | null>(null);
+  const autoAdvanceTimerRef = useRef<number | null>(null);
 
   const scene = scenes[currentIndex];
 
@@ -93,36 +98,15 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
     [locale]
   );
 
-  const startTypewriter = useCallback((text: string) => {
-    if (typeTimerRef.current) cancelAnimationFrame(typeTimerRef.current);
-    setIsTyping(true);
-    setDisplayedText("");
-    let i = 0;
-    const tick = () => {
-      i++;
-      setDisplayedText(text.slice(0, i));
-      if (i < text.length) {
-        typeTimerRef.current = requestAnimationFrame(tick);
-      } else {
-        setIsTyping(false);
-        typeTimerRef.current = null;
-      }
-    };
-    typeTimerRef.current = requestAnimationFrame(tick);
+  const clearAutoTimer = useCallback(() => {
+    if (autoAdvanceTimerRef.current !== null) {
+      clearTimeout(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
   }, []);
 
-  const revealAll = useCallback(() => {
-    if (typeTimerRef.current) {
-      cancelAnimationFrame(typeTimerRef.current);
-      typeTimerRef.current = null;
-    }
-    if (scene) {
-      setDisplayedText(getText(scene));
-      setIsTyping(false);
-    }
-  }, [scene, getText]);
-
   const advance = useCallback(() => {
+    clearAutoTimer();
     if (currentIndex >= scenes.length - 1) {
       setIsCompleted(true);
       if (audioRef.current) {
@@ -134,45 +118,68 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
     setLayerTransition(true);
     setTimeout(() => setLayerTransition(false), 50);
     setCurrentIndex((i) => i + 1);
-  }, [currentIndex, scenes]);
+  }, [currentIndex, scenes, clearAutoTimer]);
 
+  // Schedule auto-advance when audio ends
+  const handleAudioEnded = useCallback(() => {
+    if (isCompleted || !scene) return;
+    const ms = pauseAfterMs(getText(scene));
+    clearAutoTimer();
+    autoAdvanceTimerRef.current = window.setTimeout(() => {
+      autoAdvanceTimerRef.current = null;
+      advance();
+    }, ms);
+  }, [isCompleted, scene, getText, advance, clearAutoTimer]);
+
+  // Tap: skip any pending auto-advance and move immediately
   const handleTap = useCallback(() => {
     if (isLoading) return;
     if (isCompleted) return;
-    if (isTyping) {
-      revealAll();
-    } else {
-      advance();
-    }
-  }, [isLoading, isTyping, isCompleted, revealAll, advance]);
+    advance();
+  }, [isLoading, isCompleted, advance]);
 
-  // Play audio and start typewriter when scene changes (waits for loading to finish)
+  // Play audio when scene changes (gated by loading phase)
   useEffect(() => {
     if (!scene) return;
-    if (isLoading) return; // gate until all images are preloaded
-    startTypewriter(getText(scene));
+    if (isLoading) return;
+    clearAutoTimer();
     if (audioRef.current) {
       if (scene.audio_url) {
         audioRef.current.src = scene.audio_url;
-        audioRef.current.play().catch(() => {});
+        audioRef.current.play().catch(() => {
+          // Autoplay blocked — fallback: schedule advance based on rough text duration
+          const text = getText(scene);
+          const ms = Math.max(2000, text.length * 120) + pauseAfterMs(text);
+          autoAdvanceTimerRef.current = window.setTimeout(() => {
+            autoAdvanceTimerRef.current = null;
+            advance();
+          }, ms);
+        });
       } else {
         audioRef.current.pause();
         audioRef.current.removeAttribute("src");
+        // No audio — fall back to timed advance (rough text-length based)
+        const text = getText(scene);
+        const ms = Math.max(2000, text.length * 120) + pauseAfterMs(text);
+        autoAdvanceTimerRef.current = window.setTimeout(() => {
+          autoAdvanceTimerRef.current = null;
+          advance();
+        }, ms);
       }
     }
     setLayerTransition(false);
-  }, [currentIndex, scene, getText, startTypewriter, isLoading]);
+  }, [currentIndex, scene, getText, isLoading, advance, clearAutoTimer]);
 
+  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      if (typeTimerRef.current) cancelAnimationFrame(typeTimerRef.current);
-    };
-  }, []);
+    return () => clearAutoTimer();
+  }, [clearAutoTimer]);
 
   if (scenes.length === 0) return null;
 
   const layers: Layer[] = Array.isArray(scene.layers) ? scene.layers : [];
   const transitionStyle = scene.transition_effect === "cut" ? "none" : "opacity 0.5s ease";
+  const text = scene ? getText(scene) : "";
 
   return (
     <div
@@ -189,7 +196,7 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
         touchAction: "manipulation",
       }}
     >
-      <audio ref={audioRef} preload="auto" />
+      <audio ref={audioRef} preload="auto" onEnded={handleAudioEnded} />
 
       {/* Loading overlay — fades out when all layer images are ready */}
       <div
@@ -327,7 +334,7 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
         }}
       />
 
-      {/* Text box (hidden when completed) */}
+      {/* Text box (center aligned, no typewriter) */}
       {!isCompleted && (
         <div
           style={{
@@ -335,11 +342,12 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
             bottom: 0,
             left: 0,
             right: 0,
-            padding: "12px 16px 32px",
+            padding: "14px 20px 32px",
             background: "linear-gradient(to bottom, rgba(0,0,0,0.75), rgba(0,0,0,0.92))",
             minHeight: "25%",
             display: "flex",
             flexDirection: "column",
+            alignItems: "center",
             justifyContent: "flex-start",
             zIndex: layers.length + 2,
           }}
@@ -350,8 +358,10 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
                 fontSize: 13,
                 fontWeight: 700,
                 color: "var(--accent, #c62828)",
-                marginBottom: 6,
+                marginBottom: 8,
                 letterSpacing: 1,
+                textAlign: "center",
+                width: "100%",
               }}
             >
               {getSpeaker(scene)}
@@ -359,6 +369,7 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
           )}
 
           <div
+            key={currentIndex}
             style={{
               fontSize: 16,
               lineHeight: 1.8,
@@ -366,41 +377,18 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
               fontFamily: "'SoukouMincho', serif",
               whiteSpace: "pre-wrap",
               minHeight: 80,
+              textAlign: "center",
+              width: "100%",
+              maxWidth: 560,
+              animation: "novel-text-fade-in 0.3s ease",
             }}
           >
-            {displayedText}
-            {isTyping && (
-              <span
-                style={{
-                  display: "inline-block",
-                  width: 2,
-                  height: "1em",
-                  background: "#e0e0e0",
-                  marginLeft: 2,
-                  animation: "novel-cursor-blink 0.6s infinite",
-                  verticalAlign: "text-bottom",
-                }}
-              />
-            )}
+            {text}
           </div>
-
-          {!isTyping && (
-            <div
-              style={{
-                fontSize: 12,
-                color: "rgba(255,255,255,0.4)",
-                textAlign: "center",
-                marginTop: 8,
-                animation: "novel-tap-pulse 1.5s infinite",
-              }}
-            >
-              {dict.tapToContinue} &raquo;
-            </div>
-          )}
         </div>
       )}
 
-      {/* Completed: socia-game-style home overlay */}
+      {/* Completed: social-game-style home overlay */}
       {isCompleted && (
         <div
           style={{
@@ -438,13 +426,9 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
       )}
 
       <style>{`
-        @keyframes novel-cursor-blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
-        }
-        @keyframes novel-tap-pulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 0.8; }
+        @keyframes novel-text-fade-in {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         @keyframes novel-player-logo-pulse {
           0%, 100% { opacity: 0.4; transform: scale(1); }
