@@ -2,13 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getIsAdmin, getAccessToken } from "@/lib/auth";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
 import { uploadImage } from "@/lib/uploadImage";
 import { uploadVideoToStream } from "@/lib/uploadVideoToStream";
+import { MAP_PUBLIC_TO_WEB } from "@/lib/isCreepyHubApp";
+import { roundLocation, type LocationPrecision } from "@/lib/roundLocation";
+import LocationPickerModal from "@/components/map/LocationPickerModal";
+import type { SpotCategory } from "@/lib/mapPalettes";
 
 type Chapter = { id: number; title: string; body: string };
 
@@ -29,6 +33,9 @@ export default function StoryEditPage() {
   const locale = params?.locale ?? "ja";
   const postId = params?.id;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // 開発時に位置ピッカーUIを強制表示するためのフラグ（?forceAppUI=1）
+  const forceAppUI = searchParams?.get("forceAppUI") === "1";
 
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
@@ -54,6 +61,21 @@ export default function StoryEditPage() {
   const [videoUploading, setVideoUploading] = useState(false);
   const [videoUploadProgress, setVideoUploadProgress] = useState(0);
 
+  // 位置情報 state
+  // 表示可否は state を介さず描画時に直接評価（SPA遷移/HMRの影響を回避）
+  const canPickLocation = MAP_PUBLIC_TO_WEB || forceAppUI || (typeof window !== "undefined" && (
+    (window as Record<string, unknown>).__CREEPYHUB_IOS__ === true ||
+    (window as Record<string, unknown>).__CREEPYHUB_ANDROID__ === true
+  ));
+  const [locLat, setLocLat] = useState<number | null>(null);
+  const [locLng, setLocLng] = useState<number | null>(null);
+  const [locName, setLocName] = useState<string | null>(null);
+  const [locPrecision, setLocPrecision] = useState<LocationPrecision | null>(null);
+  const [mapCategory, setMapCategory] = useState<SpotCategory | null>(null);
+  const [locPickerOpen, setLocPickerOpen] = useState(false);
+  // 変更検出用：ロード時の値を保持
+  const [locationDirty, setLocationDirty] = useState(false);
+
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -61,7 +83,7 @@ export default function StoryEditPage() {
 
       const { data: post, error } = await supabase
         .from("post")
-        .select("id, title, content, category_id, user_id, slug, image_url, image_url_2, image_url_3, video_url, stream_video_id")
+        .select("id, title, content, category_id, user_id, slug, image_url, image_url_2, image_url_3, video_url, stream_video_id, lat, lng, location_name, location_precision, map_category")
         .eq("id", postId)
         .single();
 
@@ -89,6 +111,11 @@ export default function StoryEditPage() {
       setImageUrl3(post.image_url_3 ?? null);
       setVideoUrl(post.video_url ?? null);
       setExistingStreamVideoId(post.stream_video_id ?? null);
+      setLocLat(post.lat ?? null);
+      setLocLng(post.lng ?? null);
+      setLocName(post.location_name ?? null);
+      setLocPrecision((post.location_precision as LocationPrecision | null) ?? null);
+      setMapCategory((post.map_category as SpotCategory | null) ?? null);
       setLoading(false);
     };
     init();
@@ -114,6 +141,36 @@ export default function StoryEditPage() {
 
   const updateChapter = (i: number, key: "title" | "body", val: string) =>
     setChapters((prev) => prev.map((c, idx) => idx === i ? { ...c, [key]: val } : c));
+
+  const handleLocationConfirm = ({
+    lat,
+    lng,
+    precision,
+    mapCategory: cat,
+  }: {
+    lat: number;
+    lng: number;
+    precision: LocationPrecision;
+    mapCategory: SpotCategory;
+  }) => {
+    const rounded = roundLocation({ lat, lng, precision });
+    setLocLat(rounded.lat);
+    setLocLng(rounded.lng);
+    setLocName(rounded.locationName);
+    setLocPrecision(precision);
+    setMapCategory(cat);
+    setLocationDirty(true);
+    setLocPickerOpen(false);
+  };
+
+  const clearLocation = () => {
+    setLocLat(null);
+    setLocLng(null);
+    setLocName(null);
+    setLocPrecision(null);
+    setMapCategory(null);
+    setLocationDirty(true);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,6 +244,14 @@ export default function StoryEditPage() {
           image_url_3: finalImageUrl3,
           video_url: finalVideoUrl,
           stream_video_id: finalStreamVideoId,
+          // 位置情報は変更があった時だけ送る（送らなければ API 側で touch されない）
+          ...(locationDirty ? {
+            lat: locLat,
+            lng: locLng,
+            location_name: locName,
+            location_precision: locPrecision,
+            map_category: mapCategory,
+          } : {}),
         }),
       });
 
@@ -357,6 +422,53 @@ export default function StoryEditPage() {
               )}
             </div>
 
+            {/* 位置情報（iOS/Android アプリ内または forceAppUI=1 のみ） */}
+            {canPickLocation && (
+              <div style={groupStyle}>
+                <label style={labelStyle}>場所（任意）</label>
+                {locLat !== null && locLng !== null ? (
+                  <div style={locationCardStyle}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, color: "#e8d8d0" }}>
+                        {locName ?? `${locLat.toFixed(4)}, ${locLng.toFixed(4)}`}
+                      </div>
+                      <div style={{ fontSize: 10, color: "rgba(200,150,140,0.5)", marginTop: 2 }}>
+                        {locPrecision === "exact"
+                          ? "正確な位置"
+                          : locPrecision === "town"
+                          ? "町単位（±300mランダム）"
+                          : locPrecision === "prefecture"
+                          ? "都道府県のみ"
+                          : "精度未設定"}
+                        {mapCategory && (
+                          <>
+                            {" ・ "}
+                            {mapCategory === "haunted" && "心霊"}
+                            {mapCategory === "horror" && "恐怖"}
+                            {mapCategory === "sightseeing" && "観光"}
+                            {mapCategory === "legend" && "伝承"}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <button type="button" style={locationEditBtn} onClick={() => setLocPickerOpen(true)}>
+                      変更
+                    </button>
+                    <button type="button" style={locationRemoveBtn} onClick={clearLocation}>
+                      削除
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" style={locationAddBtn} onClick={() => setLocPickerOpen(true)}>
+                    ＋ 場所を追加
+                  </button>
+                )}
+                <small style={{ fontSize: 10, color: "rgba(200,150,140,0.35)", lineHeight: 1.5 }}>
+                  地図タップで位置を指定。町/県を選ぶと保存前に座標をぼかします。
+                </small>
+              </div>
+            )}
+
             <div style={{ ...groupStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h3 style={{ margin: 0, fontSize: 14, color: "#c8b8b0" }}>章構成</h3>
             </div>
@@ -392,6 +504,14 @@ export default function StoryEditPage() {
           </form>
         </section>
       </div>
+
+      <LocationPickerModal
+        isOpen={locPickerOpen}
+        onConfirm={handleLocationConfirm}
+        onCancel={() => setLocPickerOpen(false)}
+        initialCenter={locLat !== null && locLng !== null ? [locLng, locLat] : undefined}
+        initialZoom={locLat !== null && locLng !== null ? 12 : undefined}
+      />
     </main>
   );
 }
@@ -417,3 +537,7 @@ const imageSlotStyle: React.CSSProperties = { width: 100, height: 100, borderRad
 const imagePreviewStyle: React.CSSProperties = { width: 100, height: 100, objectFit: "cover", display: "block", borderRadius: 6 };
 const imageRemoveBtn: React.CSSProperties = { position: "absolute", top: 2, right: 2, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.7)", color: "#fff", border: "none", cursor: "pointer", fontSize: 14, lineHeight: "20px", textAlign: "center", padding: 0 };
 const imageAddLabel: React.CSSProperties = { width: 100, height: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: "rgba(20,8,10,0.8)", border: "1px dashed rgba(180,100,110,0.4)", borderRadius: 6, color: "#a09080", cursor: "pointer" };
+const locationAddBtn: React.CSSProperties = { padding: "10px 14px", background: "rgba(20,8,10,0.8)", border: "1px dashed rgba(180,100,110,0.4)", color: "#c0a090", borderRadius: 4, cursor: "pointer", fontSize: 13, textAlign: "left" };
+const locationCardStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, background: "rgba(30,10,15,0.8)", border: "1px solid rgba(180,100,110,0.3)", padding: "10px 14px", borderRadius: 4 };
+const locationEditBtn: React.CSSProperties = { background: "none", border: "1px solid rgba(200,150,140,0.35)", color: "rgba(200,180,170,0.85)", fontSize: 11, padding: "4px 10px", borderRadius: 3, cursor: "pointer", flexShrink: 0 };
+const locationRemoveBtn: React.CSSProperties = { background: "none", border: "1px solid rgba(200,60,60,0.35)", color: "rgba(200,100,100,0.75)", fontSize: 11, padding: "4px 10px", borderRadius: 3, cursor: "pointer", flexShrink: 0 };

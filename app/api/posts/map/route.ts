@@ -17,6 +17,18 @@ export async function GET(req: NextRequest) {
   const limitRaw = parseInt(searchParams.get("limit") ?? "300", 10);
   const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 1000) : 300;
 
+  // since: 期間フィルタ。数値なら "過去N日"、ISO文字列ならその時点以降。
+  const sinceRaw = searchParams.get("since");
+  let sinceISO: string | null = null;
+  if (sinceRaw) {
+    const asDays = parseInt(sinceRaw, 10);
+    if (Number.isFinite(asDays) && String(asDays) === sinceRaw && asDays > 0) {
+      sinceISO = new Date(Date.now() - asDays * 24 * 60 * 60 * 1000).toISOString();
+    } else if (!Number.isNaN(Date.parse(sinceRaw))) {
+      sinceISO = new Date(sinceRaw).toISOString();
+    }
+  }
+
   if (
     !Number.isFinite(north) ||
     !Number.isFinite(south) ||
@@ -37,7 +49,7 @@ export async function GET(req: NextRequest) {
   // posts_with_location ビューを叩く（is_published + 未削除 + 位置あり）
   let query = supabase
     .from("posts_with_location")
-    .select("id, title, slug, content, image_url, image_url_2, image_url_3, category_id, user_id, lat, lng, location_name, location_precision, created_at")
+    .select("id, title, slug, content, image_url, image_url_2, image_url_3, category_id, user_id, lat, lng, location_name, location_precision, map_category, created_at")
     .gte("lat", south)
     .lte("lat", north)
     .order("created_at", { ascending: false })
@@ -45,6 +57,10 @@ export async function GET(req: NextRequest) {
 
   // 日付変更線をまたがない想定（日本のみ対象）なので east > west 前提
   query = query.gte("lng", west).lte("lng", east);
+
+  if (sinceISO) {
+    query = query.gte("created_at", sinceISO);
+  }
 
   const { data, error } = await query;
 

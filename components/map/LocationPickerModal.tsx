@@ -4,14 +4,23 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl, { Map as MLMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { LocationPrecision } from "@/lib/roundLocation";
+import { BLOOD_SCORCHED, CATEGORY_LABEL, type SpotCategory } from "@/lib/mapPalettes";
+import { renderSpotPin } from "@/lib/mapPins";
 
 interface Props {
   isOpen: boolean;
-  onConfirm: (args: { lat: number; lng: number; precision: LocationPrecision }) => void;
+  onConfirm: (args: {
+    lat: number;
+    lng: number;
+    precision: LocationPrecision;
+    mapCategory: SpotCategory;
+  }) => void;
   onCancel: () => void;
   initialCenter?: [number, number];
   initialZoom?: number;
 }
+
+const ALL_CATS: SpotCategory[] = ["haunted", "horror", "sightseeing", "legend"];
 
 const CARTO_STYLE = {
   version: 8 as const,
@@ -49,6 +58,7 @@ export default function LocationPickerModal({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MLMap | null>(null);
   const [precision, setPrecision] = useState<LocationPrecision>("town");
+  const [mapCategory, setMapCategory] = useState<SpotCategory>("haunted");
 
   useEffect(() => {
     if (!isOpen) return;
@@ -77,7 +87,7 @@ export default function LocationPickerModal({
   const handleConfirm = () => {
     const c = mapRef.current?.getCenter();
     if (!c) return;
-    onConfirm({ lat: c.lat, lng: c.lng, precision });
+    onConfirm({ lat: c.lat, lng: c.lng, precision, mapCategory });
   };
 
   return (
@@ -85,11 +95,12 @@ export default function LocationPickerModal({
       {/* MapLibre container */}
       <div ref={containerRef} style={mapStyle} />
 
-      {/* 中央レチクル */}
+      {/* 中央レチクル（選択中カテゴリのピンをプレビュー表示） */}
       <div style={reticleWrap}>
-        <div style={reticleCircle} />
-        <div style={reticleVertical} />
-        <div style={reticleHorizontal} />
+        <div
+          style={reticlePinWrap}
+          dangerouslySetInnerHTML={{ __html: renderSpotPin(mapCategory, 48, "A") }}
+        />
       </div>
 
       {/* 上部：キャンセル */}
@@ -97,9 +108,35 @@ export default function LocationPickerModal({
         <button type="button" style={topBtn} onClick={onCancel}>キャンセル</button>
       </div>
 
-      {/* 下部：精度 + 確定 */}
+      {/* 下部：カテゴリ + 精度 + 確定 */}
       <div style={bottomPanel}>
         <div style={hint}>この場所を投稿に付けますか？</div>
+
+        {/* ピン種別 */}
+        <div style={sectionLabel}>ピン種別</div>
+        <div style={categoryRow}>
+          {ALL_CATS.map((c) => {
+            const active = mapCategory === c;
+            return (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setMapCategory(c)}
+                style={{
+                  ...categoryBtn,
+                  background: active ? BLOOD_SCORCHED[c] : "rgba(255,255,255,0.08)",
+                  borderColor: active ? BLOOD_SCORCHED[c] : "rgba(255,255,255,0.15)",
+                  fontWeight: active ? 700 : 400,
+                }}
+              >
+                {CATEGORY_LABEL[c]}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 精度 */}
+        <div style={sectionLabel}>位置の精度</div>
         <div style={precisionRow}>
           <PrecisionButton
             label="正確"
@@ -174,30 +211,9 @@ const reticleWrap: React.CSSProperties = {
   pointerEvents: "none",
   zIndex: 10,
 };
-const reticleCircle: React.CSSProperties = {
-  width: 48,
-  height: 48,
-  border: "1.5px solid rgba(255,255,255,0.9)",
-  borderRadius: "50%",
-  boxShadow: "0 0 4px rgba(0,0,0,0.7)",
-};
-const reticleVertical: React.CSSProperties = {
-  position: "absolute",
-  left: "50%",
-  top: "50%",
-  width: 1.5,
-  height: 20,
-  background: "rgba(255,255,255,0.9)",
-  transform: "translate(-50%, -50%)",
-};
-const reticleHorizontal: React.CSSProperties = {
-  position: "absolute",
-  left: "50%",
-  top: "50%",
-  width: 20,
-  height: 1.5,
-  background: "rgba(255,255,255,0.9)",
-  transform: "translate(-50%, -50%)",
+const reticlePinWrap: React.CSSProperties = {
+  transform: "translateY(-50%)", // SVG 自体は下端がアンカー、中心位置に来るようY補正
+  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.6))",
 };
 const topBar: React.CSSProperties = {
   position: "absolute",
@@ -230,6 +246,23 @@ const bottomPanel: React.CSSProperties = {
   gap: 10,
 };
 const hint: React.CSSProperties = { fontSize: 13, textAlign: "center", color: "rgba(255,255,255,0.9)" };
+const sectionLabel: React.CSSProperties = {
+  fontSize: 11,
+  color: "rgba(255,255,255,0.55)",
+  letterSpacing: "0.08em",
+  marginTop: 4,
+};
+const categoryRow: React.CSSProperties = { display: "flex", gap: 6 };
+const categoryBtn: React.CSSProperties = {
+  flex: 1,
+  padding: "8px 6px",
+  color: "#fff",
+  border: "1px solid",
+  borderRadius: 6,
+  fontSize: 13,
+  cursor: "pointer",
+  fontFamily: "inherit",
+};
 const precisionRow: React.CSSProperties = { display: "flex", gap: 6 };
 const precisionBtn: React.CSSProperties = {
   flex: 1,

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import maplibregl, { Map as MLMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { renderSpotPin, renderPostPin } from "@/lib/mapPins";
+import { renderSpotPin, type PinVariant } from "@/lib/mapPins";
 import type { SpotCategory } from "@/lib/mapPalettes";
 
 export interface SpotDatum {
@@ -29,6 +29,8 @@ export interface PostDatum {
   lng: number;
   location_name: string | null;
   location_precision: "exact" | "town" | "prefecture" | null;
+  /** ユーザーが投稿時に選んだピン種別。未選択の旧投稿は null。地図上は haunted にフォールバック */
+  map_category: SpotCategory | null;
   created_at: string | null;
 }
 
@@ -41,6 +43,7 @@ interface Props {
   initialCenter?: [number, number];
   initialZoom?: number;
   showControls?: boolean;
+  pinVariant?: PinVariant;
 }
 
 const CARTO_STYLE = {
@@ -74,6 +77,7 @@ export default function MapCanvas({
   initialCenter = [138, 36.5],
   initialZoom = 5,
   showControls = true,
+  pinVariant = "A",
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MLMap | null>(null);
@@ -99,6 +103,15 @@ export default function MapCanvas({
 
     if (showControls) {
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+      map.addControl(
+        new maplibregl.GeolocateControl({
+          positionOptions: { enableHighAccuracy: true },
+          trackUserLocation: true,
+          showUserLocation: true,
+          showAccuracyCircle: true,
+        }),
+        "bottom-right"
+      );
     }
 
     // bbox 変化通知（デバウンス）
@@ -135,7 +148,7 @@ export default function MapCanvas({
     for (const s of spots) {
       const el = document.createElement("div");
       el.style.cursor = "pointer";
-      el.innerHTML = renderSpotPin(s.category, 42);
+      el.innerHTML = renderSpotPin(s.category, 42, pinVariant);
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         onSelectSpot?.(s);
@@ -145,7 +158,7 @@ export default function MapCanvas({
         .addTo(map);
       spotMarkers.current.push(marker);
     }
-  }, [spots, onSelectSpot]);
+  }, [spots, onSelectSpot, pinVariant]);
 
   // 投稿マーカー同期
   useEffect(() => {
@@ -156,7 +169,10 @@ export default function MapCanvas({
     for (const p of posts) {
       const el = document.createElement("div");
       el.style.cursor = "pointer";
-      el.innerHTML = renderPostPin(38);
+      // 投稿ピンもスポットと同じ 4 カテゴリピンで描画する。
+      // 古い投稿 (map_category が null) は心霊 (haunted) にフォールバック。
+      const cat: SpotCategory = p.map_category ?? "haunted";
+      el.innerHTML = renderSpotPin(cat, 38, pinVariant);
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         onSelectPost?.(p);
@@ -166,7 +182,7 @@ export default function MapCanvas({
         .addTo(map);
       postMarkers.current.push(marker);
     }
-  }, [posts, onSelectPost]);
+  }, [posts, onSelectPost, pinVariant]);
 
   return (
     <div

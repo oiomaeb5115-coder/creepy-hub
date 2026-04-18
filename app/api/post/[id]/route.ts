@@ -65,7 +65,21 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { title, content, category_id, image_url, image_url_2, image_url_3, video_url, stream_video_id } = body;
+  const {
+    title,
+    content,
+    category_id,
+    image_url,
+    image_url_2,
+    image_url_3,
+    video_url,
+    stream_video_id,
+    lat,
+    lng,
+    location_name,
+    location_precision,
+    map_category,
+  } = body;
 
   // サーバーサイド入力バリデーション
   if (title !== undefined && (typeof title !== "string" || title.length === 0 || title.length > 200)) {
@@ -83,6 +97,32 @@ export async function PATCH(
       return NextResponse.json({ error: "メディアURLが不正です" }, { status: 400 });
     }
   }
+  // 位置情報のバリデーション
+  for (const [key, val] of [
+    ["lat", lat] as const,
+    ["lng", lng] as const,
+  ]) {
+    if (val !== undefined && val !== null && (typeof val !== "number" || !Number.isFinite(val))) {
+      return NextResponse.json({ error: `${key} が不正です` }, { status: 400 });
+    }
+  }
+  if (location_name !== undefined && location_name !== null && typeof location_name !== "string") {
+    return NextResponse.json({ error: "location_name が不正です" }, { status: 400 });
+  }
+  if (
+    location_precision !== undefined &&
+    location_precision !== null &&
+    !["exact", "town", "prefecture"].includes(location_precision)
+  ) {
+    return NextResponse.json({ error: "location_precision が不正です" }, { status: 400 });
+  }
+  if (
+    map_category !== undefined &&
+    map_category !== null &&
+    !["haunted", "horror", "sightseeing", "legend"].includes(map_category)
+  ) {
+    return NextResponse.json({ error: "map_category が不正です" }, { status: 400 });
+  }
 
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -98,6 +138,11 @@ export async function PATCH(
   if (image_url_3 !== undefined) updateData.image_url_3 = image_url_3;
   if (video_url !== undefined) updateData.video_url = video_url;
   if (stream_video_id !== undefined) updateData.stream_video_id = stream_video_id;
+  if (lat !== undefined) updateData.lat = lat;
+  if (lng !== undefined) updateData.lng = lng;
+  if (location_name !== undefined) updateData.location_name = location_name;
+  if (location_precision !== undefined) updateData.location_precision = location_precision;
+  if (map_category !== undefined) updateData.map_category = map_category;
 
   const { error } = await adminSupabase
     .from("post")

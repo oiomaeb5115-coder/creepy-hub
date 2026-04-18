@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAccessToken } from "@/lib/auth";
 import { generateSlug, sanitizeSlug } from "@/lib/slug";
@@ -12,15 +12,19 @@ import { uploadVideoToStream } from "@/lib/uploadVideoToStream";
 import BackButton from "@/components/BackButton";
 import { getDictionary } from "@/lib/getDictionary";
 import type { Dictionary } from "@/lib/getDictionary";
-import { isCreepyHubApp } from "@/lib/isCreepyHubApp";
+import { MAP_PUBLIC_TO_WEB } from "@/lib/isCreepyHubApp";
 import { roundLocation, type LocationPrecision } from "@/lib/roundLocation";
 import LocationPickerModal from "@/components/map/LocationPickerModal";
+import type { SpotCategory } from "@/lib/mapPalettes";
 import tabStyles from "./page.module.css";
 
 export default function PostNewPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // 開発時に位置ピッカーUIを強制表示するためのフラグ（?forceAppUI=1）
+  const forceAppUI = searchParams?.get("forceAppUI") === "1";
 
   // ── POST フォーム state ──
   const [labels, setLabels] = useState<Dictionary["postDrawer"] | null>(null);
@@ -49,12 +53,17 @@ export default function PostNewPage() {
   const [videoUploading, setVideoUploading] = useState(false);
   const [videoUploadProgress, setVideoUploadProgress] = useState(0);
 
-  // ── 位置情報（Web 地図ピッカー。iOS/Android アプリ内でのみ UI を出す）──
-  const [canPickLocation, setCanPickLocation] = useState(false);
+  // ── 位置情報（Web 地図ピッカー）──
+  // 表示可否は state を介さず描画時に直接評価（SPA遷移/HMRの影響を回避）
+  const canPickLocation = MAP_PUBLIC_TO_WEB || forceAppUI || (typeof window !== "undefined" && (
+    (window as Record<string, unknown>).__CREEPYHUB_IOS__ === true ||
+    (window as Record<string, unknown>).__CREEPYHUB_ANDROID__ === true
+  ));
   const [locLat, setLocLat] = useState<number | null>(null);
   const [locLng, setLocLng] = useState<number | null>(null);
   const [locName, setLocName] = useState<string | null>(null);
   const [locPrecision, setLocPrecision] = useState<LocationPrecision | null>(null);
+  const [mapCategory, setMapCategory] = useState<SpotCategory | null>(null);
   const [locPickerOpen, setLocPickerOpen] = useState(false);
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -65,25 +74,23 @@ export default function PostNewPage() {
     getDictionary(locale).then((dict) => setLabels(dict.postDrawer));
   }, [locale]);
 
-  // iOS/Android アプリ内でのみ位置ピッカー UI を出す
-  useEffect(() => {
-    setCanPickLocation(isCreepyHubApp());
-  }, []);
-
   const handleLocationConfirm = ({
     lat,
     lng,
     precision,
+    mapCategory: cat,
   }: {
     lat: number;
     lng: number;
     precision: LocationPrecision;
+    mapCategory: SpotCategory;
   }) => {
     const rounded = roundLocation({ lat, lng, precision });
     setLocLat(rounded.lat);
     setLocLng(rounded.lng);
     setLocName(rounded.locationName);
     setLocPrecision(precision);
+    setMapCategory(cat);
     setLocPickerOpen(false);
   };
 
@@ -92,6 +99,7 @@ export default function PostNewPage() {
     setLocLng(null);
     setLocName(null);
     setLocPrecision(null);
+    setMapCategory(null);
   };
 
   // Auth check + categories fetch
@@ -228,6 +236,7 @@ export default function PostNewPage() {
           lng: locLng,
           location_name: locName,
           location_precision: locPrecision,
+          map_category: mapCategory,
         }])
         .select()
         .single();
@@ -492,6 +501,15 @@ export default function PostNewPage() {
                               : locPrecision === "town"
                               ? (locale === "en" ? "Town-level (randomised ±300m)" : "町単位（±300mランダム）")
                               : (locale === "en" ? "Prefecture only" : "都道府県のみ")}
+                            {mapCategory && (
+                              <>
+                                {" ・ "}
+                                {mapCategory === "haunted" && (locale === "en" ? "Haunted" : "心霊")}
+                                {mapCategory === "horror" && (locale === "en" ? "Horror" : "恐怖")}
+                                {mapCategory === "sightseeing" && (locale === "en" ? "Sightseeing" : "観光")}
+                                {mapCategory === "legend" && (locale === "en" ? "Legend" : "伝承")}
+                              </>
+                            )}
                           </div>
                         </div>
                         <button type="button" style={locationRemoveBtn} onClick={clearLocation}>

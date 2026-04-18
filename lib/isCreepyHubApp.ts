@@ -21,3 +21,18 @@ export function isAndroidApp(): boolean {
 export function isCreepyHubApp(): boolean {
   return isIOSApp() || isAndroidApp();
 }
+
+/**
+ * マップ機能を Web 版にも一時的に公開するフラグ。
+ *
+ * true  — サイドバー地図アイコン、投稿作成/編集の位置UIを Web でも表示
+ * false — iOS/Android アプリ内でのみ表示（本来の仕様）
+ *
+ * 戻す時はこの定数を false にするだけで元の挙動に復帰する。
+ */
+export const MAP_PUBLIC_TO_WEB = true;
+
+/** マップ関連UIの表示判定（アプリ内 or 一時公開フラグON） */
+export function canShowMapFeatures(): boolean {
+  return isCreepyHubApp() || MAP_PUBLIC_TO_WEB;
+}
