@@ -822,3 +822,169 @@
   text-overflow: ellipsis;
   max-width: 100%;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   ⌘K Search bar
+   ═══════════════════════════════════════════════════════════ */
+.searchBarHotkey {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 0 14px;
+  height: 44px;
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  background: var(--bg-input);
+  transition: all 0.2s;
+}
+.searchBarHotkey:focus-within {
+  border-color: rgba(var(--accent-rgb), 0.6);
+  box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.12);
+}
+.searchIcon {
+  font-size: 16px;
+  color: var(--accent-text-muted);
+  line-height: 1;
+}
+.searchBarHotkey .searchInput {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: "装甲明朝", "Soukou Mincho", serif;
+  outline: none;
+}
+.searchBarHotkey .searchInput::placeholder {
+  color: var(--text-muted-light);
+}
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  background: rgba(var(--accent-rgb), 0.08);
+  color: var(--accent-text-muted);
+  font-family: "Impact", "Anton", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  border-radius: 2px;
+  user-select: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Stats bar
+   ═══════════════════════════════════════════════════════════ */
+.statsBar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: rgba(var(--accent-rgb), 0.15);
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  margin-bottom: 20px;
+}
+.statBox {
+  padding: 12px 14px;
+  background: var(--bg-surface-alt);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 60px;
+}
+.statNum {
+  font-family: "Impact", "Anton", sans-serif;
+  font-size: 22px;
+  color: var(--text-primary);
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+.statLabel {
+  font-family: "Impact", "Anton", sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--accent-text-muted);
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .statsBar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .statBox {
+    min-height: 54px;
+    padding: 10px 12px;
+  }
+  .statNum {
+    font-size: 18px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Category chip active
+   ═══════════════════════════════════════════════════════════ */
+.categoryChipActive {
+  background: rgba(var(--accent-rgb), 0.22);
+  border-color: rgba(var(--accent-rgb), 0.65);
+  color: #ffded8;
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.2);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FileCard (thumbnail + body, 2-col)
+   ═══════════════════════════════════════════════════════════ */
+.feedGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (max-width: 820px) {
+  .feedGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fileCard {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 12px;
+  padding: 12px;
+  width: 100%;
+  min-width: 0;
+}
+.fileThumb {
+  width: 72px;
+  height: 72px;
+  background: #030103;
+  border: 1px solid rgba(var(--accent-rgb), 0.15);
+  overflow: hidden;
+  position: relative;
+}
+.fileThumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.fileThumbPlaceholder {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: rgba(200, 120, 130, 0.5);
+  font-family: "Impact", "Anton", sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+}
+.fileBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

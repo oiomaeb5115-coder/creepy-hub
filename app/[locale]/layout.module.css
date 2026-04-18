@@ -166,3 +166,19 @@
     font-size: 7px;
   }
 }
+
+/* ── Active state for bottom nav ── */
+.bottomNavItemActive {
+  background: rgba(var(--accent-rgb), 0.06);
+}
+.bottomNavItemActive::after {
+  width: 60% !important;
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.5);
+}
+.bottomNavItemActive .bottomNavLabelEn {
+  color: var(--text-primary);
+  text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.35);
+}
+.bottomNavItemActive .bottomNavLabelJa {
+  color: var(--accent-text);
+}

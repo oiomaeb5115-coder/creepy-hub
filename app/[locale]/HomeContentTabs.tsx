@@ -107,7 +107,7 @@ function StoryCardGrid({
     <Link href={postUrl(locale, post.id, post.slug)} className={styles.gridCardLink}>
       <ImpressionTracker type="post" id={post.id}>
       <article className={styles.gridCard}>
-        <div className={styles.gridCardBody}>
+        <div className={styles.gridCardHead}>
           <div className={styles.gridCardAuthorRow}>
             {post.author?.avatar_url ? (
               <img src={post.author.avatar_url} alt="" className={styles.gridCardAvatar} />
@@ -123,10 +123,14 @@ function StoryCardGrid({
                 : unknownDate}
             </span>
           </div>
-          <h3 className={styles.gridCardTitle}>{safeTitle}</h3>
-          <p className={styles.gridCardExcerpt}>
-            {safeContent.length > 400 ? `${safeContent.slice(0, 400)}...` : safeContent}
-          </p>
+          <h3 className={styles.gridCardTitle}>
+            {safeTitle}
+            {score >= 10 && (
+              <span className={styles.hotPill} aria-label="hot">
+                HOT
+              </span>
+            )}
+          </h3>
         </div>
 
         {imageUrls.length > 0 && (
@@ -166,6 +170,10 @@ function StoryCardGrid({
           </div>
         )}
 
+        <div className={styles.gridCardBody}>
+          <p className={styles.gridCardExcerpt}>{safeContent}</p>
+        </div>
+
         <div className={styles.gridCardFooter}>
           <InlineVoteButtons postId={post.id} initialScore={score} />
           <span className="stat-icon"><CommentIcon /> {commentCount}</span>
@@ -197,7 +205,7 @@ function WikiCardGrid({
     <Link href={`/${locale}/wiki/${item.slug}`} className={styles.gridCardLink}>
       <ImpressionTracker type="wiki" id={item.id}>
       <article className={styles.gridCard}>
-        <div className={styles.gridCardBody}>
+        <div className={styles.gridCardHead}>
           <div className={styles.gridCardAuthorRow}>
             {showAuthor ? (
               <>
@@ -223,9 +231,6 @@ function WikiCardGrid({
             </span>
           </div>
           <h3 className={styles.gridCardTitle}>{item.title}</h3>
-          <p className={styles.gridCardExcerpt}>
-            {item.summary ?? noSummary}
-          </p>
         </div>
 
         {item.image_url && (
@@ -238,6 +243,12 @@ function WikiCardGrid({
             />
           </div>
         )}
+
+        <div className={styles.gridCardBody}>
+          <p className={styles.gridCardExcerpt}>
+            {item.summary ?? noSummary}
+          </p>
+        </div>
 
         <div className={styles.gridCardFooter}>
           <InlineWikiVoteButtons wikiId={item.id} initialScore={item.vote_score ?? 0} />
@@ -281,7 +292,7 @@ export default function HomeContentTabs({
         <section className={styles.contentSection}>
           <div className={styles.sectionHeader}>
             <div className={styles.textSectionTitle}>
-              <span className={styles.textSectionTitleEn}>CREEPY POSTS</span>
+              <span className={styles.textSectionTitleEn}>STORIES</span>
               <span className={styles.textSectionTitleJa}>{labels.latestStories}</span>
             </div>
             <Link href={`/${locale}/post`} className={styles.seeAllLink}>
@@ -346,7 +357,7 @@ export default function HomeContentTabs({
         <section className={styles.contentSection}>
           <div className={styles.sectionHeader}>
             <div className={styles.textSectionTitle}>
-              <span className={styles.textSectionTitleEn}>OCCULT FILES</span>
+              <span className={styles.textSectionTitleEn}>FILES</span>
               <span className={styles.textSectionTitleJa}>{labels.latestWiki}</span>
             </div>
             <Link href={`/${locale}/wiki`} className={styles.seeAllLink}>

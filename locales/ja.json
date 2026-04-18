@@ -1,8 +1,8 @@
 {
   "nav": {
     "home": "ホーム",
-    "stories": "怪談一覧",
-    "wiki": "オカルトファイル",
+    "stories": "怪談",
+    "wiki": "ファイル",
     "profile": "プロフィール",
     "post": "投稿する",
     "login": "ログイン",
@@ -26,8 +26,8 @@
     "noCategory": "カテゴリなし",
     "storySearchDesc": "ユーザー投稿の怪談・ホラー体験談・Creepypasta",
     "wikiSearchDesc": "都市伝説・怪事件・オカルト用語を調べるオカルトファイル",
-    "tabPosts": "投稿",
-    "tabFiles": "みんなのオカルト知識",
+    "tabPosts": "怪談",
+    "tabFiles": "ファイル",
     "tabNew": "新着",
     "tabPopular": "人気",
     "periodToday": "今日",
@@ -61,7 +61,16 @@
     "random": "ランダム",
     "following": "フォロー中",
     "followingEmpty": "フォロー中のユーザーの投稿はまだありません。",
-    "loginToSeeFollowing": "ログインするとフォロー中のユーザーの投稿を見れます。"
+    "loginToSeeFollowing": "ログインするとフォロー中のユーザーの投稿を見れます。",
+    "sortNew": "NEW",
+    "sortHot": "HOT",
+    "sortTop": "TOP",
+    "sortViewed": "VIEWED",
+    "all_": "ALL",
+    "total": "TOTAL",
+    "newStoryCta": "+ 怪談を投稿",
+    "more": "→ MORE",
+    "visibleCount": "件表示中"
   },
   "wiki": {
     "listTitle": "オカルトファイル 一覧",
@@ -98,7 +107,14 @@
     "categoryFetchFailed": "記事の取得に失敗しました: ",
     "categoryEmptyInCat": "このカテゴリにはまだ記事がありません。",
     "categoryDefaultDesc": "このカテゴリのファイル一覧です。",
-    "allCategories": "すべてのカテゴリ ›"
+    "allCategories": "すべてのカテゴリ ›",
+    "entries": "ENTRIES",
+    "newThisWeek": "新着",
+    "popularStat": "POPULAR",
+    "categoriesStat": "CATEGORIES",
+    "sectionNew": "NEW / 最近更新",
+    "sectionPopular": "POPULAR / 人気",
+    "searchHint": "⌘K"
   },
   "postDrawer": {
     "loginRequired": "投稿するにはログインが必要です",

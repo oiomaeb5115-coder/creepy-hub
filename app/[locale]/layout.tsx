@@ -8,8 +8,7 @@ import PageTransition from "./PageTransition";
 import FloatingPostButton from "./FloatingPostButton";
 import AuthDrawer from "./AuthDrawer";
 import Script from "next/script";
-import Link from "next/link";
-import styles from "./layout.module.css";
+import BottomNav from "./BottomNav";
 import WelcomeVideoModal from "@/components/WelcomeVideoModal";
 import Footer from "@/components/Footer";
 import StorageConsent from "@/components/StorageConsent";
@@ -68,7 +67,15 @@ export default async function LocaleLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t)}else if(window.matchMedia('(prefers-color-scheme:light)').matches){document.documentElement.setAttribute('data-theme','light')}}catch(e){}})()`,
+            __html: `(function(){try{
+              var t=localStorage.getItem('theme');
+              if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);
+              else if(window.matchMedia('(prefers-color-scheme:light)').matches)
+                document.documentElement.setAttribute('data-theme','light');
+              var p=location.pathname;
+              if(/\\/(post|wiki|novel)\\//.test(p))
+                document.documentElement.setAttribute('data-route','reading');
+            }catch(e){}})()`,
           }}
         />
         <Script
@@ -79,56 +86,28 @@ export default async function LocaleLayout({
         />
       </head>
       <body>
-      <PageTransition>{children}</PageTransition>
+        <PageTransition>{children}</PageTransition>
 
-      <nav className={styles.bottomNav}>
-        <Link href={`/${locale}`} className={styles.bottomNavItem}>
-          <span className={styles.bottomNavLabel}>
-            <span className={styles.bottomNavLabelEn}>HOME</span>
-            <span className={styles.bottomNavLabelJa}>{dict.nav.home}</span>
-          </span>
-        </Link>
+        <BottomNav locale={locale} labels={dict.nav} />
 
-        <Link href={`/${locale}/post`} className={styles.bottomNavItem}>
-          <span className={styles.bottomNavLabel}>
-            <span className={styles.bottomNavLabelEn}>CREEPY POSTS</span>
-            <span className={styles.bottomNavLabelJa}>{dict.nav.stories}</span>
-          </span>
-        </Link>
+        <Footer
+          locale={locale}
+          privacyLabel={dict.footer.privacy}
+          termsLabel={dict.footer.terms}
+          contactLabel={dict.footer.contact}
+          rightsClaimLabel={dict.footer.rightsClaim}
+        />
 
-        <Link href={`/${locale}/wiki`} className={styles.bottomNavItem}>
-          <span className={styles.bottomNavLabel}>
-            <span className={styles.bottomNavLabelEn}>CREEPY FILES</span>
-            <span className={styles.bottomNavLabelJa}>{dict.nav.wiki}</span>
-          </span>
-        </Link>
-
-        <Link href={`/${locale}/stream`} className={styles.bottomNavItem}>
-          <span className={styles.bottomNavLabel}>
-            <span className={styles.bottomNavLabelEn}>STREAM</span>
-            <span className={styles.bottomNavLabelJa}>{dict.nav.stream}</span>
-          </span>
-        </Link>
-      </nav>
-
-      <Footer
-        locale={locale}
-        privacyLabel={dict.footer.privacy}
-        termsLabel={dict.footer.terms}
-        contactLabel={dict.footer.contact}
-        rightsClaimLabel={dict.footer.rightsClaim}
-      />
-
-      <SidebarWrapper locale={locale} labels={dict.sidebar} />
-      <FloatingPostButton locale={locale} />
-      <AuthDrawer locale={locale} labels={dict.authDrawer} />
-      <WelcomeVideoModal videoSrc="/welcome.webm/welcome-1.webm" />
-      <StorageConsent
-        locale={locale}
-        message={dict.cookieConsent.message}
-        privacyLinkText={dict.cookieConsent.privacyLink}
-        acceptText={dict.cookieConsent.accept}
-      />
+        <SidebarWrapper locale={locale} labels={dict.sidebar} />
+        <FloatingPostButton locale={locale} />
+        <AuthDrawer locale={locale} labels={dict.authDrawer} />
+        <WelcomeVideoModal videoSrc="/welcome.webm/welcome-1.webm" />
+        <StorageConsent
+          locale={locale}
+          message={dict.cookieConsent.message}
+          privacyLinkText={dict.cookieConsent.privacyLink}
+          acceptText={dict.cookieConsent.accept}
+        />
       </body>
     </html>
   );

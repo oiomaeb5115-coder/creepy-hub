@@ -12,8 +12,8 @@
   --bg-input: rgba(5, 2, 4, 0.9);
   --bg-image: #030103;
   --text-primary: #f5f1eb;
-  --text-body: rgba(230, 220, 210, 0.8);
-  --text-body-light: rgba(230, 220, 210, 0.7);
+  --text-body: rgba(236, 228, 218, 0.92);
+  --text-body-light: rgba(230, 220, 210, 0.78);
   --text-muted: rgba(200, 150, 140, 0.5);
   --text-muted-light: rgba(200, 150, 140, 0.45);
   --text-guide: rgba(200, 190, 180, 0.65);
@@ -27,7 +27,7 @@
   --shadow-heavy: rgba(0, 0, 0, 0.5);
   --shadow-medium: rgba(0, 0, 0, 0.4);
   --shadow-deep: rgba(0, 0, 0, 0.45);
-  --scanline-opacity: 1;
+  --scanline-opacity: 0.55;
   --external-link: #c8283a;
   --external-link-hover: #e03040;
   --external-link-underline: rgba(200, 40, 58, 0.4);
@@ -47,8 +47,8 @@ html[data-theme="light"] {
   --bg-input: #ffffff;
   --bg-image: #e8e4de;
   --text-primary: #000000;
-  --text-body: rgba(30, 30, 30, 0.85);
-  --text-body-light: rgba(30, 30, 30, 0.7);
+  --text-body: rgba(24, 24, 24, 0.92);
+  --text-body-light: rgba(30, 30, 30, 0.78);
   --text-muted: rgba(80, 60, 55, 0.6);
   --text-muted-light: rgba(80, 60, 55, 0.5);
   --text-guide: rgba(60, 50, 45, 0.65);
@@ -1533,4 +1533,22 @@ select.form-control {
 .external-link:hover {
   color: var(--external-link-hover);
   text-decoration-color: var(--external-link-underline-hover);
+}
+
+/* ── Route-based scanline modulation ── */
+html[data-route="reading"] {
+  --scanline-opacity: 0.2;
+}
+
+/* Soften scanline inside forms for better input ergonomics */
+form,
+.form-soft {
+  --scanline-opacity: 0.15;
+}
+
+/* Unified focus ring for keyboard navigation */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid rgba(var(--accent-rgb), 0.9);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.18);
 }
