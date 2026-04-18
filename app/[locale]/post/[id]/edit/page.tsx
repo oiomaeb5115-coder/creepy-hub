@@ -64,8 +64,8 @@ export default function StoryEditPage() {
   // 位置情報 state
   // 表示可否は state を介さず描画時に直接評価（SPA遷移/HMRの影響を回避）
   const canPickLocation = MAP_PUBLIC_TO_WEB || forceAppUI || (typeof window !== "undefined" && (
-    (window as Record<string, unknown>).__CREEPYHUB_IOS__ === true ||
-    (window as Record<string, unknown>).__CREEPYHUB_ANDROID__ === true
+    (window as unknown as Record<string, unknown>).__CREEPYHUB_IOS__ === true ||
+    (window as unknown as Record<string, unknown>).__CREEPYHUB_ANDROID__ === true
   ));
   const [locLat, setLocLat] = useState<number | null>(null);
   const [locLng, setLocLng] = useState<number | null>(null);

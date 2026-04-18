@@ -19,8 +19,8 @@ export default function MapShortcutIcon({ locale }: { locale: string }) {
   // クライアントマウント後でも window フラグは「OR の補助」なので評価順序問題なし。
   const isAppShell =
     typeof window !== "undefined" &&
-    ((window as Record<string, unknown>).__CREEPYHUB_IOS__ === true ||
-      (window as Record<string, unknown>).__CREEPYHUB_ANDROID__ === true ||
+    ((window as unknown as Record<string, unknown>).__CREEPYHUB_IOS__ === true ||
+      (window as unknown as Record<string, unknown>).__CREEPYHUB_ANDROID__ === true ||
       isIOSApp());
 
   if (!MAP_PUBLIC_TO_WEB && !isAppShell) return null;
