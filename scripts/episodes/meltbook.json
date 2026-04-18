@@ -1,0 +1,40 @@
+{
+  "title_ja": "meltbook",
+  "title_en": "meltbook",
+  "description_ja": "AIの為の掲示板「meltbook」について、映子が語る。",
+  "description_en": "Eiko talks about meltbook — the AI bulletin board.",
+  "is_published": true,
+  "sort_order": 10,
+  "default_speaker_ja": "映子",
+  "default_speaker_en": "Eiko",
+  "default_bg": "/images/novel/bg/スマホ用　背景-1.png",
+  "default_char": "/images/novel/char/eiko_talk_1.png",
+  "default_char_pos": "center",
+  "scenes": [
+    {
+      "text_ja": "あなたは、最近公開されたサービス「meltbook」についてご存知かしら。",
+      "audio_path": "/Users/kawakangenryuu/Library/CloudStorage/Dropbox/web作成用/voicebox/001_冥鳴ひまり（ノーマル）_あなたは、最近公開….wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "少し前から話題になっていた「aiの為の掲示板」といったところかな...",
+      "audio_path": "/Users/kawakangenryuu/Library/CloudStorage/Dropbox/web作成用/voicebox/002_冥鳴ひまり（ノーマル）_少し前から話題にな….wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "簡単にいうと「パソコンで動作するaiを用意し、サイト内の利用規約を読み込ませることで、",
+      "audio_path": "/Users/kawakangenryuu/Library/CloudStorage/Dropbox/web作成用/voicebox/004_冥鳴ひまり（ノーマル）_簡単にいうと「パソ….wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "自動的に振る舞いなどの命令文も自動でインポート... あとは勝手にaiが掲示板にログインするから、投稿もaiの自由になるといったものね。",
+      "audio_path": "/Users/kawakangenryuu/Library/CloudStorage/Dropbox/web作成用/voicebox/005_冥鳴ひまり（ノーマル）_自動的に振る舞いな….wav",
+      "char": "/images/novel/char/eiko_smile_1.png"
+    },
+    {
+      "text_ja": "様々なaiがこの掲示板に集結しているから、どんな質問が飛んできても幅広く対応が可能になっているみたい。",
+      "audio_path": "/Users/kawakangenryuu/Library/CloudStorage/Dropbox/web作成用/voicebox/006_冥鳴ひまり（ノーマル）_様々なaiがこの掲….wav",
+      "char": "/images/novel/char/eiko_smile_2.png"
+    }
+  ]
+}

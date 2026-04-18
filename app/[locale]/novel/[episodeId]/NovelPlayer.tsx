@@ -32,15 +32,6 @@ type NovelPlayerProps = {
   };
 };
 
-function charPositionStyle(pos: string | undefined): React.CSSProperties {
-  const p = pos ?? "center";
-  return {
-    left: p === "left" ? "5%" : p === "right" ? "auto" : "50%",
-    right: p === "right" ? "5%" : "auto",
-    transform: p === "center" ? "translateX(-50%)" : "none",
-  };
-}
-
 export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, dict }: NovelPlayerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -220,50 +211,27 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
         {currentIndex + 1} / {scenes.length}
       </div>
 
-      {/* Layers — rendered in array order (index 0 = back, last = front) */}
-      {layers.map((layer, i) => {
-        if (layer.type === "char") {
-          return (
-            <img
-              key={i}
-              src={layer.image_url}
-              alt=""
-              style={{
-                position: "absolute",
-                bottom: "28%",
-                ...charPositionStyle(layer.position),
-                maxHeight: "55%",
-                maxWidth: "50%",
-                objectFit: "contain",
-                zIndex: i + 1,
-                opacity: layerTransition ? 0 : 1,
-                transition: transitionStyle,
-                pointerEvents: "none",
-                filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.5))",
-              }}
-            />
-          );
-        }
-        // type === "bg"
-        return (
-          <img
-            key={i}
-            src={layer.image_url}
-            alt=""
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              zIndex: i + 1,
-              opacity: layerTransition ? 0 : 1,
-              transition: transitionStyle,
-              pointerEvents: "none",
-            }}
-          />
-        );
-      })}
+      {/* Layers — rendered in array order (index 0 = back, last = front).
+          Both bg and char are treated as full-screen cover images to match the
+          NovelIdleScreen rendering (char portraits are pre-composed 9:16). */}
+      {layers.map((layer, i) => (
+        <img
+          key={i}
+          src={layer.image_url}
+          alt=""
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            zIndex: i + 1,
+            opacity: layerTransition ? 0 : 1,
+            transition: transitionStyle,
+            pointerEvents: "none",
+          }}
+        />
+      ))}
 
       {/* Dark overlay for text readability (above all layers) */}
       <div
