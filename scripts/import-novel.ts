@@ -47,7 +47,8 @@ type SceneConfig = {
   text_ja: string;
   text_en?: string;
   audio_path: string;
-  bg?: string;
+  bg?: string;          // single bg (back-compat)
+  bgs?: string[];       // multiple bgs (stacked in order, first = back)
   char?: string;
   char_pos?: "left" | "center" | "right";
   speaker_ja?: string;
@@ -66,6 +67,7 @@ type EpisodeConfig = {
   default_speaker_ja?: string;
   default_speaker_en?: string;
   default_bg?: string;
+  default_bgs?: string[]; // fallback for all scenes
   default_char?: string;
   default_char_pos?: "left" | "center" | "right";
   scenes: SceneConfig[];
@@ -227,10 +229,14 @@ async function main() {
   // Insert scenes
   console.log(`\n🎬 Inserting scenes...`);
   const rows = config.scenes.map((s, i) => {
-    const bg = normalizeImagePath(s.bg ?? config.default_bg);
+    // bgs (array) has priority over single bg. Fallback to default_bgs then default_bg.
+    const bgList = s.bgs ?? (s.bg ? [s.bg] : undefined) ?? config.default_bgs ?? (config.default_bg ? [config.default_bg] : []);
     const char = normalizeImagePath(s.char ?? config.default_char);
     const layers: any[] = [];
-    if (bg) layers.push({ type: "bg", image_url: bg });
+    for (const b of bgList) {
+      const n = normalizeImagePath(b);
+      if (n) layers.push({ type: "bg", image_url: n });
+    }
     if (char) {
       layers.push({
         type: "char",

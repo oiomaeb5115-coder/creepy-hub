@@ -7,7 +7,11 @@
   "sort_order": 10,
   "default_speaker_ja": "映子",
   "default_speaker_en": "Eiko",
-  "default_bg": "/images/novel/bg/スマホ用　背景-1.png",
+  "default_bgs": [
+    "/images/novel/bg/スマホ用　背景-3.png",
+    "/images/novel/bg/スマホ用　背景-2.png",
+    "/images/novel/bg/スマホ用　背景-1.png"
+  ],
   "default_char": "/images/novel/char/eiko_talk_1.png",
   "default_char_pos": "center",
   "scenes": [
