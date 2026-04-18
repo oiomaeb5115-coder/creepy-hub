@@ -46,16 +46,25 @@ interface Props {
   pinVariant?: PinVariant;
 }
 
+/**
+ * iOS WebKit (iPhone Safari/Chrome) は @2x タイル + 高 devicePixelRatio の
+ * 組み合わせで raster ソースのレンダリングがメモリ制約で落ちることがある。
+ * モバイル幅では標準解像度タイルにフォールバックして互換性を優先する。
+ */
+const isMobileViewport =
+  typeof window !== "undefined" && window.innerWidth < 768;
+const TILE_SUFFIX = isMobileViewport ? "" : "@2x";
+
 const CARTO_STYLE = {
   version: 8 as const,
   sources: {
     cartoDark: {
       type: "raster" as const,
       tiles: [
-        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-        "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+        `https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}${TILE_SUFFIX}.png`,
+        `https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}${TILE_SUFFIX}.png`,
+        `https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}${TILE_SUFFIX}.png`,
+        `https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}${TILE_SUFFIX}.png`,
       ],
       tileSize: 256,
       attribution: '© OpenStreetMap © CARTO',
@@ -98,8 +107,20 @@ export default function MapCanvas({
       minZoom: 4,
       maxZoom: 18,
       attributionControl: { compact: true },
+      // iOS Safari/Chrome の WebGL2 コンテキスト失敗を防ぐ
+      // （preserveDrawingBuffer は Safari 系で必須に近い）
+      preserveDrawingBuffer: false,
+      antialias: false,
+      // モバイルでのメモリ消費を抑える
+      maxTileCacheSize: typeof window !== "undefined" && window.innerWidth < 768 ? 50 : 200,
     });
     mapRef.current = map;
+
+    // タイル取得失敗等のエラーをログ出力（モバイル特有の問題切り分け用）
+    map.on("error", (e) => {
+      // eslint-disable-next-line no-console
+      console.error("[MapLibre error]", e?.error?.message ?? e);
+    });
 
     if (showControls) {
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
@@ -131,8 +152,21 @@ export default function MapCanvas({
     map.on("moveend", emitMoveEnd);
     map.once("load", emitMoveEnd);
 
+    // iOS Safari/Chrome は URLバーの伸縮で初期高さがズレることがあるため、
+    // load 後と短い遅延後にリサイズして正しい寸法に合わせる
+    map.once("load", () => {
+      requestAnimationFrame(() => map.resize());
+    });
+    const resizeTimer = setTimeout(() => map.resize(), 500);
+    const onWinResize = () => map.resize();
+    window.addEventListener("resize", onWinResize);
+    window.addEventListener("orientationchange", onWinResize);
+
     return () => {
       if (moveTimerRef.current) clearTimeout(moveTimerRef.current);
+      clearTimeout(resizeTimer);
+      window.removeEventListener("resize", onWinResize);
+      window.removeEventListener("orientationchange", onWinResize);
       map.remove();
       mapRef.current = null;
     };
