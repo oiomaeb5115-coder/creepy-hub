@@ -128,10 +128,6 @@ export default function MapCanvas({
       minZoom: 4,
       maxZoom: 18,
       attributionControl: { compact: true },
-      // iOS Safari/Chrome の WebGL2 コンテキスト失敗を防ぐ
-      // （preserveDrawingBuffer は Safari 系で必須に近い）
-      preserveDrawingBuffer: false,
-      antialias: false,
       // モバイルでのメモリ消費を抑える
       maxTileCacheSize: typeof window !== "undefined" && window.innerWidth < 768 ? 50 : 200,
     });
