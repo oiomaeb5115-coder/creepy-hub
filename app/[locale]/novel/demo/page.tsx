@@ -1,4 +1,6 @@
+import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/getDictionary";
+import { isCreepyHubAppFromHeaders } from "@/lib/isCreepyHubApp";
 import NovelPlayer from "../[episodeId]/NovelPlayer";
 
 type Props = {
@@ -6,6 +8,11 @@ type Props = {
 };
 
 export default async function NovelDemoPage({ params }: Props) {
+  // ノベル機能は iOS/Android 公式アプリ内でのみ公開。Web ブラウザからは 404。
+  if (!(await isCreepyHubAppFromHeaders())) {
+    notFound();
+  }
+
   const { locale } = await params;
   const dict = await getDictionary(locale);
 
