@@ -26,7 +26,8 @@ type WikiDetailPageProps = {
 export async function generateMetadata({
   params,
 }: WikiDetailPageProps): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { locale, slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
 
   const { data: page } = await supabaseAdmin
     .from("wiki_pages")
@@ -96,7 +97,8 @@ type WikiLinkItem = {
 export default async function WikiDetailPage({
   params,
 }: WikiDetailPageProps) {
-  const { locale, slug } = await params;
+  const { locale, slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
   const dict = await getDictionary(locale);
 
   const { data: page, error } = await supabaseAdmin

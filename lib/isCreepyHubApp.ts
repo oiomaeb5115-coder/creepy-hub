@@ -36,3 +36,17 @@ export const MAP_PUBLIC_TO_WEB = true;
 export function canShowMapFeatures(): boolean {
   return isCreepyHubApp() || MAP_PUBLIC_TO_WEB;
 }
+
+/**
+ * サーバーコンポーネントから User-Agent で creepy.hub 公式アプリか判定する。
+ *
+ * iOS アプリは UA 末尾に `CreepyHubApp` を付与する規約。
+ * Android アプリも同様の文字列付与を想定（未実装時は UA に含まれない）。
+ */
+export async function isCreepyHubAppFromHeaders(): Promise<boolean> {
+  // next/headers は動的 import（サーバー専用 API のため）
+  const { headers } = await import("next/headers");
+  const h = await headers();
+  const ua = h.get("user-agent") ?? "";
+  return ua.includes("CreepyHubApp");
+}

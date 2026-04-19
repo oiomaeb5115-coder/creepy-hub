@@ -1,5 +1,7 @@
+import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
+import { isCreepyHubAppFromHeaders } from "@/lib/isCreepyHubApp";
 import NovelIdleScreen from "./NovelIdleScreen";
 
 type Props = {
@@ -16,6 +18,11 @@ const idleLayers = [
 ];
 
 export default async function NovelPage({ params }: Props) {
+  // ノベル機能は iOS/Android 公式アプリ内でのみ公開。Web ブラウザからは 404。
+  if (!(await isCreepyHubAppFromHeaders())) {
+    notFound();
+  }
+
   const { locale } = await params;
   const dict = await getDictionary(locale);
 
