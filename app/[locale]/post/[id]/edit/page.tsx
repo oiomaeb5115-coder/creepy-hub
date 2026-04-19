@@ -10,7 +10,7 @@ import { postUrl } from "@/lib/postUrl";
 import { uploadImage } from "@/lib/uploadImage";
 import { uploadVideoToStream } from "@/lib/uploadVideoToStream";
 import { MAP_PUBLIC_TO_WEB } from "@/lib/isCreepyHubApp";
-import { roundLocation, type LocationPrecision } from "@/lib/roundLocation";
+import { roundLocation, normalizePrecision, type LocationPrecision } from "@/lib/roundLocation";
 import LocationPickerModal from "@/components/map/LocationPickerModal";
 import type { SpotCategory } from "@/lib/mapPalettes";
 
@@ -249,7 +249,8 @@ export default function StoryEditPage() {
             lat: locLat,
             lng: locLng,
             location_name: locName,
-            location_precision: locPrecision,
+            // プライバシー保護：保存ラベルも town 以下に正規化（exact を許さない）
+            location_precision: locPrecision ? normalizePrecision(locPrecision) : locPrecision,
             map_category: mapCategory,
           } : {}),
         }),

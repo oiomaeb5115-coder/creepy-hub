@@ -7,6 +7,18 @@
 
 export type LocationPrecision = "exact" | "town" | "prefecture";
 
+/**
+ * 保存用に精度ラベルを正規化する。
+ *
+ * UI からは「正確」選択を廃止した（プライバシー保護のため最大でも町単位）が、
+ * 旧クライアント・編集フロー・API 直叩きなどで `"exact"` が混入する可能性がある。
+ * 保存直前にこの関数を通し、`"exact"` を `"town"` に落とすことで DB 上の
+ * 精度ラベルと実際の座標精度（roundLocation で町単位に丸められる）を一致させる。
+ */
+export function normalizePrecision(p: LocationPrecision): LocationPrecision {
+  return p === "exact" ? "town" : p;
+}
+
 export interface LocationInput {
   lat: number;
   lng: number;
@@ -22,18 +34,18 @@ export interface LocationRounded {
 
 /**
  * 指定の精度に応じて座標を丸める。
- * - exact: そのまま
+ * - exact: プライバシー保護のため廃止。`town` と同等に丸める（defense-in-depth）
  * - town: 小数 3 桁（約 110m 単位）に丸め + ±300m のランダムオフセット
  * - prefecture: 入力座標に最も近い都道府県の重心へ置換
+ *
+ * UI からは「正確」を選択できなくしているが、旧クライアントや API 直叩きで
+ * `exact` が送られても正確な座標は決して保存しないよう、ここで town に落とす。
  */
 export function roundLocation(input: LocationInput): LocationRounded {
   const { lat, lng, precision, locationName } = input;
 
-  if (precision === "exact") {
-    return { lat, lng, locationName: locationName ?? null };
-  }
-
-  if (precision === "town") {
+  // exact は UI から削除済み。万一混入しても town として処理する。
+  if (precision === "town" || precision === "exact") {
     const roundedLat = Math.round(lat * 1000) / 1000;
     const roundedLng = Math.round(lng * 1000) / 1000;
     // ±300m 相当の乱数オフセット。1 度 ≈ 111km なので 0.003 ≈ 333m

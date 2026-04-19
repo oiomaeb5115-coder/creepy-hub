@@ -8,7 +8,7 @@ import { getIsAdmin, getAccessToken } from "@/lib/auth";
 import { compressImage } from "@/lib/compressImage";
 import { validateImageFile } from "@/lib/validateImageFile";
 import BackButton from "@/components/BackButton";
-import { roundLocation, type LocationPrecision } from "@/lib/roundLocation";
+import { roundLocation, normalizePrecision, type LocationPrecision } from "@/lib/roundLocation";
 import LocationPickerModal from "@/components/map/LocationPickerModal";
 import type { SpotCategory } from "@/lib/mapPalettes";
 import { MAP_PUBLIC_TO_WEB } from "@/lib/isCreepyHubApp";
@@ -265,7 +265,8 @@ export default function WikiEditPage() {
             lat: locLat,
             lng: locLng,
             location_name: locName,
-            location_precision: locPrecision,
+            // プライバシー保護：保存ラベルも town 以下に正規化（exact を許さない）
+            location_precision: locPrecision ? normalizePrecision(locPrecision) : locPrecision,
             map_category: mapCategory,
           } : {}),
         }),

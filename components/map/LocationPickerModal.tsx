@@ -43,7 +43,8 @@ const CARTO_STYLE = {
 /**
  * 投稿作成フォームから呼ばれる位置ピッカーモーダル。
  * - MapLibre フルスクリーン（中央レチクル方式）
- * - 下部パネルで精度（正確 / 町単位 / 県のみ）を選択
+ * - 下部パネルで精度（町単位 / 県のみ）を選択
+ *   ※ プライバシー保護のため「正確」は廃止。最大でも町単位までに制限する方針。
  * - 「この場所に設定」で onConfirm を呼ぶ
  *
  * ネイティブ JS ブリッジを廃止し純 Web で動作するので iOS / Android / デスクトップ共通。
@@ -135,14 +136,9 @@ export default function LocationPickerModal({
           })}
         </div>
 
-        {/* 精度 */}
+        {/* 精度 — プライバシー保護のため最大「町単位」までに制限 */}
         <div style={sectionLabel}>位置の精度</div>
         <div style={precisionRow}>
-          <PrecisionButton
-            label="正確"
-            active={precision === "exact"}
-            onClick={() => setPrecision("exact")}
-          />
           <PrecisionButton
             label="町単位"
             active={precision === "town"}
@@ -189,7 +185,8 @@ function PrecisionButton({
 
 function hintFor(p: LocationPrecision): string {
   switch (p) {
-    case "exact": return "正確な座標が保存されます。心霊スポット等に最適。";
+    // "exact" は UI から除外済み。過去データ表示時に備えてケースだけ残す。
+    case "exact": return "（過去に投稿された正確座標）";
     case "town": return "町の範囲内でランダムにずれた座標が保存されます。";
     case "prefecture": return "県の重心が保存されます。自宅体験談などにどうぞ。";
   }

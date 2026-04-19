@@ -13,7 +13,7 @@ import BackButton from "@/components/BackButton";
 import { getDictionary } from "@/lib/getDictionary";
 import type { Dictionary } from "@/lib/getDictionary";
 import { MAP_PUBLIC_TO_WEB } from "@/lib/isCreepyHubApp";
-import { roundLocation, type LocationPrecision } from "@/lib/roundLocation";
+import { roundLocation, normalizePrecision, type LocationPrecision } from "@/lib/roundLocation";
 import LocationPickerModal from "@/components/map/LocationPickerModal";
 import type { SpotCategory } from "@/lib/mapPalettes";
 import tabStyles from "./page.module.css";
@@ -235,7 +235,8 @@ export default function PostNewPage() {
           lat: locLat,
           lng: locLng,
           location_name: locName,
-          location_precision: locPrecision,
+          // プライバシー保護：保存ラベルも town 以下に正規化（exact を許さない）
+          location_precision: locPrecision ? normalizePrecision(locPrecision) : locPrecision,
           map_category: mapCategory,
         }])
         .select()
