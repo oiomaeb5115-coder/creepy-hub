@@ -53,9 +53,9 @@ export default function MapFilterBar({ value, onChange }: Props) {
               onClick={() => toggleCat(c)}
               style={{
                 ...chip,
-                background: active ? BLOOD_SCORCHED[c] : "rgba(0,0,0,0.55)",
-                borderColor: active ? BLOOD_SCORCHED[c] : "rgba(255,255,255,0.25)",
-                color: active ? "#fff" : "rgba(255,255,255,0.65)",
+                background: active ? BLOOD_SCORCHED[c] : "var(--bg-surface, rgba(0,0,0,0.55))",
+                borderColor: active ? BLOOD_SCORCHED[c] : "rgba(var(--accent-rgb, 200,40,50), 0.3)",
+                color: active ? "#fff" : "var(--text-body, rgba(255,255,255,0.65))",
               }}
             >
               {CATEGORY_LABEL[c]}
@@ -65,7 +65,12 @@ export default function MapFilterBar({ value, onChange }: Props) {
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          style={{ ...chip, background: "rgba(0,0,0,0.55)", borderColor: "rgba(255,255,255,0.25)" }}
+          style={{
+            ...chip,
+            background: "var(--bg-surface, rgba(0,0,0,0.55))",
+            borderColor: "rgba(var(--accent-rgb, 200,40,50), 0.3)",
+            color: "var(--text-body, rgba(255,255,255,0.65))",
+          }}
           aria-label="詳細フィルタ"
         >
           {expanded ? "▲" : "▼"}
@@ -118,8 +123,8 @@ function SegControl<T extends string>({
             onClick={() => onChange(o.v)}
             style={{
               ...segBtn,
-              background: active ? "rgba(139,26,20,0.9)" : "transparent",
-              color: active ? "#fff" : "rgba(255,255,255,0.7)",
+              background: active ? "rgba(var(--accent-rgb, 200,40,50), 0.85)" : "transparent",
+              color: active ? "#fff" : "var(--text-body, rgba(255,255,255,0.7))",
             }}
           >
             {o.label}
@@ -162,8 +167,8 @@ const chip: React.CSSProperties = {
 const seg: React.CSSProperties = {
   display: "inline-flex",
   borderRadius: 999,
-  border: "1px solid rgba(255,255,255,0.25)",
-  background: "rgba(0,0,0,0.55)",
+  border: "1px solid rgba(var(--accent-rgb, 200,40,50), 0.3)",
+  background: "var(--bg-surface, rgba(0,0,0,0.55))",
   overflow: "hidden",
   backdropFilter: "blur(4px)",
   WebkitBackdropFilter: "blur(4px)",

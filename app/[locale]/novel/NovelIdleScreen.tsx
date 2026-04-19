@@ -14,6 +14,10 @@ type EpisodeSummary = {
   title_en: string | null;
   description_ja: string | null;
   description_en: string | null;
+  access_tier?: "free" | "premium" | "members_only";
+  required_membership?: string | null;
+  premium_unlock_note_ja?: string | null;
+  premium_unlock_note_en?: string | null;
 };
 
 type Props = {
@@ -861,6 +865,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
               {episodes.map((ep) => {
                 const title = locale === "en" && ep.title_en ? ep.title_en : ep.title_ja;
                 const desc = locale === "en" && ep.description_en ? ep.description_en : ep.description_ja;
+                const isPremium = ep.access_tier === "premium" || ep.access_tier === "members_only";
                 return (
                   <button
                     key={ep.id}
@@ -871,8 +876,10 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
                     style={{
                       width: "100%",
                       maxWidth: 360,
-                      background: "rgba(10,5,8,0.78)",
-                      border: "1px solid rgba(var(--accent-rgb, 200,40,50), 0.45)",
+                      background: isPremium ? "rgba(40,15,25,0.82)" : "rgba(10,5,8,0.78)",
+                      border: isPremium
+                        ? "1px solid rgba(255, 200, 80, 0.55)"
+                        : "1px solid rgba(var(--accent-rgb, 200,40,50), 0.45)",
                       borderRadius: 8,
                       padding: "12px 18px",
                       color: "rgba(255,255,255,0.92)",
@@ -887,8 +894,34 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
                       display: "flex",
                       flexDirection: "column",
                       gap: 4,
+                      position: "relative",
                     }}
                   >
+                    {isPremium && (
+                      <span
+                        style={{
+                          position: "absolute",
+                          top: 8,
+                          right: 10,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          fontSize: 10,
+                          letterSpacing: 1,
+                          color: "rgba(255, 210, 130, 0.95)",
+                          background: "rgba(60, 30, 10, 0.8)",
+                          border: "1px solid rgba(255, 200, 80, 0.5)",
+                          borderRadius: 4,
+                          padding: "2px 6px",
+                        }}
+                      >
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="4" y="11" width="16" height="10" rx="2" />
+                          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                        </svg>
+                        {locale === "en" ? "MEMBERS" : "限定"}
+                      </span>
+                    )}
                     <span style={{ fontWeight: 700, letterSpacing: 2 }}>{title}</span>
                     {desc && (
                       <span

@@ -655,7 +655,12 @@
     "tapToContinue": "タップで次へ",
     "completed": "お読みいただきありがとうございます",
     "backToList": "エピソード一覧へ戻る",
-    "nowPlaying": "再生中"
+    "nowPlaying": "再生中",
+    "premiumLockedTitle": "メンバー限定エピソード",
+    "premiumLockedDesc": "このエピソードはメンバー限定です。ご視聴にはメンバーシップへのご参加が必要です。",
+    "unlockViaYoutube": "YouTubeメンバーシップで見る",
+    "unlockViaApp": "アプリ内で購読する",
+    "membersBadge": "限定"
   },
   "novelAdmin": {
     "title": "ノベル管理",
