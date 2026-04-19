@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import type { PinVariant } from "@/lib/mapPins";
+import { useParams, useRouter } from "next/navigation";
 import MapCanvas, { type SpotDatum, type PostDatum, type WikiDatum } from "@/components/map/MapCanvas";
 import SpotDetailDialog from "@/components/map/SpotDetailDialog";
 import PostDetailDialog from "@/components/map/PostDetailDialog";
@@ -26,11 +25,6 @@ export default function MapPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const pinVariant = ((): PinVariant => {
-    const raw = (searchParams?.get("pinVariant") ?? "A").toUpperCase();
-    return raw === "B" || raw === "C" || raw === "D" ? (raw as PinVariant) : "A";
-  })();
 
   const [spots, setSpots] = useState<SpotDatum[]>([]);
   const [posts, setPosts] = useState<PostDatum[]>([]);
@@ -176,7 +170,6 @@ export default function MapPage() {
         onSelectSpot={setSelectedSpot}
         onSelectPost={setSelectedPost}
         onSelectWiki={setSelectedWiki}
-        pinVariant={pinVariant}
       />
 
       {/* 戻るボタン */}
