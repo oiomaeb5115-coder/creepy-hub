@@ -73,23 +73,36 @@ const isMobileViewport =
   typeof window !== "undefined" && window.innerWidth < 768;
 const TILE_SUFFIX = isMobileViewport ? "" : "@2x";
 
-const CARTO_STYLE = {
-  version: 8 as const,
-  sources: {
-    cartoDark: {
-      type: "raster" as const,
-      tiles: [
-        `https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}${TILE_SUFFIX}.png`,
-        `https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}${TILE_SUFFIX}.png`,
-        `https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}${TILE_SUFFIX}.png`,
-        `https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}${TILE_SUFFIX}.png`,
-      ],
-      tileSize: 256,
-      attribution: '© OpenStreetMap © CARTO',
+type MapTheme = "dark" | "light";
+
+/** ブラウザの現在テーマを html[data-theme] から取得（無ければ dark） */
+function getMapTheme(): MapTheme {
+  if (typeof document === "undefined") return "dark";
+  const t = document.documentElement.getAttribute("data-theme");
+  return t === "light" ? "light" : "dark";
+}
+
+/** テーマに応じた CARTO ベースマップスタイルを生成 */
+function makeCartoStyle(theme: MapTheme) {
+  const base = theme === "light" ? "light_all" : "dark_all";
+  return {
+    version: 8 as const,
+    sources: {
+      cartoBase: {
+        type: "raster" as const,
+        tiles: [
+          `https://a.basemaps.cartocdn.com/${base}/{z}/{x}/{y}${TILE_SUFFIX}.png`,
+          `https://b.basemaps.cartocdn.com/${base}/{z}/{x}/{y}${TILE_SUFFIX}.png`,
+          `https://c.basemaps.cartocdn.com/${base}/{z}/{x}/{y}${TILE_SUFFIX}.png`,
+          `https://d.basemaps.cartocdn.com/${base}/{z}/{x}/{y}${TILE_SUFFIX}.png`,
+        ],
+        tileSize: 256,
+        attribution: '© OpenStreetMap © CARTO',
+      },
     },
-  },
-  layers: [{ id: "base", type: "raster" as const, source: "cartoDark" }],
-};
+    layers: [{ id: "base", type: "raster" as const, source: "cartoBase" }],
+  };
+}
 
 /**
  * MapLibre GL JS で CARTO ダーク basemap を表示し、
@@ -120,9 +133,10 @@ export default function MapCanvas({
     if (!containerRef.current) return;
     if (mapRef.current) return; // 二重初期化防止
 
+    const initialTheme = getMapTheme();
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: CARTO_STYLE,
+      style: makeCartoStyle(initialTheme),
       center: initialCenter,
       zoom: initialZoom,
       minZoom: 4,
@@ -179,11 +193,30 @@ export default function MapCanvas({
     window.addEventListener("resize", onWinResize);
     window.addEventListener("orientationchange", onWinResize);
 
+    // テーマ変更（html[data-theme] の変化）を検知してベースマップタイルを切替
+    let currentTheme: MapTheme = initialTheme;
+    const themeObserver = new MutationObserver(() => {
+      const next = getMapTheme();
+      if (next === currentTheme) return;
+      currentTheme = next;
+      try {
+        // setStyle はマーカーと controls を保持したまま raster source を差し替えてくれる
+        map.setStyle(makeCartoStyle(next));
+      } catch (e) {
+        console.error("[MapLibre setStyle error]", e);
+      }
+    });
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
     return () => {
       if (moveTimerRef.current) clearTimeout(moveTimerRef.current);
       clearTimeout(resizeTimer);
       window.removeEventListener("resize", onWinResize);
       window.removeEventListener("orientationchange", onWinResize);
+      themeObserver.disconnect();
       map.remove();
       mapRef.current = null;
     };
@@ -266,7 +299,7 @@ export default function MapCanvas({
       style={{
         position: "absolute",
         inset: 0,
-        background: "#0b0b0e",
+        background: "var(--bg-image, #0b0b0e)",
       }}
     />
   );

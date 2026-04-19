@@ -212,7 +212,7 @@ export default function MapPage() {
 const wrap: React.CSSProperties = {
   position: "fixed",
   inset: 0,
-  background: "#0b0b0e",
+  background: "var(--bg-image, #0b0b0e)",
   overflow: "hidden",
   // Sidebar のフローティングアイコンや下部タブナビより上に出す
   zIndex: 2000,
@@ -222,11 +222,14 @@ const backBtn: React.CSSProperties = {
   top: 16,
   left: 16,
   zIndex: 20,
-  background: "rgba(0,0,0,0.55)",
-  color: "#fff",
+  background: "var(--bg-surface, rgba(0,0,0,0.55))",
+  color: "var(--text-primary, #fff)",
+  border: "1px solid rgba(var(--accent-rgb, 200,40,50), 0.3)",
   padding: "8px 14px",
   borderRadius: 999,
   fontSize: 14,
   textDecoration: "none",
   fontFamily: '"装甲明朝","Soukou Mincho",serif',
+  backdropFilter: "blur(4px)",
+  WebkitBackdropFilter: "blur(4px)",
 };
