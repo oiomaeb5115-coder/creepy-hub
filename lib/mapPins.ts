@@ -1,19 +1,18 @@
 /**
  * 地図ピンの SVG を生成する。
- * creepy-map/components/icons.ts の variant M (テーマ別) を参考に TypeScript で再実装。
+ * 形状: 和風プレミアムの「石灯籠（Stone Lantern）」一本化。
  *
  * - 心霊 (haunted)     → 炎
  * - 恐怖 (horror)      → 髑髏
  * - 観光 (sightseeing) → 鳥居
  * - 伝承 (legend)      → 御札
  *
- * 投稿ピン（post）は涙滴シェイプ + 中央に「巻物」グリフで別形状に。
- *
- * バリアント：
- *   A: Classic teardrop（デフォルト、現行）
- *   B: 朱印（和風の判子／二重円）
- *   C: 御札（縦長札＋紐）
- *   D: 血痕（不規則な血の雫）
+ * パーツ構成:
+ *   笠 (kasa)     — 上部の屋根（反りのある台形）
+ *   火袋 (hibukuro) — 中央の灯りを入れる窓。色塗り＋カテゴリグリフ
+ *   中台 (chūdai)  — 火袋の下の受け皿
+ *   竿 (sao)      — 中央の柱
+ *   基礎 (kiso)    — 末広がりの足。SVG 最下端が地理座標
  */
 
 import { colorFor, type SpotCategory } from "@/lib/mapPalettes";
@@ -21,35 +20,31 @@ import { colorFor, type SpotCategory } from "@/lib/mapPalettes";
 const STROKE = "#f5f5f5";
 
 export type PinKind = "spot" | "post";
-export type PinVariant = "A" | "B" | "C" | "D";
 
-export const PIN_VARIANT_LABELS: Record<PinVariant, string> = {
-  A: "Classic",
-  B: "朱印",
-  C: "御札",
-  D: "血痕",
-};
-
-/** カテゴリ別グリフ（白で描画）。viewBox 基準は 26x26 にフィット */
+/** カテゴリ別グリフ（白で描画）。viewBox 26x26 内、中心 (13,13) を想定。 */
 function glyphFor(category: SpotCategory): string {
   switch (category) {
     case "haunted":
+      // 炎
       return `
         <path d="M13 7c-1 2 -3 3 -3 6 a3 3 0 0 0 6 0 c0 -2 -1 -3 -3 -6z M13 16 a1.4 1.4 0 0 0 0 -3 a1.4 1.4 0 0 0 0 3z"
           fill="${STROKE}"/>`;
     case "horror":
+      // 髑髏
       return `
         <rect x="7.5" y="8" width="11" height="9" rx="3.2" fill="${STROKE}"/>
         <circle cx="10.5" cy="12" r="1.3" fill="#000"/>
         <circle cx="15.5" cy="12" r="1.3" fill="#000"/>
         <rect x="10" y="16" width="6" height="2" fill="${STROKE}"/>`;
     case "sightseeing":
+      // 鳥居
       return `
         <rect x="6" y="8" width="14" height="1.8" fill="${STROKE}"/>
         <rect x="7.5" y="10.6" width="11" height="1.2" fill="${STROKE}"/>
         <rect x="8.2" y="11.8" width="1.6" height="6.5" fill="${STROKE}"/>
         <rect x="16.2" y="11.8" width="1.6" height="6.5" fill="${STROKE}"/>`;
     case "legend":
+      // 御札
       return `
         <path d="M13 7 L16 9 L16 18 L10 18 L10 9 Z" fill="${STROKE}"/>
         <rect x="11.2" y="11.2" width="3.6" height="0.8" fill="#000" opacity="0.6"/>
@@ -58,150 +53,78 @@ function glyphFor(category: SpotCategory): string {
   }
 }
 
-/** A: 涙滴 */
-function renderA(color: string, category: SpotCategory, size: number): string {
-  return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round(size * 1.44)}" viewBox="-3 -3 32 46">
-  <path d="M13 0C5.82 0 0 5.74 0 12.83c0 9.6 13 25.17 13 25.17s13-15.57 13-25.17C26 5.74 20.18 0 13 0z"
-    fill="${color}" stroke="${STROKE}" stroke-width="1.4" stroke-linejoin="round"/>
-  ${glyphFor(category)}
-</svg>`.trim();
+/** 火袋の中に納めるためグリフを縮小（0.55 倍）してセンタリング */
+function smallGlyph(category: SpotCategory, cx: number, cy: number): string {
+  // glyphFor は (13,13) 中心の 26x26 設計。0.55 倍 + 任意位置に再配置。
+  const scale = 0.55;
+  // 元の中心(13,13)を新中心(cx,cy)にもっていく:
+  // transform: translate(cx - 13*scale, cy - 13*scale) scale(scale)
+  const tx = cx - 13 * scale;
+  const ty = cy - 13 * scale;
+  return `<g transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${scale})">${glyphFor(category)}</g>`;
 }
 
-/** B: 朱印（二重円＋下にわずかな足） */
-function renderB(color: string, category: SpotCategory, size: number): string {
-  // アンカーを円下部に合わせる。viewBox 縦を少し拡げ、下に三角の留め具を追加
+/**
+ * 灯籠ピン。アンカーは SVG 最下端（基礎の底）。
+ * viewBox: -3 -3 32 46 → 縦長 1.44 比、幅26 / 高40 のレイアウト。
+ *
+ * 縦座標目安:
+ *   y=0   : 笠 上端（宝珠想定なし）
+ *   y=2-9 : 笠（屋根）
+ *   y=10-22 : 火袋（カテゴリ色 + グリフ）
+ *   y=23-25 : 中台（受け皿）
+ *   y=26-32 : 竿（柱）
+ *   y=33-38 : 基礎（末広がり）
+ */
+function renderLantern(color: string, category: SpotCategory, size: number): string {
   return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round(size * 1.2)}" viewBox="-2 -2 30 34">
-  <!-- 影 -->
-  <ellipse cx="13" cy="31" rx="7" ry="1.3" fill="#000" opacity="0.35"/>
-  <!-- 印影の外円（太めリング） -->
-  <circle cx="13" cy="13" r="12.2" fill="${color}" stroke="${STROKE}" stroke-width="1.6"/>
-  <!-- 内側リング -->
-  <circle cx="13" cy="13" r="9.6" fill="none" stroke="${STROKE}" stroke-width="0.8" opacity="0.8"/>
-  <!-- 固定ピン（下端の小突起） -->
-  <path d="M11 24.5 L13 30 L15 24.5 Z" fill="${color}" stroke="${STROKE}" stroke-width="1.1" stroke-linejoin="round"/>
-  ${glyphFor(category)}
-</svg>`.trim();
-}
+<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round(size * 1.54)}" viewBox="-3 -3 32 46">
+  <!-- 影（地面に薄く） -->
+  <ellipse cx="13" cy="40" rx="9.5" ry="1.4" fill="#000" opacity="0.32"/>
 
-/** C: 御札（縦長の札＋紐） */
-function renderC(color: string, category: SpotCategory, size: number): string {
-  return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round(size * 1.55)}" viewBox="-2 -4 30 44">
-  <!-- 紐 -->
-  <path d="M13 -3 L13 3" stroke="${STROKE}" stroke-width="1" opacity="0.7"/>
-  <circle cx="13" cy="-2.5" r="1.2" fill="none" stroke="${STROKE}" stroke-width="0.8" opacity="0.7"/>
-  <!-- 札本体（五角形っぽい台形＋尖り） -->
-  <path d="M13 2 L22 6 L22 32 L13 37 L4 32 L4 6 Z"
-    fill="${color}" stroke="${STROKE}" stroke-width="1.4" stroke-linejoin="round"/>
-  <!-- 上下の線飾り -->
-  <rect x="6" y="8.2" width="14" height="0.8" fill="${STROKE}" opacity="0.6"/>
-  <rect x="6" y="30" width="14" height="0.8" fill="${STROKE}" opacity="0.6"/>
-  <!-- グリフ（やや下方に配置） -->
-  <g transform="translate(0, 4)">
-    ${glyphFor(category)}
-  </g>
-</svg>`.trim();
-}
+  <!-- 宝珠（てっぺんの飾り玉） -->
+  <circle cx="13" cy="2" r="1.7" fill="${color}" stroke="${STROKE}" stroke-width="1"/>
 
-/** D: 血痕（不規則な血の雫） */
-function renderD(color: string, category: SpotCategory, size: number): string {
-  return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round(size * 1.5)}" viewBox="-4 -4 34 48">
-  <!-- 不規則な血の雫シェイプ + 垂れ -->
-  <path d="
-    M13 0
-    C 6 0 0 6 0 13
-    C 0 18 3 22 6 25
-    C 8 27 10 29 11 32
-    L 11.5 36
-    Q 12 39 12.7 40
-    Q 13 41 13 40.5
-    Q 13 39 13.3 36
-    L 13.8 32
-    C 15 29 18 27 20 25
-    C 23 22 26 18 26 13
-    C 26 6 20 0 13 0 Z"
+  <!-- 笠（屋根）反りのある六角台形 -->
+  <path d="M2 9 L4 6 Q13 1 22 6 L24 9 L21 10 L5 10 Z"
     fill="${color}" stroke="${STROKE}" stroke-width="1.2" stroke-linejoin="round"/>
-  <!-- 小さな血飛沫 -->
-  <circle cx="21.5" cy="21.5" r="1.3" fill="${color}" stroke="${STROKE}" stroke-width="0.6"/>
-  <circle cx="3.5" cy="20" r="1.0" fill="${color}" stroke="${STROKE}" stroke-width="0.6"/>
-  <circle cx="17.5" cy="33" r="0.9" fill="${color}"/>
-  ${glyphFor(category)}
+
+  <!-- 火袋（中央の灯り箱） 角丸長方形 -->
+  <rect x="5.5" y="10.5" width="15" height="12.5" rx="1.6"
+    fill="${color}" stroke="${STROKE}" stroke-width="1.2"/>
+  <!-- 火袋内のカテゴリグリフ（縮小） -->
+  ${smallGlyph(category, 13, 16.5)}
+
+  <!-- 中台（受け皿） -->
+  <rect x="3.5" y="23.5" width="19" height="2.6" rx="0.6"
+    fill="${color}" stroke="${STROKE}" stroke-width="1.1"/>
+
+  <!-- 竿（柱）中央に細く -->
+  <rect x="10.2" y="26.5" width="5.6" height="6.6"
+    fill="${color}" stroke="${STROKE}" stroke-width="1.1"/>
+
+  <!-- 基礎（末広がり） -->
+  <path d="M7 33.2 L19 33.2 L22 38.6 L4 38.6 Z"
+    fill="${color}" stroke="${STROKE}" stroke-width="1.2" stroke-linejoin="round"/>
 </svg>`.trim();
 }
 
 /**
- * キュレーションスポット用のピン SVG。涙滴シェイプ + カテゴリグリフ。
- * variant 未指定時は A（Classic）。
+ * キュレーションスポット用のピン SVG。灯籠 + カテゴリグリフ。
  */
-export function renderSpotPin(
-  category: SpotCategory,
-  size = 42,
-  variant: PinVariant = "A"
-): string {
+export function renderSpotPin(category: SpotCategory, size = 42): string {
   const color = colorFor(category);
-  switch (variant) {
-    case "B": return renderB(color, category, size);
-    case "C": return renderC(color, category, size);
-    case "D": return renderD(color, category, size);
-    case "A":
-    default:  return renderA(color, category, size);
-  }
-}
-
-/** 投稿用グリフ（巻物線） */
-function postGlyph(): string {
-  return `
-    <rect x="9" y="10" width="8" height="1.2" fill="${STROKE}" opacity="0.9"/>
-    <rect x="9" y="13" width="8" height="1.2" fill="${STROKE}" opacity="0.9"/>
-    <rect x="9" y="16" width="8" height="1.2" fill="${STROKE}" opacity="0.9"/>`;
+  return renderLantern(color, category, size);
 }
 
 /**
- * 投稿ピン用の SVG。variant ごとに形状を変える。
+ * 投稿ピン用の SVG。スポット同様の灯籠形状で、色は投稿のカテゴリに従う。
+ * 旧: 巻物形 → 統一感のため灯籠＋グリフへ移行。
+ *
+ * 呼び出し側で `map_category` をカテゴリとして渡せば、4色4グリフが反映される。
+ * カテゴリ未指定時は haunted（血赤＋炎）にフォールバック。
  */
-export function renderPostPin(size = 38, variant: PinVariant = "A"): string {
-  const color = colorFor("haunted"); // 投稿は血赤ベース
-  if (variant === "B") {
-    return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round(size * 1.2)}" viewBox="-2 -2 30 34">
-  <ellipse cx="13" cy="31" rx="6" ry="1.2" fill="#000" opacity="0.35"/>
-  <circle cx="13" cy="13" r="12.2" fill="${color}" stroke="${STROKE}" stroke-width="1.6"/>
-  <circle cx="13" cy="13" r="9.6" fill="none" stroke="${STROKE}" stroke-width="0.8" opacity="0.8"/>
-  <path d="M11 24.5 L13 30 L15 24.5 Z" fill="${color}" stroke="${STROKE}" stroke-width="1.1" stroke-linejoin="round"/>
-  ${postGlyph()}
-</svg>`.trim();
-  }
-  if (variant === "C") {
-    return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round(size * 1.55)}" viewBox="-2 -4 30 44">
-  <path d="M13 -3 L13 3" stroke="${STROKE}" stroke-width="1" opacity="0.7"/>
-  <circle cx="13" cy="-2.5" r="1.2" fill="none" stroke="${STROKE}" stroke-width="0.8" opacity="0.7"/>
-  <path d="M13 2 L22 6 L22 32 L13 37 L4 32 L4 6 Z"
-    fill="${color}" stroke="${STROKE}" stroke-width="1.4" stroke-linejoin="round"/>
-  <g transform="translate(0, 4)">${postGlyph()}</g>
-</svg>`.trim();
-  }
-  if (variant === "D") {
-    return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round(size * 1.5)}" viewBox="-4 -4 34 48">
-  <path d="M13 0 C 6 0 0 6 0 13 C 0 18 3 22 6 25 C 8 27 10 29 11 32 L 11.5 36 Q 12 39 12.7 40 Q 13 41 13 40.5 Q 13 39 13.3 36 L 13.8 32 C 15 29 18 27 20 25 C 23 22 26 18 26 13 C 26 6 20 0 13 0 Z"
-    fill="${color}" stroke="${STROKE}" stroke-width="1.2" stroke-linejoin="round"/>
-  <circle cx="21.5" cy="21.5" r="1.3" fill="${color}" stroke="${STROKE}" stroke-width="0.6"/>
-  <circle cx="3.5" cy="20" r="1.0" fill="${color}" stroke="${STROKE}" stroke-width="0.6"/>
-  ${postGlyph()}
-</svg>`.trim();
-  }
-  // A: 巻物形
-  const w = 24, h = 34;
-  return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round(size * (h / w))}" viewBox="-2 -2 ${w + 4} ${h + 4}">
-  <path d="M0 3 Q${w / 2} -1 ${w} 3 L${w} ${h - 6} L${w / 2 + 1} ${h - 1} L${w / 2} ${h} L${w / 2 - 1} ${h - 1} L0 ${h - 6} Z"
-    fill="${color}" stroke="${STROKE}" stroke-width="1.3" stroke-linejoin="round"/>
-  <rect x="5" y="10" width="${w - 10}" height="1.3" fill="${STROKE}" opacity="0.9"/>
-  <rect x="5" y="15" width="${w - 10}" height="1.3" fill="${STROKE}" opacity="0.9"/>
-  <rect x="5" y="20" width="${w - 10}" height="1.3" fill="${STROKE}" opacity="0.9"/>
-</svg>`.trim();
+export function renderPostPin(size = 38, category: SpotCategory = "haunted"): string {
+  const color = colorFor(category);
+  return renderLantern(color, category, size);
 }

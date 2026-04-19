@@ -99,7 +99,7 @@ export default function LocationPickerModal({
       <div style={reticleWrap}>
         <div
           style={reticlePinWrap}
-          dangerouslySetInnerHTML={{ __html: renderSpotPin(mapCategory, 48, "A") }}
+          dangerouslySetInnerHTML={{ __html: renderSpotPin(mapCategory, 48) }}
         />
       </div>
 

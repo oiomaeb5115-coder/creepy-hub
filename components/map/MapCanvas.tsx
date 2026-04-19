@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import maplibregl, { Map as MLMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { renderSpotPin, type PinVariant } from "@/lib/mapPins";
+import { renderSpotPin } from "@/lib/mapPins";
 import type { SpotCategory } from "@/lib/mapPalettes";
 
 export interface SpotDatum {
@@ -61,7 +61,6 @@ interface Props {
   initialCenter?: [number, number];
   initialZoom?: number;
   showControls?: boolean;
-  pinVariant?: PinVariant;
 }
 
 /**
@@ -119,7 +118,6 @@ export default function MapCanvas({
   initialCenter = [138, 36.5],
   initialZoom = 5,
   showControls = true,
-  pinVariant = "A",
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MLMap | null>(null);
@@ -232,7 +230,7 @@ export default function MapCanvas({
     for (const s of spots) {
       const el = document.createElement("div");
       el.style.cursor = "pointer";
-      el.innerHTML = renderSpotPin(s.category, 42, pinVariant);
+      el.innerHTML = renderSpotPin(s.category, 42);
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         onSelectSpot?.(s);
@@ -242,7 +240,7 @@ export default function MapCanvas({
         .addTo(map);
       spotMarkers.current.push(marker);
     }
-  }, [spots, onSelectSpot, pinVariant]);
+  }, [spots, onSelectSpot]);
 
   // 投稿マーカー同期
   useEffect(() => {
@@ -256,7 +254,7 @@ export default function MapCanvas({
       // 投稿ピンもスポットと同じ 4 カテゴリピンで描画する。
       // 古い投稿 (map_category が null) は心霊 (haunted) にフォールバック。
       const cat: SpotCategory = p.map_category ?? "haunted";
-      el.innerHTML = renderSpotPin(cat, 38, pinVariant);
+      el.innerHTML = renderSpotPin(cat, 38);
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         onSelectPost?.(p);
@@ -266,7 +264,7 @@ export default function MapCanvas({
         .addTo(map);
       postMarkers.current.push(marker);
     }
-  }, [posts, onSelectPost, pinVariant]);
+  }, [posts, onSelectPost]);
 
   // wiki マーカー同期
   useEffect(() => {
@@ -279,7 +277,7 @@ export default function MapCanvas({
       el.style.cursor = "pointer";
       // wiki ピンもスポット/投稿と同じ 4 カテゴリピンで描画。やや小さめにして post と差別化
       const cat: SpotCategory = w.map_category ?? "haunted";
-      el.innerHTML = renderSpotPin(cat, 34, pinVariant);
+      el.innerHTML = renderSpotPin(cat, 34);
       // wiki ピンは半透明枠で post と区別（CSS だけで軽く付与）
       el.style.filter = "drop-shadow(0 0 3px rgba(255,255,255,0.35))";
       el.addEventListener("click", (e) => {
@@ -291,7 +289,7 @@ export default function MapCanvas({
         .addTo(map);
       wikiMarkers.current.push(marker);
     }
-  }, [wikis, onSelectWiki, pinVariant]);
+  }, [wikis, onSelectWiki]);
 
   return (
     <div
