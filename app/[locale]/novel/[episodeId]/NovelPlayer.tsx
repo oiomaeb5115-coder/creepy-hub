@@ -29,6 +29,18 @@ type NovelPlayerProps = {
     tapToContinue: string;
     completed: string;
     backToList: string;
+    premiumLockedTitle?: string;
+    premiumLockedDesc?: string;
+    unlockViaYoutube?: string;
+    unlockViaApp?: string;
+  };
+  /**
+   * プレビュー再生時の情報。シーン終端で「ここから先はメンバー限定」誘導を出す想定。
+   * 未指定なら通常の完了画面。
+   */
+  lockedAtEnd?: {
+    requiredMembership: string;
+    unlockNote: string | null;
   };
 };
 
@@ -39,7 +51,10 @@ function pauseAfterMs(text: string): number {
   return 500;
 }
 
-export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, dict }: NovelPlayerProps) {
+export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, dict, lockedAtEnd }: NovelPlayerProps) {
+  // lockedAtEnd はプレビュー再生時のみ非null。
+  // 現状は完了画面はそのまま、将来ここで誘導オーバーレイに差し替える。
+  void lockedAtEnd;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [layerTransition, setLayerTransition] = useState(false);

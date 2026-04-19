@@ -655,7 +655,12 @@
     "tapToContinue": "Tap to continue",
     "completed": "Thank you for reading",
     "backToList": "Back to episodes",
-    "nowPlaying": "Now playing"
+    "nowPlaying": "Now playing",
+    "premiumLockedTitle": "Members-only Episode",
+    "premiumLockedDesc": "This episode is available to members. Please join to continue.",
+    "unlockViaYoutube": "Join via YouTube Membership",
+    "unlockViaApp": "Subscribe in the app",
+    "membersBadge": "MEMBERS"
   },
   "novelAdmin": {
     "title": "Novel Management",

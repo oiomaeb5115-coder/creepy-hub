@@ -9,6 +9,9 @@ import BackButton from "@/components/BackButton";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
 
+type AccessTier = "free" | "premium" | "members_only";
+type RequiredMembership = "any" | "youtube" | "apple_iap" | "google_play" | "stripe" | null;
+
 type Episode = {
   id: string;
   title_ja: string;
@@ -19,6 +22,11 @@ type Episode = {
   is_published: boolean;
   sort_order: number;
   created_at: string;
+  access_tier?: AccessTier;
+  required_membership?: RequiredMembership;
+  premium_unlock_note_ja?: string | null;
+  premium_unlock_note_en?: string | null;
+  preview_scene_count?: number;
 };
 
 type Layer = {
@@ -335,6 +343,86 @@ export default function NovelAdminPage() {
             <button onClick={() => deleteEpisode(editingEpisode.id)} style={btnStyle("#ef4444")}>
               {t.deleteEpisode}
             </button>
+          </div>
+
+          {/* === 課金設定（箱）=== */}
+          <div
+            style={{
+              marginTop: 8,
+              padding: 14,
+              border: "1px solid rgba(255, 200, 80, 0.35)",
+              borderRadius: 8,
+              background: "rgba(40, 20, 10, 0.3)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+            }}
+          >
+            <div style={{ fontSize: 13, letterSpacing: 2, color: "rgba(255, 210, 130, 0.9)" }}>
+              {locale === "en" ? "Access / Membership" : "課金・メンバーシップ設定"}
+            </div>
+            <label style={{ fontSize: 12 }}>
+              {locale === "en" ? "Access tier" : "公開範囲"}
+              <select
+                value={editingEpisode.access_tier ?? "free"}
+                onChange={(e) => updateEpisode({ access_tier: e.target.value as AccessTier })}
+                style={inputStyle}
+              >
+                <option value="free">{locale === "en" ? "Free (everyone)" : "無料（全員）"}</option>
+                <option value="premium">{locale === "en" ? "Premium" : "有料メンバー"}</option>
+                <option value="members_only">{locale === "en" ? "Members only (YouTube/IAP)" : "メンバー限定（YouTube/IAP）"}</option>
+              </select>
+            </label>
+            <label style={{ fontSize: 12 }}>
+              {locale === "en" ? "Required membership" : "解錠メンバーシップ"}
+              <select
+                value={editingEpisode.required_membership ?? ""}
+                onChange={(e) =>
+                  updateEpisode({
+                    required_membership: (e.target.value || null) as RequiredMembership,
+                  })
+                }
+                style={inputStyle}
+              >
+                <option value="">—</option>
+                <option value="any">{locale === "en" ? "Any platform" : "いずれか（any）"}</option>
+                <option value="youtube">YouTube Membership</option>
+                <option value="apple_iap">Apple IAP</option>
+                <option value="google_play">Google Play</option>
+                <option value="stripe">Stripe</option>
+              </select>
+            </label>
+            <label style={{ fontSize: 12 }}>
+              {locale === "en" ? "Preview scene count" : "プレビュー公開シーン数"}
+              <input
+                type="number"
+                min={0}
+                defaultValue={editingEpisode.preview_scene_count ?? 0}
+                onBlur={(e) => {
+                  const v = Math.max(0, Number(e.target.value) || 0);
+                  updateEpisode({ preview_scene_count: v });
+                }}
+                style={inputStyle}
+              />
+            </label>
+            <label style={{ fontSize: 12 }}>
+              {locale === "en" ? "Unlock note (JA)" : "ロック画面の案内文（日本語）"}
+              <textarea
+                defaultValue={editingEpisode.premium_unlock_note_ja ?? ""}
+                onBlur={(e) => updateEpisode({ premium_unlock_note_ja: e.target.value || null })}
+                placeholder={locale === "en" ? "Shown on the locked screen (JA)" : "ロック画面に表示（例: YouTubeメンバー限定です）"}
+                style={{ ...inputStyle, minHeight: 50 }}
+              />
+            </label>
+            <label style={{ fontSize: 12 }}>
+              {locale === "en" ? "Unlock note (EN)" : "ロック画面の案内文（English）"}
+              <textarea
+                defaultValue={editingEpisode.premium_unlock_note_en ?? ""}
+                onBlur={(e) => updateEpisode({ premium_unlock_note_en: e.target.value || null })}
+                placeholder="Shown on the locked screen (EN)"
+                style={{ ...inputStyle, minHeight: 50 }}
+              />
+            </label>
           </div>
         </div>
 

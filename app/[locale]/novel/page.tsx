@@ -1,6 +1,5 @@
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
-import { headers } from "next/headers";
 import NovelIdleScreen from "./NovelIdleScreen";
 
 type Props = {
@@ -18,26 +17,13 @@ const idleLayers = [
 
 export default async function NovelPage({ params }: Props) {
   const { locale } = await params;
-
-  // Server-side iOS detection
-  const headersList = await headers();
-  const ua = headersList.get("user-agent") ?? "";
-  const isIOS = ua.includes("CreepyHubApp");
-
   const dict = await getDictionary(locale);
 
-  if (!isIOS) {
-    return (
-      <div style={{ padding: "60px 20px", textAlign: "center", color: "var(--muted)" }}>
-        <p style={{ fontSize: 18 }}>{dict.novel.iosOnly}</p>
-      </div>
-    );
-  }
-
   // Fetch all published episodes for lobby list
+  // Web/iOS/Android すべてで無料ノベルは公開。課金エピソードは access_tier で判別する。
   const { data: episodesData } = await supabase
     .from("novel_episodes")
-    .select("id, title_ja, title_en, description_ja, description_en")
+    .select("id, title_ja, title_en, description_ja, description_en, access_tier, required_membership, premium_unlock_note_ja, premium_unlock_note_en")
     .eq("is_published", true)
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
@@ -48,9 +34,16 @@ export default async function NovelPage({ params }: Props) {
     title_en: (e.title_en as string | null) ?? null,
     description_ja: (e.description_ja as string | null) ?? null,
     description_en: (e.description_en as string | null) ?? null,
+    access_tier: ((e.access_tier as string | null) ?? "free") as "free" | "premium" | "members_only",
+    required_membership: (e.required_membership as string | null) ?? null,
+    premium_unlock_note_ja: (e.premium_unlock_note_ja as string | null) ?? null,
+    premium_unlock_note_en: (e.premium_unlock_note_en as string | null) ?? null,
   }));
 
-  const storyHref = episodes[0] ? `/${locale}/novel/${episodes[0].id}` : undefined;
+  // storyHref は「エピソードが1件のみ」の時の即時開始用。
+  // 無料を優先し、なければ先頭（ロック画面で誘導する）
+  const firstPlayable = episodes.find((e) => e.access_tier === "free") ?? episodes[0];
+  const storyHref = firstPlayable ? `/${locale}/novel/${firstPlayable.id}` : undefined;
 
   // Always show idle screen as lobby — tap to start story
   return (
