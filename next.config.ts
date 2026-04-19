@@ -12,7 +12,8 @@ const nextConfig: NextConfig = {
       // Tailwind CSS / Next.js がインラインスタイルを使用するため必要
       "style-src 'self' 'unsafe-inline'",
       // Supabase Storage・外部画像・アバタークロッパー用 blob: を許可
-      "img-src 'self' https: blob:",
+      // MapLibre の NavigationControl が data: URL の SVG アイコンを使うため data: も許可
+      "img-src 'self' https: blob: data:",
       // Supabase API・Cloudflare Workers AI への接続を許可
       // MapLibre の CARTO dark basemap タイル取得用に basemaps.cartocdn.com を追加
       "connect-src 'self' https://*.supabase.co https://api.cloudflare.com https://unpkg.com https://*.shinobi.jp https://*.criteo.com https://*.amossp-sp.in https://*.cloudflarestream.com https://upload.videodelivery.net https://*.basemaps.cartocdn.com blob:",

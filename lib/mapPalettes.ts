@@ -12,12 +12,12 @@ export const CATEGORY_LABEL: Record<SpotCategory, string> = {
   legend: "伝承",
 };
 
-/** 本番固定：血＋焦土の高級感パレット */
+/** 本番固定：黒・赤黒・金・焦茶の高級感4色パレット */
 export const BLOOD_SCORCHED: Record<SpotCategory, string> = {
-  haunted: "#8B1A14",      // 血赤：炎
-  horror: "#5A1A14",       // 血×焦土の暗赤褐色：髑髏
-  sightseeing: "#A65A1F",  // 朱色寄り焦土：鳥居
-  legend: "#6A3A22",       // バーントシエナ（深い茶）：御札
+  haunted: "#5A0F0F",      // 赤黒い赤（凝固した血）：炎
+  horror: "#1A1A1A",       // 黒（漆黒）：髑髏
+  sightseeing: "#B89A2D",  // 高級感ある黄色（アンティークゴールド）：鳥居
+  legend: "#3E2823",       // 高級感ある焦茶（エスプレッソブラウン）：御札
 };
 
 export function colorFor(cat: SpotCategory): string {
