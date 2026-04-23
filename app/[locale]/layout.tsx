@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { getDictionary } from "@/lib/getDictionary";
 import SidebarWrapper from "./SidebarWrapper";
 import MapShortcutIcon from "./MapShortcutIcon";
+import NovelShortcutIcon from "./NovelShortcutIcon";
 import PageTransition from "./PageTransition";
 import FloatingPostButton from "./FloatingPostButton";
 import AuthDrawer from "./AuthDrawer";
@@ -101,6 +102,7 @@ export default async function LocaleLayout({
 
         <SidebarWrapper locale={locale} labels={dict.sidebar} />
         <MapShortcutIcon locale={locale} />
+        <NovelShortcutIcon locale={locale} />
         <FloatingPostButton locale={locale} />
         <AuthDrawer locale={locale} labels={dict.authDrawer} />
         <WelcomeVideoModal videoSrc="/welcome.webm/welcome-1.webm" />
