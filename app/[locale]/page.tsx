@@ -228,12 +228,6 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
               <p className={styles.heroTagline}>{dict.meta.description}</p>
             </div>
 
-            <div className={styles.heroActions}>
-              <Link href={`/${locale}/novel`} className={styles.heroPrimaryLink}>
-                {locale === "en" ? "Open Novel" : "ノベルを開く"}
-              </Link>
-            </div>
-
           </div>
         </section>
 
