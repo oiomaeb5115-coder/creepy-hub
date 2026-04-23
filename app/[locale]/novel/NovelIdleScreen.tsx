@@ -232,18 +232,6 @@ type ScriptTopic = { id?: string; label: string; lines: Line[]; choices?: Script
 type OpeningChoice = { label: string; lines?: Line[]; skipExplanation?: boolean };
 type AnalogEffect = "none" | "film" | "vhs" | "crt" | "max" | "fog" | "sepia" | "red" | "dream";
 
-const analogEffectOptions: Array<{ value: AnalogEffect; label: string }> = [
-  { value: "none", label: "なし" },
-  { value: "film", label: "Film" },
-  { value: "vhs", label: "VHS" },
-  { value: "crt", label: "CRT" },
-  { value: "max", label: "MAX" },
-  { value: "fog", label: "霧" },
-  { value: "sepia", label: "古写" },
-  { value: "red", label: "赤" },
-  { value: "dream", label: "夢" },
-];
-
 const kutisakeOnnaLines: Line[] = [
   { text: "私のチャンネルでは普段、それほどメジャーではないホラーコンテンツを中心に取り扱っているから、", expr: EXPR.talkEyeclose1, audio: `${KUTISAKE_ONNA_AUDIO_BASE}/001.wav` },
   { text: "何故今になってこんなにもベターな怪異を取り上げたのかなんて、そう思っているのでしょう?", expr: EXPR.talk2, audio: `${KUTISAKE_ONNA_AUDIO_BASE}/002.wav` },
@@ -1492,31 +1480,6 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
               <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 6 }}>
                 {autoPlay ? "会話が自動で進みます" : "タップ・クリックで進みます"}
               </p>
-            </div>
-
-            {/* Visual effect */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={settingsLabel}>映像効果</label>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6 }}>
-                {analogEffectOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setAnalogEffect(option.value)}
-                    style={{
-                      background: analogEffect === option.value ? "rgba(198,40,40,0.7)" : "rgba(255,255,255,0.08)",
-                      border: `1px solid ${analogEffect === option.value ? "rgba(255,100,100,0.6)" : "rgba(255,255,255,0.25)"}`,
-                      borderRadius: 6,
-                      padding: "8px 0",
-                      color: "rgba(255,255,255,0.85)",
-                      fontSize: 12,
-                      cursor: "pointer",
-                      fontFamily: "'SoukouMincho', serif",
-                    }}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Font size */}
