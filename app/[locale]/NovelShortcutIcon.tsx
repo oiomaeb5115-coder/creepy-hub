@@ -10,7 +10,7 @@ export default function NovelShortcutIcon({ locale }: { locale: string }) {
         position: "fixed",
         top: 114,
         left: 14,
-        zIndex: 100,
+        zIndex: 120,
         width: 40,
         height: 40,
         borderRadius: "50%",
