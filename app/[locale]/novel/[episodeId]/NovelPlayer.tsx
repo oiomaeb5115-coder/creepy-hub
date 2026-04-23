@@ -52,8 +52,9 @@ function pauseAfterMs(text: string): number {
 }
 
 const NOVEL_BGM_AUDIO = "/audio/novel/bgm/mirror-hall.mp3";
-const NOVEL_BGM_VOLUME = 0.18;
+const NOVEL_BGM_VOLUME = 0.08;
 const NOVEL_BGM_FADE_MS = 5000;
+const NOVEL_VOICE_VOLUME_MULTIPLIER = 2;
 
 export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, dict, lockedAtEnd }: NovelPlayerProps) {
   // lockedAtEnd はプレビュー再生時のみ非null。
@@ -87,6 +88,7 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
   const totalImages = allImageUrls.length;
 
   const getTargetBgmVolume = useCallback(() => Math.min(1, volume * NOVEL_BGM_VOLUME), [volume]);
+  const getTargetVoiceVolume = useCallback(() => Math.min(1, volume * NOVEL_VOICE_VOLUME_MULTIPLIER), [volume]);
 
   const clearBgmFade = useCallback(() => {
     if (bgmFadeIntervalRef.current !== null) {
@@ -190,6 +192,12 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
     if (!muted && !isLoading) startBgmAudio();
   }, [muted, volume, isLoading, startBgmAudio, syncBgmAudio]);
 
+  useEffect(() => {
+    if (!audioRef.current) return;
+    audioRef.current.volume = getTargetVoiceVolume();
+    audioRef.current.muted = muted;
+  }, [getTargetVoiceVolume, muted]);
+
   // Preload all layer images
   useEffect(() => {
     if (totalImages === 0) {
@@ -274,6 +282,8 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
     clearAutoTimer();
     if (audioRef.current) {
       if (scene.audio_url) {
+        audioRef.current.volume = getTargetVoiceVolume();
+        audioRef.current.muted = muted;
         audioRef.current.src = scene.audio_url;
         audioRef.current.play().catch(() => {
           // Autoplay blocked — fallback: schedule advance based on rough text duration
@@ -297,7 +307,7 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
       }
     }
     setLayerTransition(false);
-  }, [currentIndex, scene, getText, isLoading, advance, clearAutoTimer]);
+  }, [currentIndex, scene, getText, isLoading, getTargetVoiceVolume, muted, advance, clearAutoTimer]);
 
   // Cleanup on unmount
   useEffect(() => {

@@ -1,5 +1,4 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { getDictionary } from "@/lib/getDictionary";
 import NovelIdleScreen from "./NovelIdleScreen";
 
 type Props = {
@@ -16,9 +15,7 @@ const idleLayers = [
 ];
 
 export default async function NovelPage({ params }: Props) {
-
   const { locale } = await params;
-  const dict = await getDictionary(locale);
 
   // Fetch all published episodes for lobby list
   // Web/iOS/Android すべてで無料ノベルは公開。課金エピソードは access_tier で判別する。
@@ -51,7 +48,6 @@ export default async function NovelPage({ params }: Props) {
     <NovelIdleScreen
       layers={idleLayers}
       locale={locale}
-      dict={dict.novel}
       storyHref={storyHref}
       speakerName="映子"
       episodes={episodes}

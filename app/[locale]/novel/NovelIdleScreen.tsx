@@ -24,12 +24,6 @@ type EpisodeSummary = {
 type Props = {
   layers: Layer[];
   locale: string;
-  dict: {
-    title: string;
-    subtitle: string;
-    backToList: string;
-    tapToContinue?: string;
-  };
   storyHref?: string;
   speakerName?: string;
   episodes?: EpisodeSummary[];
@@ -69,8 +63,10 @@ const INAKURO_CLUB_AUDIO_BASE = "/audio/novel/inakuro-club";
 const NO_EXPLANATION_AUDIO_BASE = "/audio/novel/no-explanation";
 const KUTISAKE_ONNA_AUDIO_BASE = "/audio/novel/kutisake-onna";
 const NOVEL_BGM_AUDIO = "/audio/novel/bgm/mirror-hall.mp3";
-const NOVEL_BGM_VOLUME = 0.18;
+const NOVEL_BGM_VOLUME = 0.08;
 const NOVEL_BGM_FADE_MS = 5000;
+const NOVEL_VOICE_VOLUME_MULTIPLIER = 2;
+const DIALOGUE_AUDIO_PRELOAD_AHEAD = 4;
 const OPENING_LINES: OpeningLine[] = [
   { text: "...ふふふ", expr: EXPR.smileEyeclose2, audio: `${AUDIO_BASE}/001.wav` },
   { text: "いらっしゃい。", expr: EXPR.smile1, audio: `${AUDIO_BASE}/002.wav` },
@@ -95,6 +91,61 @@ const getLineAutoDelay = (text: string) => {
     periodMatches.length * 1000;
 
   return Math.max(1500, text.length * 60 + pauseDelay);
+};
+
+const expressionGroups = {
+  smile: [EXPR.smile1, EXPR.smile2, EXPR.smile3, EXPR.smileEyeclose1, EXPR.smileEyeclose2, EXPR.smileEyeclose3],
+  confused: [
+    EXPR.talkConfuse1,
+    EXPR.talkConfuse2,
+    EXPR.talkEyecloseConfuse1,
+    EXPR.talkEyecloseConfuse2,
+    EXPR.smileConfuse1,
+    EXPR.smileEyecloseConfuse1,
+    EXPR.smileEyecloseConfuse2,
+    EXPR.smileEyecloseConfuse3,
+    EXPR.normalEyecloseConfuse1,
+  ],
+  soft: [EXPR.talkEyeclose1, EXPR.talkEyeclose2, EXPR.smileEyeclose1, EXPR.smileEyeclose2, EXPR.smileEyeclose3],
+  talk: [EXPR.talk1, EXPR.talk2, EXPR.talkEyeclose1, EXPR.talkEyeclose2],
+} as const;
+
+const expressionGroupValues = Object.values(expressionGroups).flat();
+const isKnownExpression = (expr: string): expr is (typeof expressionGroupValues)[number] =>
+  expressionGroupValues.includes(expr as (typeof expressionGroupValues)[number]) || expr === EXPR.normal;
+
+const getMatchingExpressionGroup = (line: Line) => {
+  const text = line.text;
+  if (/[？?]/.test(text) || /かしら|でしょう|思わない|知っている|わかる|かな|かも|けれど|だけれど|ごめんなさい/.test(text)) {
+    return expressionGroups.confused;
+  }
+  if (/ふふ|嬉|ありがとう|正解|いらっしゃい|選んでね|始めましょう|また会った/.test(text)) {
+    return expressionGroups.smile;
+  }
+  if (/……|…|静か|正直|注意|もちろん|ただ|もっとも/.test(text)) {
+    return expressionGroups.soft;
+  }
+  if (expressionGroups.smile.includes(line.expr as (typeof expressionGroups.smile)[number])) {
+    return expressionGroups.smile;
+  }
+  if (expressionGroups.confused.includes(line.expr as (typeof expressionGroups.confused)[number])) {
+    return expressionGroups.confused;
+  }
+  if (expressionGroups.soft.includes(line.expr as (typeof expressionGroups.soft)[number])) {
+    return expressionGroups.soft;
+  }
+  return expressionGroups.talk;
+};
+
+const resolveLineExpression = (line: Line, previousExpr: string) => {
+  const preferredExpr = isKnownExpression(line.expr) ? line.expr : EXPR.talk1;
+  if (preferredExpr !== previousExpr) return preferredExpr;
+
+  const group = getMatchingExpressionGroup(line);
+  const currentIndex = group.indexOf(preferredExpr as never);
+  if (currentIndex >= 0) return group[(currentIndex + 1) % group.length];
+
+  return group.find((expr) => expr !== previousExpr) ?? EXPR.talk2;
 };
 
 const greetings: Line[] = [
@@ -402,7 +453,7 @@ const kutisakeOnnaTopic: ScriptTopic = {
 };
 const getLineMediaUrls = (lines: Line[]) => lines.flatMap((line) => line.visual?.src ? [line.visual.src] : []);
 
-export default function NovelIdleScreen({ layers, locale, dict, storyHref, speakerName, episodes = [] }: Props) {
+export default function NovelIdleScreen({ layers, locale, storyHref, speakerName, episodes = [] }: Props) {
   const [phase, setPhase] = useState<"loading" | "opening" | "openingChoice" | "greeting" | "idle" | "tap" | "script" | "choice" | "branch">("loading");
   const [displayedText, setDisplayedText] = useState("");
   const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
@@ -413,6 +464,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
   const [branchIndex, setBranchIndex] = useState(0);
   const [isOpeningBranch, setIsOpeningBranch] = useState(false);
   const [currentExpr, setCurrentExpr] = useState<string>(EXPR.normal);
+  const currentExprRef = useRef<string>(EXPR.normal);
   const [activeLineMedia, setActiveLineMedia] = useState<LineMedia | null>(null);
   const [loadedCount, setLoadedCount] = useState(0);
   const transitionStarted = useRef(false);
@@ -425,10 +477,13 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
   const openingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dialogueAudioRef = useRef<HTMLAudioElement | null>(null);
   const dialogueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const openingPlaybackIdRef = useRef(0);
+  const dialoguePlaybackIdRef = useRef(0);
   const bgmAudioRef = useRef<HTMLAudioElement | null>(null);
   const bgmFadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const bgmFadingOutRef = useRef(false);
   const handleTapRef = useRef<(() => void) | null>(null);
+  const dialogueAudioCacheRef = useRef<Map<string, HTMLAudioElement>>(new Map());
 
   // UI preferences (persisted)
   const [muted, setMuted] = useState(false);
@@ -447,8 +502,42 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
   useEffect(() => { volumeRef.current = volume; }, [volume]);
   useEffect(() => { autoPlayRef.current = autoPlay; }, [autoPlay]);
   useEffect(() => { openingIndexRef.current = openingIndex; }, [openingIndex]);
+  useEffect(() => { currentExprRef.current = currentExpr; }, [currentExpr]);
 
   const getTargetBgmVolume = useCallback(() => Math.min(1, volumeRef.current * NOVEL_BGM_VOLUME), []);
+  const getTargetVoiceVolume = useCallback(() => Math.min(1, volumeRef.current * NOVEL_VOICE_VOLUME_MULTIPLIER), []);
+
+  const preloadDialogueAudio = useCallback((src?: string) => {
+    if (!src) return null;
+    const cached = dialogueAudioCacheRef.current.get(src);
+    if (cached) return cached;
+
+    const audio = new Audio();
+    audio.preload = "auto";
+    audio.src = src;
+    dialogueAudioCacheRef.current.set(src, audio);
+    audio.load();
+    return audio;
+  }, []);
+
+  const prepareDialogueAudio = useCallback((src: string) => {
+    const audio = preloadDialogueAudio(src);
+    if (!audio) return null;
+
+    audio.pause();
+    try {
+      audio.currentTime = 0;
+    } catch {}
+    audio.volume = getTargetVoiceVolume();
+    audio.muted = mutedRef.current;
+    return audio;
+  }, [getTargetVoiceVolume, preloadDialogueAudio]);
+
+  const preloadLineAudios = useCallback((lines: Line[], start = 0, count = DIALOGUE_AUDIO_PRELOAD_AHEAD) => {
+    lines.slice(start, start + count).forEach((line) => {
+      preloadDialogueAudio(line.audio);
+    });
+  }, [preloadDialogueAudio]);
 
   const clearBgmFade = useCallback(() => {
     if (bgmFadeIntervalRef.current !== null) {
@@ -617,6 +706,33 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
     if (!muted) startBgmAudio();
   }, [muted, volume, prefsLoaded, startBgmAudio, syncBgmAudio]);
 
+  useEffect(() => {
+    const targetVolume = getTargetVoiceVolume();
+    if (openingAudioRef.current) openingAudioRef.current.volume = targetVolume;
+    if (dialogueAudioRef.current) dialogueAudioRef.current.volume = targetVolume;
+  }, [getTargetVoiceVolume, volume]);
+
+  useEffect(() => {
+    preloadLineAudios(OPENING_LINES, 0, DIALOGUE_AUDIO_PRELOAD_AHEAD);
+    openingChoices.forEach((choice) => preloadLineAudios(choice.lines ?? [], 0, 1));
+  }, [preloadLineAudios]);
+
+  useEffect(() => {
+    if (phase === "opening") {
+      preloadLineAudios(OPENING_LINES, openingIndex, DIALOGUE_AUDIO_PRELOAD_AHEAD);
+      return;
+    }
+
+    if (phase === "script" && activeScript) {
+      preloadLineAudios(activeScript.lines, scriptIndex, DIALOGUE_AUDIO_PRELOAD_AHEAD);
+      return;
+    }
+
+    if (phase === "branch" && activeBranch) {
+      preloadLineAudios(activeBranch.lines, branchIndex, DIALOGUE_AUDIO_PRELOAD_AHEAD);
+    }
+  }, [activeBranch, activeScript, branchIndex, openingIndex, phase, preloadLineAudios, scriptIndex]);
+
   // Preload all images
   const allImageUrls = Array.from(new Set([
     ...layers.map((l) => l.image_url),
@@ -640,6 +756,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
   }, [layers]);
 
   const stopDialogueAudio = useCallback(() => {
+    dialoguePlaybackIdRef.current += 1;
     if (dialogueTimerRef.current !== null) {
       clearTimeout(dialogueTimerRef.current);
       dialogueTimerRef.current = null;
@@ -654,33 +771,39 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
   // Show a line instantly (no typewriter)
   const showLine = useCallback((line: Line, playAudio = true) => {
     stopDialogueAudio();
-    setCurrentExpr(line.expr);
+    const nextExpr = resolveLineExpression(line, currentExprRef.current);
+    currentExprRef.current = nextExpr;
+    setCurrentExpr(nextExpr);
     setActiveLineMedia((current) => line.visual ?? (line.keepVisual ? current : null));
     setDisplayedText(line.text);
-    setBacklog((prev) => [...prev, { speaker: speakerName ?? "", text: line.text, expr: line.expr }]);
+    setBacklog((prev) => [...prev, { speaker: speakerName ?? "", text: line.text, expr: nextExpr }]);
 
     if (!playAudio || !line.audio || mutedRef.current) return;
 
-    const audio = new Audio(line.audio);
-    audio.volume = volumeRef.current;
+    const audio = prepareDialogueAudio(line.audio);
+    if (!audio) return;
+    const playbackId = dialoguePlaybackIdRef.current;
     dialogueAudioRef.current = audio;
     audio.onended = () => {
+      if (playbackId !== dialoguePlaybackIdRef.current || dialogueAudioRef.current !== audio) return;
       if (autoPlayRef.current) {
         dialogueTimerRef.current = setTimeout(() => handleTapRef.current?.(), 400);
       }
     };
     audio.play().catch(() => {
+      if (playbackId !== dialoguePlaybackIdRef.current || dialogueAudioRef.current !== audio) return;
       dialogueAudioRef.current = null;
       if (autoPlayRef.current) {
         dialogueTimerRef.current = setTimeout(() => handleTapRef.current?.(), getLineAutoDelay(line.text));
       }
     });
-  }, [speakerName, stopDialogueAudio]);
+  }, [prepareDialogueAudio, speakerName, stopDialogueAudio]);
 
   // Advance opening to next line (or idle when done)
   const advanceOpening = useCallback(() => {
     if (openingAdvancedRef.current) return;
     openingAdvancedRef.current = true;
+    openingPlaybackIdRef.current += 1;
     if (openingTimerRef.current !== null) {
       clearTimeout(openingTimerRef.current);
       openingTimerRef.current = null;
@@ -705,6 +828,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
   // Play each opening line. AUTO advances after audio/read-time; tap mode waits for input.
   useEffect(() => {
     if (phase !== "opening") return;
+    openingPlaybackIdRef.current += 1;
     openingAdvancedRef.current = false;
 
     const line = OPENING_LINES[openingIndex];
@@ -729,15 +853,18 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
         openingTimerRef.current = setTimeout(advanceOpening, readingDelay);
       }
     } else {
-      const audio = new Audio(line.audio);
-      audio.volume = volumeRef.current;
+      const audio = prepareDialogueAudio(line.audio);
+      if (!audio) return;
+      const playbackId = openingPlaybackIdRef.current;
       openingAudioRef.current = audio;
       audio.onended = () => {
+        if (playbackId !== openingPlaybackIdRef.current || openingAudioRef.current !== audio) return;
         if (autoPlayRef.current) {
           openingTimerRef.current = setTimeout(advanceOpening, 400);
         }
       };
       audio.play().catch(() => {
+        if (playbackId !== openingPlaybackIdRef.current || openingAudioRef.current !== audio) return;
         openingAudioRef.current = null;
         if (autoPlay) {
           openingTimerRef.current = setTimeout(advanceOpening, readingDelay);
@@ -751,7 +878,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
         openingTimerRef.current = null;
       }
     };
-  }, [phase, openingIndex, autoPlay, showLine, advanceOpening]);
+  }, [phase, openingIndex, autoPlay, prepareDialogueAudio, showLine, advanceOpening]);
 
   // Transition loading → opening (first visit) or greeting (returning)
   useEffect(() => {
@@ -816,7 +943,10 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
 
   // Cleanup on unmount
   useEffect(() => {
+    const dialogueAudioCache = dialogueAudioCacheRef.current;
     return () => {
+      openingPlaybackIdRef.current += 1;
+      dialoguePlaybackIdRef.current += 1;
       if (openingTimerRef.current !== null) clearTimeout(openingTimerRef.current);
       if (openingAudioRef.current) {
         openingAudioRef.current.onended = null;
@@ -830,10 +960,16 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
         bgmAudioRef.current.pause();
         bgmAudioRef.current = null;
       }
+      dialogueAudioCache.forEach((audio) => {
+        audio.onended = null;
+        audio.pause();
+      });
+      dialogueAudioCache.clear();
     };
   }, [clearBgmFade, stopDialogueAudio]);
 
   const startScript = (topic: ScriptTopic) => {
+    preloadLineAudios(topic.lines, 0, DIALOGUE_AUDIO_PRELOAD_AHEAD);
     setActiveScript(topic);
     setIsOpeningBranch(false);
     setScriptIndex(0);
@@ -942,6 +1078,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
   };
 
   const selectChoice = (choice: ScriptChoice) => {
+    preloadLineAudios(choice.lines, 0, DIALOGUE_AUDIO_PRELOAD_AHEAD);
     setIsOpeningBranch(false);
     setActiveBranch(choice);
     setBranchIndex(0);
@@ -958,6 +1095,7 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
       return;
     }
 
+    preloadLineAudios(choice.lines, 0, DIALOGUE_AUDIO_PRELOAD_AHEAD);
     setActiveBranch({ label: choice.label, lines: choice.lines });
     setIsOpeningBranch(!choice.skipExplanation);
     setBranchIndex(0);
@@ -1026,11 +1164,8 @@ export default function NovelIdleScreen({ layers, locale, dict, storyHref, speak
         <img
           src="/images/ui/auth-logo_2.webp"
           alt=""
-          style={{ width: 80, height: "auto", animation: "novel-logo-pulse 2s ease-in-out infinite" }}
+          style={{ width: 128, height: "auto", animation: "novel-logo-pulse 2s ease-in-out infinite" }}
         />
-        <p style={{ marginTop: 16, fontSize: 13, color: "rgba(255,255,255,0.4)", fontFamily: "'SoukouMincho', serif", letterSpacing: 3 }}>
-          {dict.title}
-        </p>
       </div>
 
       {/* Layers */}
