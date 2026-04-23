@@ -364,11 +364,6 @@ const kutisakeOnnaLines: Line[] = [
 
 const openingChoices: OpeningChoice[] = [
   {
-    label: "口裂け女の発祥について",
-    skipExplanation: true,
-    lines: kutisakeOnnaLines,
-  },
-  {
     label: "君はここで何をするの？",
     lines: [
       { text: "私が見たcreepyhubへの投稿やその他SNSで最近話題のことについてお話しすることとなるわ", expr: EXPR.talk1, audio: `${WHAT_DO_YOU_DO_AUDIO_BASE}/051.wav` },
