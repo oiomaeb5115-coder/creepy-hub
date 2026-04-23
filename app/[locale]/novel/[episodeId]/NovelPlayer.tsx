@@ -51,6 +51,10 @@ function pauseAfterMs(text: string): number {
   return 500;
 }
 
+const NOVEL_BGM_AUDIO = "/audio/novel/bgm/mirror-hall.mp3";
+const NOVEL_BGM_VOLUME = 0.18;
+const NOVEL_BGM_FADE_MS = 5000;
+
 export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, dict, lockedAtEnd }: NovelPlayerProps) {
   // lockedAtEnd はプレビュー再生時のみ非null。
   // 現状は完了画面はそのまま、将来ここで誘導オーバーレイに差し替える。
@@ -65,7 +69,12 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
   const transitionStarted = useRef(false);
 
   const audioRef = useRef<HTMLAudioElement>(null);
+  const bgmAudioRef = useRef<HTMLAudioElement | null>(null);
+  const bgmFadeIntervalRef = useRef<number | null>(null);
+  const bgmFadingOutRef = useRef(false);
   const autoAdvanceTimerRef = useRef<number | null>(null);
+  const [muted, setMuted] = useState(false);
+  const [volume, setVolume] = useState(1);
 
   const scene = scenes[currentIndex];
 
@@ -76,6 +85,110 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
     )
   );
   const totalImages = allImageUrls.length;
+
+  const getTargetBgmVolume = useCallback(() => Math.min(1, volume * NOVEL_BGM_VOLUME), [volume]);
+
+  const clearBgmFade = useCallback(() => {
+    if (bgmFadeIntervalRef.current !== null) {
+      window.clearInterval(bgmFadeIntervalRef.current);
+      bgmFadeIntervalRef.current = null;
+    }
+  }, []);
+
+  const fadeBgmTo = useCallback((targetVolume: number, durationMs: number, onComplete?: () => void) => {
+    const audio = bgmAudioRef.current;
+    if (!audio) return;
+    clearBgmFade();
+    const startVolume = audio.volume;
+    const startedAt = Date.now();
+    bgmFadeIntervalRef.current = window.setInterval(() => {
+      const current = bgmAudioRef.current;
+      if (!current) {
+        clearBgmFade();
+        return;
+      }
+      const progress = Math.min(1, (Date.now() - startedAt) / durationMs);
+      current.volume = startVolume + (targetVolume - startVolume) * progress;
+      if (progress >= 1) {
+        clearBgmFade();
+        onComplete?.();
+      }
+    }, 100);
+  }, [clearBgmFade]);
+
+  const restartBgmLoop = useCallback(() => {
+    const audio = bgmAudioRef.current;
+    if (!audio) return;
+    bgmFadingOutRef.current = false;
+    clearBgmFade();
+    audio.currentTime = 0;
+    audio.volume = 0;
+    audio.muted = muted;
+    audio.play().then(() => {
+      fadeBgmTo(getTargetBgmVolume(), NOVEL_BGM_FADE_MS);
+    }).catch(() => {
+      audio.volume = getTargetBgmVolume();
+    });
+  }, [clearBgmFade, fadeBgmTo, getTargetBgmVolume, muted]);
+
+  const syncBgmAudio = useCallback(() => {
+    const audio = bgmAudioRef.current;
+    if (!audio) return;
+    audio.muted = muted;
+    if (!bgmFadingOutRef.current && !muted) {
+      audio.volume = getTargetBgmVolume();
+    }
+  }, [getTargetBgmVolume, muted]);
+
+  const startBgmAudio = useCallback(() => {
+    if (!bgmAudioRef.current) {
+      const audio = new Audio(NOVEL_BGM_AUDIO);
+      audio.loop = false;
+      audio.preload = "auto";
+      audio.ontimeupdate = () => {
+        const current = bgmAudioRef.current;
+        if (!current || bgmFadingOutRef.current || !Number.isFinite(current.duration)) return;
+        const remainingMs = Math.max(0, (current.duration - current.currentTime) * 1000);
+        if (remainingMs <= NOVEL_BGM_FADE_MS) {
+          bgmFadingOutRef.current = true;
+          fadeBgmTo(0, Math.max(250, remainingMs));
+        }
+      };
+      audio.onended = () => {
+        restartBgmLoop();
+      };
+      bgmAudioRef.current = audio;
+    }
+    syncBgmAudio();
+    const audio = bgmAudioRef.current;
+    if (!muted && audio.paused) {
+      bgmFadingOutRef.current = false;
+      clearBgmFade();
+      audio.volume = 0;
+      audio.play().then(() => {
+        fadeBgmTo(getTargetBgmVolume(), NOVEL_BGM_FADE_MS);
+      }).catch(() => {
+        audio.volume = getTargetBgmVolume();
+      });
+    }
+  }, [clearBgmFade, fadeBgmTo, getTargetBgmVolume, muted, restartBgmLoop, syncBgmAudio]);
+
+  useEffect(() => {
+    try {
+      const m = localStorage.getItem("creepyhub_novel_muted");
+      const v = localStorage.getItem("creepyhub_novel_volume");
+      if (m !== null) setMuted(m === "1");
+      if (v !== null) {
+        const n = Number(v);
+        if (!Number.isNaN(n) && n >= 0 && n <= 1) setVolume(n);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    syncBgmAudio();
+    if (!muted && !isLoading) startBgmAudio();
+  }, [muted, volume, isLoading, startBgmAudio, syncBgmAudio]);
 
   // Preload all layer images
   useEffect(() => {
@@ -150,8 +263,9 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
   const handleTap = useCallback(() => {
     if (isLoading) return;
     if (isCompleted) return;
+    startBgmAudio();
     advance();
-  }, [isLoading, isCompleted, advance]);
+  }, [isLoading, isCompleted, advance, startBgmAudio]);
 
   // Play audio when scene changes (gated by loading phase)
   useEffect(() => {
@@ -187,8 +301,17 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
 
   // Cleanup on unmount
   useEffect(() => {
-    return () => clearAutoTimer();
-  }, [clearAutoTimer]);
+    return () => {
+      clearAutoTimer();
+      if (bgmAudioRef.current) {
+        clearBgmFade();
+        bgmAudioRef.current.ontimeupdate = null;
+        bgmAudioRef.current.onended = null;
+        bgmAudioRef.current.pause();
+        bgmAudioRef.current = null;
+      }
+    };
+  }, [clearAutoTimer, clearBgmFade]);
 
   if (scenes.length === 0) return null;
 
@@ -201,7 +324,13 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
       onClick={handleTap}
       style={{
         position: "fixed",
-        inset: 0,
+        top: "50%",
+        left: "50%",
+        width: "min(100vw, 430px, calc(100dvh * 9 / 16))",
+        maxWidth: "100vw",
+        aspectRatio: "9 / 16",
+        maxHeight: "100dvh",
+        transform: "translate(-50%, -50%)",
         background: "#000",
         zIndex: 9999,
         cursor: "pointer",
@@ -209,6 +338,7 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
         userSelect: "none",
         WebkitUserSelect: "none",
         touchAction: "manipulation",
+        boxShadow: "0 0 0 100vmax #000, 0 24px 80px rgba(0,0,0,0.72)",
       }}
     >
       <audio ref={audioRef} preload="auto" onEnded={handleAudioEnded} />

@@ -49,7 +49,13 @@ export default function NovelPremiumLock({
     <div
       style={{
         position: "fixed",
-        inset: 0,
+        top: "50%",
+        left: "50%",
+        width: "min(100vw, 430px, calc(100dvh * 9 / 16))",
+        maxWidth: "100vw",
+        aspectRatio: "9 / 16",
+        maxHeight: "100dvh",
+        transform: "translate(-50%, -50%)",
         background:
           "linear-gradient(135deg, rgba(10,5,8,0.98) 0%, rgba(30,10,15,0.96) 50%, rgba(10,5,8,0.98) 100%)",
         display: "flex",
@@ -60,6 +66,7 @@ export default function NovelPremiumLock({
         color: "rgba(255,255,255,0.9)",
         fontFamily: "'SoukouMincho', serif",
         zIndex: 1500,
+        boxShadow: "0 0 0 100vmax #000, 0 24px 80px rgba(0,0,0,0.72)",
       }}
     >
       {/* 鍵アイコン */}
