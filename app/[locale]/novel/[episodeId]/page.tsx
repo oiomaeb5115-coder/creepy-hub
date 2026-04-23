@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
 import { redirect } from "next/navigation";
 import NovelPlayer from "./NovelPlayer";
@@ -15,7 +15,7 @@ export default async function NovelEpisodePage({ params }: Props) {
   const dict = await getDictionary(locale);
 
   // Fetch episode — Web/iOS/Android すべて閲覧可。課金判定は access_tier で行う。
-  const { data: episode } = await supabase
+  const { data: episode } = await supabaseAdmin
     .from("novel_episodes")
     .select("*")
     .eq("id", episodeId)
@@ -27,7 +27,7 @@ export default async function NovelEpisodePage({ params }: Props) {
   }
 
   // Fetch scenes
-  const { data: scenes } = await supabase
+  const { data: scenes } = await supabaseAdmin
     .from("novel_scenes")
     .select("*")
     .eq("episode_id", episodeId)

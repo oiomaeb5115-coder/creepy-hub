@@ -1,7 +1,5 @@
-import { notFound } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
-import { isCreepyHubAppFromHeaders } from "@/lib/isCreepyHubApp";
 import NovelIdleScreen from "./NovelIdleScreen";
 
 type Props = {
@@ -18,17 +16,13 @@ const idleLayers = [
 ];
 
 export default async function NovelPage({ params }: Props) {
-  // ノベル機能は iOS/Android 公式アプリ内でのみ公開。Web ブラウザからは 404。
-  if (!(await isCreepyHubAppFromHeaders())) {
-    notFound();
-  }
 
   const { locale } = await params;
   const dict = await getDictionary(locale);
 
   // Fetch all published episodes for lobby list
   // Web/iOS/Android すべてで無料ノベルは公開。課金エピソードは access_tier で判別する。
-  const { data: episodesData } = await supabase
+  const { data: episodesData } = await supabaseAdmin
     .from("novel_episodes")
     .select("id, title_ja, title_en, description_ja, description_en, access_tier, required_membership, premium_unlock_note_ja, premium_unlock_note_en")
     .eq("is_published", true)
