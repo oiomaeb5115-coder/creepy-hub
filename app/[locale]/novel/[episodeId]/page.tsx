@@ -1,7 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { getDictionary } from "@/lib/getDictionary";
-import { notFound, redirect } from "next/navigation";
-import { isCreepyHubAppFromHeaders } from "@/lib/isCreepyHubApp";
+import { redirect } from "next/navigation";
 import NovelPlayer from "./NovelPlayer";
 // Lock screen for premium/members-only episodes. Using absolute path
 // to work around a Next.js module resolution caching quirk with bracket routes.
@@ -12,11 +11,6 @@ type Props = {
 };
 
 export default async function NovelEpisodePage({ params }: Props) {
-  // ノベル機能は iOS/Android 公式アプリ内でのみ公開。Web ブラウザからは 404。
-  if (!(await isCreepyHubAppFromHeaders())) {
-    notFound();
-  }
-
   const { locale, episodeId } = await params;
   const dict = await getDictionary(locale);
 
