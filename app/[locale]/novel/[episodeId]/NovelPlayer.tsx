@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 type Layer = {
-  type: "bg" | "char";
+  type: "bg" | "char" | "media";
   image_url: string;
   position?: "left" | "center" | "right";
 };
@@ -457,24 +457,57 @@ export default function NovelPlayer({ scenes, locale, episodeTitle, backHref, di
       {/* Layers — rendered in array order (index 0 = back, last = front).
           Both bg and char are treated as full-screen cover images to match the
           NovelIdleScreen rendering (char portraits are pre-composed 9:16). */}
-      {layers.map((layer, i) => (
-        <img
-          key={i}
-          src={layer.image_url}
-          alt=""
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            zIndex: i + 1,
-            opacity: layerTransition ? 0 : 1,
-            transition: transitionStyle,
-            pointerEvents: "none",
-          }}
-        />
-      ))}
+      {layers.map((layer, i) =>
+        layer.type === "media" ? (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              top: "8%",
+              left: 0,
+              right: 0,
+              bottom: "32%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: i + 1,
+              opacity: layerTransition ? 0 : 1,
+              transition: transitionStyle,
+              pointerEvents: "none",
+            }}
+          >
+            <img
+              src={layer.image_url}
+              alt=""
+              style={{
+                maxWidth: "88%",
+                maxHeight: "100%",
+                width: "auto",
+                height: "auto",
+                display: "block",
+                margin: "auto",
+              }}
+            />
+          </div>
+        ) : (
+          <img
+            key={i}
+            src={layer.image_url}
+            alt=""
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              zIndex: i + 1,
+              opacity: layerTransition ? 0 : 1,
+              transition: transitionStyle,
+              pointerEvents: "none",
+            }}
+          />
+        )
+      )}
 
       {/* Dark overlay for text readability (above all layers) */}
       <div

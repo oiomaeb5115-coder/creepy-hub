@@ -1,0 +1,1384 @@
+{
+  "title_ja": "便槽内怪死事件",
+  "title_en": "The Cesspool Death Case",
+  "description_ja": "映子が、1989年に起きた福島便槽内怪死事件について語る。",
+  "description_en": "Eiko talks about the mysterious Fukushima cesspool death case of 1989.",
+  "is_published": true,
+  "sort_order": 20,
+  "default_speaker_ja": "映子",
+  "default_speaker_en": "Eiko",
+  "default_bgs": [
+    "/images/novel/bg/スマホ用　背景-3.png",
+    "/images/novel/bg/スマホ用　背景-2.png",
+    "/images/novel/bg/スマホ用　背景-1.png"
+  ],
+  "default_char": "/images/novel/char/eiko_talk_1.png",
+  "default_char_pos": "center",
+  "scenes": [
+    {
+      "text_ja": "私のサイトに新しく投稿されていたものを見漁っていたのだけれどね、少し懐かしい事件を見つけたの……。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/001.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "この画像、貴方にも見覚えがあるんじゃないかしら。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/002.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/便槽内怪死事件.jpg"
+    },
+    {
+      "text_ja": "……やはり何度見ても、状況の奇妙さに圧倒されてしまうわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/003.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "一般には「福島女性教員宅便槽内怪死事件」や、「福島便槽内怪死事件」、あるいは短く「便槽内怪死事件」と呼ばれることが多い事件ね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/004.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "creepyhub内でも紹介されていたから、まずはその概要を要約して読み上げてみるわね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/005.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "時は1989年2月28日——平成という新しい元号が始まったばかりの、まだ少し肌寒い日のことだったわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/006.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "場所は福島県田村郡都路村。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/007.wav",
+      "char": "/images/novel/char/eiko_talk_2.png",
+      "media": "/images/novel/media/阿武隈山地.jpg"
+    },
+    {
+      "text_ja": "阿武隈山地に抱かれた、静かな山村。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/008.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/阿武隈山地.jpg"
+    },
+    {
+      "text_ja": "村の小学校に勤める当時23歳の女性教員Aさんが、夕方ごろ、隣接する教員住宅へと帰宅したの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/009.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/阿武隈山地.jpg"
+    },
+    {
+      "text_ja": "何気なくトイレに入って便器の中を覗き込んだ彼女が見たもの——それは、底に沈むようにして見える「靴」のようなものだったのよ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/010.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "驚いたAさんは外の汲み取り口へ駆け寄ったわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/011.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "そこには、開かれた蓋の奥に、人の足のようなもの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/012.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "覗きの可能性が高いと判断したのでしょうね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/013.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "そう思った彼女は同僚や教頭に知らせ、やがて警察へ通報がなされたの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/014.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "駆けつけた警察や関係者が確認すると、便器側からは人の頭部らしきものが見え、その近くには片方の靴があったとされ、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/015.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/便槽内怪死事件.jpg"
+    },
+    {
+      "text_ja": "屋外の汲み取り口の奥には足が見えていた...そんな、信じがたい構図だったの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/016.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/便槽内怪死事件.jpg"
+    },
+    {
+      "text_ja": "直径わずか36センチほどの汲み取り口からは、どうしても遺体を引き出せず、最終的に便槽そのものを破壊する形で遺体が取り出された。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/017.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/便槽内怪死事件.jpg"
+    },
+    {
+      "text_ja": "出てきたのは、Aさんと同じ村の青年会にも関わっていた男性、菅野直之さん。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/018.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 14 41.png"
+    },
+    {
+      "text_ja": "警察の結論は...「覗き目的で侵入し、身動きが取れなくなり死亡した可能性が高い」という事故死。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/019.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 14 41.png"
+    },
+    {
+      "text_ja": "……そしてこの結論に、世間はどうにも納得しなかったようなの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/020.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 14 41.png"
+    },
+    {
+      "text_ja": "どうしても飲み込めない違和感が、何重にも残っているようね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/021.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 14 41.png"
+    },
+    {
+      "text_ja": "それでは、ここからが本題よ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/022.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 14 41.png"
+    },
+    {
+      "text_ja": "事件の舞台となった福島県田村郡都路村古道——この地名を、まずは口に含むように覚えておいてほしいの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/023.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/都路村.jpg"
+    },
+    {
+      "text_ja": "阿武隈山地のふところに抱かれた、人口数千人規模のちいさな村。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/024.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/都路村.jpg"
+    },
+    {
+      "text_ja": "葉たばこの生産や養蚕で栄えた時代もあったけれど、1970年代には過疎地域の指定を受けた、いわゆる山間の村よ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/025.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/都路村.jpg"
+    },
+    {
+      "text_ja": "郡山市と双葉町を結ぶ国道288号が東西に通っているけれど、都市部から見れば隔絶された山あいの土地でもある。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/026.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/都路村.jpg"
+    },
+    {
+      "text_ja": "そして、この都路村は福島第一原発からおよそ25キロほどの距離に位置していたともされるわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/027.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "この地理的位置が、後に原発をめぐる陰謀論と結びついて語られることになるのだけれど……それは追って話すわね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/028.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "当時の都路村は、殺人事件のような重大事件が頻繁に起こる場所ではなかったとされているの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/029.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "...まあ、日本国内ならどこでもそうかしら...。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/030.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "だからこそ、この事件の異様さが際立つのよ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/031.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "事件発生当日の状況を、もう一度時系列で確認しておきましょうか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/032.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "1989年2月28日、火曜日。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/033.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "夕方ごろ、教員住宅に住むAさんが学校から帰宅した。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/034.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "そして和式トイレの便器奥に、見慣れぬ「靴のようなもの」を見つけたわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/035.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "不審に思って外の汲み取り口に回ると、鉄製の蓋が開いていて、穴の中には人間の足のようなもの——。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/036.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "彼女はすぐに同僚や教頭に知らせ、やがて近くの駐在所へ通報がなされた。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/037.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "ここで、後年になって語られるひとつの「奇妙な点」があるの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/038.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "それは、現場にバキュームカーが早い段階で来ていた、あるいは警察よりも先に来ていたのではないか、という話。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/039.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 19 48.jpg"
+    },
+    {
+      "text_ja": "もしこの噂が真実なのであればずいぶんおかしなことになるけれど...。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/040.wav",
+      "char": "/images/novel/char/eiko_talk_confuse_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 19 48.jpg"
+    },
+    {
+      "text_ja": "ただ、この点については注意が必要よ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/041.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 19 48.jpg"
+    },
+    {
+      "text_ja": "この話はネット上や後年の証言ではよく語られるけれど、当時の記事や確実な記録でどこまで確認できるのかは、かなり曖昧なの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/042.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 19 48.jpg"
+    },
+    {
+      "text_ja": "だから私は、これを「隠蔽の決定的証拠」とまでは言えないと思っているわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/043.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 19 48.jpg"
+    },
+    {
+      "text_ja": "ただ、そうした話が語り継がれるほど、現場対応に不自然さを感じた人がいた——そのこと自体は、覚えておいてもいいかもしれない。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/044.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "便槽内の人間を外から引っ張り出そうとしても、直径36センチほどの汲み取り口はあまりにも狭くて、どうしても出せない。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/045.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/便槽内怪死事件.jpg"
+    },
+    {
+      "text_ja": "やむなく便槽を掘り起こし、最終的にトイレや便槽を破壊する形で、ようやく中の遺体を取り出したの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/046.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/便槽内怪死事件.jpg"
+    },
+    {
+      "text_ja": "引き出された遺体——その異様な姿を現した遺体は、村の青年会にも関わっていた当時26歳の男性。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/047.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 14 41.png"
+    },
+    {
+      "text_ja": "原発関連会社に勤めていたとされる菅野直之さんだった。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/048.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 14 41.png"
+    },
+    {
+      "text_ja": "ここで明らかになる遺体の状態が、かなり違和感のあるものなのよ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/049.wav",
+      "char": "/images/novel/char/eiko_talk_2.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 14 41.png"
+    },
+    {
+      "text_ja": "すでに死後硬直していた菅野さんの遺体は、真冬であるにもかかわらず上半身裸で、脱いだと思われる衣服を胸元に抱えるような状態だったとされている。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/050.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 14 41.png"
+    },
+    {
+      "text_ja": "抱えていたとされるのは、フード付きジャンパー、トレーナー、下着類。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/051.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 14 41.png"
+    },
+    {
+      "text_ja": "便槽の内部は、成人男性が自然に入るにはあまりにも狭い空間だった。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/052.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "そんな棺桶のような空間に、170センチ近い成人男性が、自ら身を折りたたんで収まっている。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/053.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "これがいかに奇妙な状況か、わかるでしょう？",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/054.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "検死の結果、死因は「凍え兼胸部循環障害」とされたわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/055.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "狭い場所で胸部が圧迫され、さらに低温によって命を落とした、という見立てね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/056.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "遺体には肘や膝に擦り傷があったとされる一方で、目立った外傷や激しく争った形跡はなかったとも語られている。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/057.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "死後硬直などの状況から、死亡時期は発見の2日前、2月26日ごろと推定されたとされるわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/058.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "そして、この事件でよく問題視されるのが、司法解剖の有無よ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/059.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "多くの資料や考察では、司法解剖は行われず、医師の検案のみで事故死とされた、と語られている。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/060.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "ただし、ここも断定には注意が必要ね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/061.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "当時の捜査資料を直接確認できるわけではないから、少なくとも私たちが言えるのは、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/062.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "「司法解剖が行われなかったとされ、そのことが後年まで大きな疑問として残っている」ということ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/063.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "それでも、こんなに不自然な状況の遺体に対して、本格的な解剖や再検証が十分に行われたのかどうか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/064.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "そこに疑問を抱く人が多いのは、自然なことだと思うわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/065.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "都路村は事件が頻繁に起こるような土地ではなかったと言われているし、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/066.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "地元の駐在や関係者が、このような異様な変死事件への対応に慣れていなかった可能性もあるでしょう。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/067.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "でも、それを差し引いても、多くの人にとって腑に落ちるものではなかった。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/068.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "そういう事件だったのよ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/069.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "そして、今回の事件で亡くなっていた菅野さんの人物像についてなのだけれど……。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/070.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "この菅野さんという青年が、また「覗き」とはおよそ結びつかない人物だったと、多くの人が語っているの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/071.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "スポーツと音楽が好きな好青年。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/072.wav",
+      "char": "/images/novel/char/eiko_smile_1.png"
+    },
+    {
+      "text_ja": "両親や家族と暮らし、原発関連の会社に勤め、村の青年会でも中心的な役割を担っていたとされているわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/073.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "明るく人望もあり、友人の結婚式では司会を頼まれることもあった。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/074.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "村長選挙の応援に関わったとも語られている。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/075.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "中学・高校では野球部に所属し、ギターを弾き、自ら詩を書いていたという話も残っている。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/076.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "もちろん、こうした人物評は周囲の証言や後年の語りを含むものだから、絶対的な証明とは言えないわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/077.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "けれど、少なくとも村の人々の多くは、「彼がそんなことをする人間とは思えない」と感じていたのね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/078.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "その事実は、事件後の反応を見ても伝わってくるの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/079.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "そんな青年が、わざわざ深夜に女性教員宅の便槽へ潜り込んで覗きをするかしら……。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/080.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "これが、村の人々が抱いた素朴な疑問だったのよ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/081.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "次に、この事件の不審点についてね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/082.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "事件を「覗き目的の事故」と断じるには、あまりにも引っかかる点が多いのよ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/083.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "ただし、ここでも気をつけたいのは、すべての疑問がそのまま他殺の証拠になるわけではない、ということね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/084.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "あくまで「事故死とするには説明しきれない点」として、私なりに整理してみるわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/085.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "まずはじめに、Aさんの不在期間についてね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/086.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "Aさんは大喪の礼による休校期間に、実家へ帰省していたとされているの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/087.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "つまり、菅野さんが死亡したと推定される2月26日ごろ、教員住宅にはAさんがいなかった可能性が高い。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/088.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "覗き目的なら、不在の家を狙う意味はほとんどないと思うわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/089.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "同じ村の青年会などで接点があったとされる菅野さんが、Aさんの不在を知っていたのか、知らなかったのか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/090.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "ここは断定できないけれど、少なくとも疑問として残ってしまうわね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/091.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "そして二つ目が、上半身裸という異常な状態。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/092.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "事件のあった2月下旬、福島の山間部はかなり冷え込む時期...。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/093.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "ただ、一部では「平均気温がマイナス3.3度だった」と語られることもあるけれど、実際には平均気温と最低気温が混同されている可能性があるの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/094.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "近隣観測点の記録を見る限り、2月27日の最低気温がマイナス3.3度前後だった、という形で捉える方が自然でしょう。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/095.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "つまり、「平均気温がマイナス3.3度」と断定するのは避けた方がいいと思うわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/096.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "...まぁ、いずれにしても真冬の山村であることに変わりはないのだけれどね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/097.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "そんな気温の中で、なぜ上半身裸だったのか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/098.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "「狭い場所に入るために脱いだ」という説明もあるけれど、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/099.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "一方で、低体温症の末期には、いわゆる矛盾脱衣のような行動が見られることもあるわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/100.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "だから、上半身裸という事実だけで他殺とは言えないわね...",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/101.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "その場合、矛盾脱衣を起こしたのちに覗きのためにトイレに入ったなんてさらによくわからない状況になってしまうから、あまり考えなくていいでしょうけれど...",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/102.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "「上半身裸だった」という部分、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/103.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "不自然さを感じさせる要素であることに間違いはないわね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/104.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "三つ目が、衣服と擦過痕の問題。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/105.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "遺体の肘や膝には擦り傷があったとされる一方で、衣服には目立った擦過痕がなかった...という話があるの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/106.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "もし狭い36センチほどの汲み取り口を通り抜けたなら、衣服にもこすれた痕が残るのではないか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/107.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "そう疑問視する声があがっているわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/108.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "ただ、これも当時の写真や詳細な検査記録を私たちが確認できるわけではないのよね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/109.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "だから、「衣服に擦過痕がなかったとされ、この点を不自然と見る人がいる」という表現に留めるのが正確かしら。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/110.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "四つめに、便器側にあった片方の靴。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/111.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "便器側からは頭部らしきものが見え、その近くに片方の靴があったとされているのだけれど...",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/112.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "この靴の位置についても、不可解であるとされているわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/113.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "自分で覗きに入ったなら、なぜ靴が頭の近くにあるのか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/114.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "さらに、もう片方の靴が後に別の場所、近くの土手付近で見つかったとも語られているわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/115.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "...まぁ、靴の発見場所についても資料によって表現に揺れがあるから、ここも断定は避けたいところね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/116.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "それでも、靴の位置関係は、この事件を語るうえで外せない違和感のひとつだと思うわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/117.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "そして５つめが、バキュームカーをめぐる話。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/118.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 19 48.jpg"
+    },
+    {
+      "text_ja": "さっきも少し触れたけれど、警察より早い段階でバキュームカーが現場にいた、という話があったそうなのだけれど...",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/119.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 19 48.jpg"
+    },
+    {
+      "text_ja": "もし本当なら、誰が、いつ、なぜ呼んだのか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/120.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 19 48.jpg"
+    },
+    {
+      "text_ja": "そこが大きな疑問となるわね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/121.wav",
+      "char": "/images/novel/char/eiko_talk_2.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 19 48.jpg"
+    },
+    {
+      "text_ja": "まぁこの話は確実な記録として確認しにくくってね、後年の伝聞や考察の中で膨らんだ可能性もあるわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/122.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 9 19 48.jpg"
+    },
+    {
+      "text_ja": "ただし、そうした話が語り継がれるほど、現場対応に不透明さを感じた人がいた...",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/123.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "その程度に留めるのが、いちばん誠実でしょうね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/124.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "第六に、司法解剖の問題。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/125.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "繰り返すけれど、司法解剖が行われなかったとする資料は数多く見られるわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/126.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "そして、それが本当なら、これほど不自然な遺体状況に対して、かなり大きな疑問が残るのよね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/127.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "...まあ、これも信頼に足るソースがあまりないのだけれど...。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/128.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "ここでは、「検案や解剖の有無をめぐって、後年まで疑問が残った」という程度に留めておくわね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/129.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "7つめが、再捜査要望の署名。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/130.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "事件後、真相解明を求める署名活動が起こり、数千人規模の署名が集まったとされていることについてね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/131.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "資料によっては4,000人ほど、あるいは4,300人ほどと数字に揺れがあるわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/132.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "でも、人口数千人規模の村とその周辺で、これほどの署名が集まったという事実は大きいし...",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/133.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "それだけ多くの人が、警察の事故死判断に納得していなかった。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/134.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "これについては間違いないでしょうね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/135.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "以上が、この事件にまつわる違和感よ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/136.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "こう並べてみると多少曖昧な部分が多いけれど、それにしてもあまりにも数が多いわね……",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/137.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "じゃあここで、事件発生当時から現在まで際限なく登場する、この事件に関する説明についていくつかご紹介したいと思うわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/138.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "ただし、ここで語るものは、あくまで証明されていない説よ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/139.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "事実と混ぜてしまうと、事件の輪郭が歪んでしまうわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/140.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "だから、ひとつひとつ丁寧に、「そういう見方がある」という形で並べていくわね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/141.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "一つ目は、村長選挙利権説",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/142.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "事件発生の少し前、都路村では村長選挙が行われていたとされているの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/143.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "そして、この選挙をめぐって金銭が飛び交ったのではないか、菅野さんがその内情に失望したのではないか、という噂が後年語られるようになったわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/144.wav",
+      "char": "/images/novel/char/eiko_talk_confuse_1.png"
+    },
+    {
+      "text_ja": "中には、「一票いくらの実弾があった」など、かなり具体的な金額を挙げる話もあるの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/145.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "ただ、そうした金銭授受や、菅野さんが告発しようとしていたという話は、確定した事実として確認されているわけではなく、あくまでも噂...",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/146.wav",
+      "char": "/images/novel/char/eiko_talk_confuse_1.png"
+    },
+    {
+      "text_ja": "だからこれは、村社会の閉鎖性や選挙の熱気と結びついて生まれた「利権説」のひとつね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/147.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "二つ目は、原発利権・隠蔽説",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/148.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "これがもっとも語られ続けてきた陰謀論のひとつね...",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/149.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "菅野さんの勤務先が原発関連の会社だったとされること。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/150.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "都路村が福島第一原発から比較的近い場所にあったこと。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/151.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "そして後年、映画『罵詈雑言／バリゾーゴン』などによって、原発問題と事件が結びつけて語られたこと。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/152.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "こうした要素が重なって、「菅野さんは原発関係の何かを知ってしまったのではないか」",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/153.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "「内部告発しようとして消されたのではないか」という説が広まっていったの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/154.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "ただし、これにもやはり曖昧な部分が存在するわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/155.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "原発関連会社に勤めていたという点と、原発事故や内部告発を結びつけるには、まだ大きな飛躍があるし...",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/156.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "映画は事件の一側面を捉え、それを社会批評の一部としたもので、あくまでも作品よ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/157.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "だから、映画で描かれた内容を、そのまま事件の真相として扱うのは危険ね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/158.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "そして次が...友人犯人・痴情のもつれ説よ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/159.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "ネット上では、個人的なトラブルや痴情のもつれが背景にあったのではないか、という説も存在するの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/160.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "たとえば、誰かに脅されて便槽に入らされたのではないか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/161.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "あるいは、悪ふざけや制裁のつもりが取り返しのつかない結果になったのではないか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/162.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "そういう見方ね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/163.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "片方の靴が別の場所で見つかったという話と結びつけて、河原や土手付近で何かがあったのではないか、と推測する人もいるわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/164.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "...まぁ、これについてはこれまでのものよりもより身近... 誰にでも起こり得るものだし、可能性としては近いかもしれないわね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/165.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "そして次、四つ目が、単純な覗き説、または事故死説。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/166.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "これは警察の公式見解に近いものとなるわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/167.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "菅野さんは何らかの理由で自ら便槽に入り、身動きが取れなくなって死亡した。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/168.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "覗き目的だった可能性がある... という解釈よ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/169.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "実は、この説を完全に否定することも簡単なことではないの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/170.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "遺体が衣服を胸に抱えるような姿勢だったという話が本当なら、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/171.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "便槽に入った時点で菅野さんに意識があり、自分で衣服を扱える状態だった可能性があるし、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/172.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "目立った外傷や争った形跡が乏しかったという点も、他殺説だけでは説明しきれないわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/173.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "ただし、Aさんの不在、便槽の狭さ、靴の位置、司法解剖をめぐる疑問などを考えると、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/174.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "単純な覗き事故として片づけるには、やはり違和感が残るのだけれどね...。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/175.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "当たり前だけれど、警察の見立てにも一定の説明力はあるわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/176.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "けれど、それだけでは飲み込めない違和感がある...。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/177.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "この事件の難しさは、まさにそこにあるのよ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/178.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "では次に５つめのもの...自殺説ね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/179.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "少数派だけれど、自殺だったのではないか...という説もあるわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/180.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "ただ、菅野さんに明確な自殺の兆候があったとは確認されていないけれどね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/181.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "また、便槽という場所や姿勢を考えても、積極的に自殺と見るにはかなり無理があるし...",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/182.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "だから、この説は可能性として語られることはあっても、有力説とは言いにくいわね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/183.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "では次に、イロモノ枠のようなものかしら...木村藤子氏による霊視。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/184.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "これに関してはあまりにもスピリチュアル系の考察になってしまうのだけれど、この事件を語るうえでよく出てくる要素ね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/185.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "1990年代、菅野さんの父親がテレビ番組に出演し、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/186.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "霊能力者・木村藤子氏による霊視が行われた...という話があるわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/187.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "そこで「殺されたのではないか」「別の場所で亡くなったのではないか」といった趣旨の見立てが示されたと語られているの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/188.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "...まぁ、あくまで当時のテレビ番組で扱われた、スピリチュアルな解釈よ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/189.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "けれど、ご遺族がそれほどまでに真相を求めていた。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/190.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "その苦しみを物語るエピソードとしては、無視できないものがあるわね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/191.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "世間一般で囁かれていた説といえばこのくらいかしら。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/192.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "では次に、さっきも少し触れた、この事件に関して大きく触れているもある映画についてお話ししましょう...",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/193.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "事件をさらに「事件性の象徴」として現代に伝えたのが、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/194.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "1996年に公開された渡辺文樹監督の自主制作映画『罵詈雑言』、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/195.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 7 47 23.jpg"
+    },
+    {
+      "text_ja": "通称『バリゾーゴン』よ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/196.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 7 47 23.jpg"
+    },
+    {
+      "text_ja": "この映画は、福島便槽内怪死事件を題材にした作品として知られているわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/197.wav",
+      "char": "/images/novel/char/eiko_talk_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 7 47 23.jpg"
+    },
+    {
+      "text_ja": "渡辺監督は、手書き風の強烈なポスターを全国各地に貼ったとも言われ、その宣伝手法も含めて伝説的な存在になっている...。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/198.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 7 48 35.jpg"
+    },
+    {
+      "text_ja": "キャッチコピーも、かなり刺激的なものだった。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/199.wav",
+      "char": "/images/novel/char/eiko_talk_2.png",
+      "media": "/images/novel/media/写真 2026-04-26 7 48 35.jpg"
+    },
+    {
+      "text_ja": "……正直、今の感覚で見ると、かなり過激よね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/200.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 7 48 35.jpg"
+    },
+    {
+      "text_ja": "ホラー映画や猟奇的な内容を期待した観客もいたようだけれど、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/201.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png",
+      "media": "/images/novel/media/写真 2026-04-26 7 48 35.jpg"
+    },
+    {
+      "text_ja": "実際の映画は原発問題や村社会の閉鎖性、利権構造への批判を含んだ社会派の作品だったとされているわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/202.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "上映後には賛否が激しく分かれたとも語られている...。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/203.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "ただ、忘れてはいけないのは、この作品が事件を風化させなかったということ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/204.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "映画にはご遺族が関わったとされ、渡辺監督なりの解釈で、福島便槽内怪死事件の闇を描いているの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/205.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "もちろん、映画は事実そのものではないわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/206.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "監督の思想や演出、解釈が強く反映された作品よ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/207.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "でも、事件をただの猟奇的な噂話ではなく、社会の問題として記憶させた。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/208.wav",
+      "char": "/images/novel/char/eiko_talk_confuse_1.png"
+    },
+    {
+      "text_ja": "その意味では、重要な作品だったと言えるでしょうね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/209.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "近年では、YouTubeやSNSでこの事件は繰り返し取り上げられているわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/210.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "「日本最大級の未解決事件」だとか、「闇深ミステリー」なんて...",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/211.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "そんな言葉とともに、多くのチャンネルが考察動画を上げているわね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/212.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "続いては、ネット上で語られている主な視点を、私なりにまとめてみるね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/213.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "ひとつは、「現場が改装中だった説」。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/214.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "事件当時、便槽が新築または改装中で、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/215.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "まだ完全に塞がれる前に菅野さんの遺体が入れられたのではないか、という設備工事絡みの隠蔽説ね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/216.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "ただ、これも証拠は見当たらないわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/217.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "便槽の構造上の不自然さを説明しようとして生まれた、後年の推測と見るべきでしょう。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/218.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "ふたつめは、「警察ぐるみの隠蔽説」。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/219.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "中々陰謀論めいた話ね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/220.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "バキュームカーの話、司法解剖をめぐる疑問、再捜査が行われなかったこと。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/221.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "これらをつなげて、地元有力者や警察、原発関係者による隠蔽があったのではないか、という見立てよ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/222.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "ただし、これも確たる証拠があるわけではなく、疑問点を線で結んだときに、そう見えることから生み出された説ね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/223.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "みっつめは、「Aさん本人への疑問」。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/224.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "第一発見者である女性教師は事件後何を語ったのか、報道が少ないのはなぜか、という指摘がネット上では根強くあるの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/225.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "...まぁ、個人的には何もおかしくない話だとは思うけれどね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/226.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "確かに不可解な事件ではあるけれど、第一発見者のAさんはあくまでも一般人...。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/227.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "プライバシーの観点から情報が秘匿されても何もおかしくはないわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/228.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "この事件で疑うべきは、個人の人格ではなく、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/229.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "説明されないまま残った状況そのものだと私は考えるわね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/230.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "……ここまで様々な情報を整理してきたけれど、最後に私自身の考えをお話しすると...。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/231.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "まず、警察の「覗き目的の事故死」という結論には、やはり無理があるように感じるの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/232.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "Aさんが不在だった可能性。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/233.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "便槽の狭さ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/234.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "靴の位置。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/235.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "司法解剖をめぐる疑問。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/236.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "そして、数千人規模の署名が集まったという事実。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/237.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "これらを考えると、少なくとも当時の捜査や説明が、周囲の人々を納得させるには不十分だったことは確かでしょう。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/238.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "ただ一方で、「他殺説」も決定打を欠いていることは認めなければならないわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/239.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "菅野さんが衣服を胸に抱えるような姿勢で見つかったという話が本当なら、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/240.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "便槽に入った時点で意識があり、自分で衣服を扱える状態だった可能性があるの。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/241.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "目立った外傷や争った形跡が乏しかったという点も、完全な他殺説だけでは説明しにくいわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/242.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "だから私は、ひとつの可能性として——「強要されたことによる自発的行為」",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/243.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "もしくは「いたずら目的の自発的行為」のふた通りの可能性を考えてしまうわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/244.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "つまり、菅野さん自身は生きたまま便槽に入った。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/245.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "けれど、それは自由意志ではなく、誰かに脅されて、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/246.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "あるいは悪ふざけやいたずらのような形で、無理に入らされたのではないか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/247.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "入らせた側は、最初は「すぐ出せる」と思っていた。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/248.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "けれど、思った以上に深くはまり込み、引き上げられなくなった。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/249.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "極寒の中、胸部を圧迫され、低体温が進み、やがて意識が遠のいていった。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/250.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "衣服を脱いでいたことも、低体温症による矛盾脱衣、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/251.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "あるいは狭い場所での体勢調整と考えれば、一応の説明はつくわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/252.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "そして、関わった人間がいたとすれば、自分たちの責任が露見することを恐れて、現場から逃げた。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/253.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "あるいは、その後の対応を曖昧にした...なんてね。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/254.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "……もちろん、これは私の推測に過ぎないわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/255.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "村長選挙の利権絡みなのか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/256.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "原発関係の闇なのか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/257.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "個人的なトラブルなのか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/258.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "あるいは、本当にただの事故だったのか。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/259.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    },
+    {
+      "text_ja": "背景までは、私たちには永遠にわからないのかもしれない。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/260.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "でも、少なくとも言えることがあるわ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/261.wav",
+      "char": "/images/novel/char/eiko_talk_1.png"
+    },
+    {
+      "text_ja": "この事件は、ただの「覗き中の事故」として笑い話のように消費していいものではない、ということよ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/262.wav",
+      "char": "/images/novel/char/eiko_smile_1.png"
+    },
+    {
+      "text_ja": "......真実はもう、誰にもわからないかもしれないけれど、",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/263.wav",
+      "char": "/images/novel/char/eiko_talk_eyeclose_1.png"
+    },
+    {
+      "text_ja": "でも、事実と噂を分けながら、亡くなった人の名誉を傷つけないように語り継ぐこと。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/264.wav",
+      "char": "/images/novel/char/eiko_talk_confuse_1.png"
+    },
+    {
+      "text_ja": "それだけは、私たちにできるはずよ。",
+      "audio_path": "/Users/kawakangenryuu/Desktop/creepy.hub/creepy.hub/public/audio/novel/bensounaikaisiziken/265.wav",
+      "char": "/images/novel/char/eiko_talk_2.png"
+    }
+  ]
+}

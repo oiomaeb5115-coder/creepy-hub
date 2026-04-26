@@ -54,6 +54,7 @@ type SceneConfig = {
   speaker_ja?: string;
   speaker_en?: string;
   transition_effect?: "fade" | "cut" | "slide";
+  media?: string;       // centered contain image (displayed above bg/char layers)
 };
 
 type EpisodeConfig = {
@@ -243,6 +244,10 @@ async function main() {
         image_url: char,
         position: s.char_pos ?? config.default_char_pos ?? "center",
       });
+    }
+    const media = normalizeImagePath(s.media);
+    if (media) {
+      layers.push({ type: "media", image_url: media });
     }
     return {
       episode_id: episodeId,
