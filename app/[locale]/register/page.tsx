@@ -163,6 +163,10 @@ export default function RegisterPage() {
                     locale,
                     type: "register",
                   }),
+                  // 必ずアカウント選択画面を出す（既ログイン時の自動選択を抑止）
+                  queryParams: {
+                    prompt: "select_account",
+                  },
                 },
               });
             }}
