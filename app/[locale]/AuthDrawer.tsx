@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { clearAuthCache } from "@/lib/auth";
+import { buildAuthRedirectTo } from "@/lib/buildAuthRedirectTo";
 import styles from "./auth-drawer.module.css";
 
 type Mode = "login" | "register";
@@ -139,7 +140,11 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/${locale}/auth/callback?type=${type}`,
+        redirectTo: buildAuthRedirectTo({
+          origin: window.location.origin,
+          locale,
+          type,
+        }),
       },
     });
   };
@@ -149,7 +154,11 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
     await supabase.auth.signInWithOAuth({
       provider: "discord",
       options: {
-        redirectTo: `${window.location.origin}/${locale}/auth/callback?type=${type}`,
+        redirectTo: buildAuthRedirectTo({
+          origin: window.location.origin,
+          locale,
+          type,
+        }),
       },
     });
   };

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { buildAuthRedirectTo } from "@/lib/buildAuthRedirectTo";
 
 import styles from "./page.module.css";
 import BackButton from "@/components/BackButton";
@@ -157,7 +158,11 @@ export default function RegisterPage() {
               await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                  redirectTo: `${window.location.origin}/${locale}/auth/callback?type=register`,
+                  redirectTo: buildAuthRedirectTo({
+                    origin: window.location.origin,
+                    locale,
+                    type: "register",
+                  }),
                 },
               });
             }}
@@ -178,7 +183,11 @@ export default function RegisterPage() {
               await supabase.auth.signInWithOAuth({
                 provider: "discord",
                 options: {
-                  redirectTo: `${window.location.origin}/${locale}/auth/callback?type=register`,
+                  redirectTo: buildAuthRedirectTo({
+                    origin: window.location.origin,
+                    locale,
+                    type: "register",
+                  }),
                 },
               });
             }}
