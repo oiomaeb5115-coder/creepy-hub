@@ -210,6 +210,7 @@ export default function SidebarDrawer({
                 href={`${pathname}?modal=login`}
                 className={`${styles.guestBtn} ${styles.guestBtnLogin}`}
                 onClick={onClose}
+                rel="nofollow"
               >
                 {labels.login}
               </Link>
@@ -217,6 +218,7 @@ export default function SidebarDrawer({
                 href={`${pathname}?modal=register`}
                 className={`${styles.guestBtn} ${styles.guestBtnRegister}`}
                 onClick={onClose}
+                rel="nofollow"
               >
                 {labels.register}
               </Link>

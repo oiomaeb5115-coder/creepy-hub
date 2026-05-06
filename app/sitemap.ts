@@ -38,36 +38,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // 動的コンテンツ（Stories・Wiki・カテゴリー）
+  // 動的コンテンツ（Stories・Wiki・カテゴリー・タグ・プロフィール）
   const [
     jaStoriesResult, enStoriesResult,
     jaWikiResult, enWikiResult,
     storyCategoriesResult, jaWikiCategoriesResult, enWikiCategoriesResult,
+    storyTagsResult, jaWikiTagsResult, enWikiTagsResult,
+    profilesResult,
   ] = await Promise.all([
     supabase
       .from('post')
-      .select('id, slug, updated_at, created_at')
+      .select('id, slug, created_at')
       .eq('is_published', true)
-      .limit(1000),
+      .limit(5000),
     // EN は翻訳済み投稿のみ（noindex ページをサイトマップに含めない）
     supabase
       .from('post_translations')
-      .select('post_id, post:post!inner(id, slug, updated_at, created_at)')
+      .select('post_id, post:post!inner(id, slug, created_at)')
       .eq('locale', 'en')
       .eq('post.is_published', true)
-      .limit(1000),
+      .limit(5000),
     supabase
       .from('wiki_pages')
       .select('slug, updated_at')
       .eq('locale', 'ja')
       .eq('is_published', true)
-      .limit(1000),
+      .limit(5000),
     supabase
       .from('wiki_pages')
       .select('slug, updated_at')
       .eq('locale', 'en')
       .eq('is_published', true)
-      .limit(1000),
+      .limit(5000),
     // カテゴリー
     supabase
       .from('story_categories')
@@ -81,13 +83,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .from('categories')
       .select('slug')
       .eq('locale', 'en'),
+    // タグ
+    supabase
+      .from('story_tags')
+      .select('slug')
+      .eq('is_active', true),
+    supabase
+      .from('wiki_tags')
+      .select('slug')
+      .eq('locale', 'ja'),
+    supabase
+      .from('wiki_tags')
+      .select('slug')
+      .eq('locale', 'en'),
+    // プロフィール (username が設定されている公開ユーザー)
+    supabase
+      .from('profiles')
+      .select('username, updated_at')
+      .not('username', 'is', null)
+      .limit(5000),
   ])
 
   // Stories JA（全公開投稿）
   for (const post of jaStoriesResult.data ?? []) {
     entries.push({
       url: `${BASE_URL}${postUrl('ja', post.id, post.slug)}`,
-      lastModified: new Date(post.updated_at ?? post.created_at),
+      lastModified: new Date(post.created_at),
       changeFrequency: 'weekly',
       priority: 0.7,
     })
@@ -95,10 +116,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Stories EN（翻訳済み投稿のみ）
   for (const row of enStoriesResult.data ?? []) {
-    const post = (row.post as unknown) as { id: number; slug: string | null; updated_at: string | null; created_at: string }
+    const post = (row.post as unknown) as { id: number; slug: string | null; created_at: string }
     entries.push({
       url: `${BASE_URL}${postUrl('en', post.id, post.slug)}`,
-      lastModified: new Date(post.updated_at ?? post.created_at),
+      lastModified: new Date(post.created_at),
       changeFrequency: 'weekly',
       priority: 0.7,
     })
@@ -154,6 +175,51 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.6,
     })
+  }
+
+  // Story タグ（両locale）
+  for (const tag of storyTagsResult.data ?? []) {
+    for (const locale of locales) {
+      entries.push({
+        url: `${BASE_URL}/${locale}/tag/${tag.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.5,
+      })
+    }
+  }
+
+  // Wiki タグ JA
+  for (const tag of jaWikiTagsResult.data ?? []) {
+    entries.push({
+      url: `${BASE_URL}/ja/wiki/tag/${tag.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.5,
+    })
+  }
+
+  // Wiki タグ EN
+  for (const tag of enWikiTagsResult.data ?? []) {
+    entries.push({
+      url: `${BASE_URL}/en/wiki/tag/${tag.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.5,
+    })
+  }
+
+  // ユーザープロフィール（両locale）
+  for (const profile of profilesResult.data ?? []) {
+    if (!profile.username) continue
+    for (const locale of locales) {
+      entries.push({
+        url: `${BASE_URL}/${locale}/u/${profile.username}`,
+        lastModified: profile.updated_at ? new Date(profile.updated_at) : new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.5,
+      })
+    }
   }
 
   return entries

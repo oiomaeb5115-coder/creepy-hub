@@ -63,10 +63,10 @@ export default function HomeAuthButtons({ locale }: Props) {
 
   return (
     <>
-      <Link href={`${pathname}?modal=login`} className={styles.topTextButton}>
+      <Link href={`${pathname}?modal=login`} className={styles.topTextButton} rel="nofollow">
         login
       </Link>
-      <Link href={`${pathname}?modal=register`} className={styles.topTextButton}>
+      <Link href={`${pathname}?modal=register`} className={styles.topTextButton} rel="nofollow">
         register
       </Link>
     </>
