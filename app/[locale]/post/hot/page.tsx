@@ -5,10 +5,10 @@ import { getDictionary } from "@/lib/getDictionary";
 import styles from "../../page.module.css";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
-import CommentIcon from "@/components/icons/CommentIcon";
 import ViewIcon from "@/components/icons/ViewIcon";
 import ImpressionTracker from "@/components/ImpressionTracker";
 import ThumbUpIcon from "@/components/icons/ThumbUpIcon";
+import InlineCommentForm from "@/components/InlineCommentForm";
 
 export const revalidate = 300;
 
@@ -176,9 +176,7 @@ export default async function HotPage({ params }: Props) {
                         <ThumbUpIcon size={14} /> {post.score}
                       </span>
 
-                      <span className={`${styles.postCardStat} stat-icon`}>
-                        <CommentIcon /> {post.commentCount}
-                      </span>
+                      <InlineCommentForm postId={post.id} locale={locale} initialCount={post.commentCount} postTitle={safeTitle} />
 
                       <span className={`${styles.postCardStat} stat-icon`}>
                         <ViewIcon /> {post.view_count ?? 0}

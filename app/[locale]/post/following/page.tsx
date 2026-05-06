@@ -11,6 +11,7 @@ import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
 import ViewIcon from "@/components/icons/ViewIcon";
 import ImpressionTracker from "@/components/ImpressionTracker";
+import InlineCommentForm from "@/components/InlineCommentForm";
 
 type AuthorProfile = {
   username: string | null;
@@ -215,6 +216,7 @@ export default function FollowingPostsPage() {
                       </div>
                     ) : null}
                     <div className={styles.postFooter}>
+                      <InlineCommentForm postId={post.id} locale={locale} postTitle={safeTitle} />
                       <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0}</span>
                     </div>
                   </div>

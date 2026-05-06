@@ -1,0 +1,67 @@
+.wrap {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 12px 0 4px;
+  /* フルマップへのクリック判定のため pointer-events を有効にする */
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  background: #0b0b0e;
+}
+
+/* 右下の CARTO attributionはデフォルト表示のまま */
+
+/* 位置名バッジ（左上） */
+.locationBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.62);
+  color: var(--text-primary, #fff);
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: none;
+  max-width: calc(100% - 140px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pinIcon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* 全画面マップへのボタン（左下） */
+.openBtn {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.62);
+  color: var(--text-primary, #fff);
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(var(--accent-rgb, 180, 60, 60), 0.35);
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.openBtn:hover {
+  background: rgba(var(--accent-rgb, 180, 60, 60), 0.25);
+  border-color: rgba(var(--accent-rgb, 180, 60, 60), 0.6);
+}

@@ -1,7 +1,18 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
+import SensitiveImage from "./SensitiveImage";
 import styles from "./StoryViewer.module.css";
+
+type SensitiveDict = {
+  reveal: string;
+  hide: string;
+  overlay: string;
+  ageGatePrompt: string;
+  ageGateConfirm: string;
+  ageGateCancel: string;
+};
 
 type TextOverlay = {
   text: string;
@@ -24,6 +35,7 @@ type StoryItem = {
   duration_ms: number | null;
   text_overlays: TextOverlay[];
   created_at: string;
+  is_sensitive?: boolean;
 };
 
 type StoryUser = {
@@ -39,15 +51,25 @@ type Props = {
   initialUserIndex: number;
   onClose: () => void;
   onStoryView: (storyId: string) => void;
+  sensitiveDict?: SensitiveDict;
 };
 
 const IMAGE_DURATION = 5000; // 画像は5秒表示
 
-export default function StoryViewer({ users, initialUserIndex, onClose, onStoryView }: Props) {
+export default function StoryViewer({ users, initialUserIndex, onClose, onStoryView, sensitiveDict }: Props) {
   const [userIndex, setUserIndex] = useState(initialUserIndex);
   const [storyIndex, setStoryIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!cancelled) setCurrentUserId(session?.user?.id ?? null);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -221,12 +243,23 @@ export default function StoryViewer({ users, initialUserIndex, onClose, onStoryV
         {/* メディア */}
         <div className={styles.mediaWrap}>
           {currentStory.media_type === "image" ? (
-            <img
-              key={currentStory.id}
-              src={currentStory.media_url}
-              alt=""
-              className={styles.mediaImage}
-            />
+            currentStory.is_sensitive && currentUser.user_id !== currentUserId && sensitiveDict ? (
+              <SensitiveImage
+                key={currentStory.id}
+                src={currentStory.media_url}
+                alt=""
+                className={styles.mediaImage}
+                style={{ width: "100%", height: "100%" }}
+                dict={sensitiveDict}
+              />
+            ) : (
+              <img
+                key={currentStory.id}
+                src={currentStory.media_url}
+                alt=""
+                className={styles.mediaImage}
+              />
+            )
           ) : (
             <video
               key={currentStory.id}

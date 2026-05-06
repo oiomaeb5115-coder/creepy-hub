@@ -9,12 +9,24 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 export async function GET() {
   const now = new Date().toISOString();
 
-  const { data: stories, error } = await supabaseAdmin
+  let { data: stories, error } = await supabaseAdmin
     .from("user_stories")
-    .select("id, user_id, media_url, media_type, duration_ms, text_overlays, created_at, expires_at")
+    .select("id, user_id, media_url, media_type, duration_ms, text_overlays, created_at, expires_at, is_sensitive")
     .gt("expires_at", now)
     .order("created_at", { ascending: false })
     .limit(50);
+
+  // is_sensitive カラム不在時はフォールバック select（マイグレーション未適用環境対応）
+  if (error && /is_sensitive/.test(error.message ?? "")) {
+    const retry = await supabaseAdmin
+      .from("user_stories")
+      .select("id, user_id, media_url, media_type, duration_ms, text_overlays, created_at, expires_at")
+      .gt("expires_at", now)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    stories = retry.data?.map((story) => ({ ...story, is_sensitive: false })) ?? null;
+    error = retry.error;
+  }
 
   if (error) {
     // テーブル未作成時はエラーではなく空配列を返す

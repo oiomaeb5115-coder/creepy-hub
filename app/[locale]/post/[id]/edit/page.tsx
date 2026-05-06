@@ -61,6 +61,9 @@ export default function StoryEditPage() {
   const [videoUploading, setVideoUploading] = useState(false);
   const [videoUploadProgress, setVideoUploadProgress] = useState(0);
 
+  // センシティブフラグ
+  const [isSensitive, setIsSensitive] = useState(false);
+
   // 位置情報 state
   // 表示可否は state を介さず描画時に直接評価（SPA遷移/HMRの影響を回避）
   const canPickLocation = MAP_PUBLIC_TO_WEB || forceAppUI || (typeof window !== "undefined" && (
@@ -89,6 +92,17 @@ export default function StoryEditPage() {
 
       if (error || !post) { router.replace(`/${locale}`); return; }
 
+      // is_sensitive はマイグレーション未適用環境でも動くよう個別取得（カラム不在時は false）
+      let sens = false;
+      try {
+        const { data: s } = await supabase
+          .from("post")
+          .select("is_sensitive")
+          .eq("id", postId)
+          .maybeSingle();
+        sens = (s as { is_sensitive?: boolean | null } | null)?.is_sensitive ?? false;
+      } catch { sens = false; }
+
       const isAuthor = post.user_id === session.user.id;
       const isAdmin = await getIsAdmin();
       if (!isAuthor && !isAdmin) { router.replace(postUrl(locale, postId!, post.slug)); return; }
@@ -116,6 +130,7 @@ export default function StoryEditPage() {
       setLocName(post.location_name ?? null);
       setLocPrecision((post.location_precision as LocationPrecision | null) ?? null);
       setMapCategory((post.map_category as SpotCategory | null) ?? null);
+      setIsSensitive(sens);
       setLoading(false);
     };
     init();
@@ -244,6 +259,7 @@ export default function StoryEditPage() {
           image_url_3: finalImageUrl3,
           video_url: finalVideoUrl,
           stream_video_id: finalStreamVideoId,
+          is_sensitive: isSensitive,
           // 位置情報は変更があった時だけ送る（送らなければ API 側で touch されない）
           ...(locationDirty ? {
             lat: locLat,
@@ -350,6 +366,21 @@ export default function StoryEditPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* センシティブ設定 */}
+            <div style={groupStyle}>
+              <label style={{ ...labelStyle, display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={isSensitive}
+                  onChange={(e) => setIsSensitive(e.target.checked)}
+                />
+                <span>センシティブな内容</span>
+              </label>
+              <small style={{ fontSize: 10, color: "rgba(200,150,140,0.35)", lineHeight: 1.5 }}>
+                18歳未満に不適切な内容が含まれる場合にONにしてください
+              </small>
             </div>
 
             {/* 動画アップロード */}

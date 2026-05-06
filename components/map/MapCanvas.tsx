@@ -25,11 +25,15 @@ export interface PostDatum {
   image_url: string | null;
   image_url_2: string | null;
   image_url_3: string | null;
+  /** 直接ホスティングされた動画URL（Supabase Storage 等） */
+  video_url: string | null;
+  /** Cloudflare Stream の video ID（iframe 再生用） */
+  stream_video_id: string | null;
   lat: number;
   lng: number;
   location_name: string | null;
   location_precision: "exact" | "town" | "prefecture" | null;
-  /** ユーザーが投稿時に選んだピン種別。未選択の旧投稿は null。地図上は haunted にフォールバック */
+  /** ユーザーが投稿時に選んだピン種別。未選択の旧投稿は haunted にフォールバック */
   map_category: SpotCategory | null;
   created_at: string | null;
 }

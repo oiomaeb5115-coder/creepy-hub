@@ -11,21 +11,16 @@ interface Props {
   onClose: () => void;
 }
 
-const BODY_LIMIT = 500;
-
 export default function PostDetailDialog({ post, onClose }: Props) {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
-  const color = colorFor("haunted");
-
-  const body =
-    post.content && post.content.length > BODY_LIMIT
-      ? post.content.slice(0, BODY_LIMIT) + "…"
-      : post.content ?? "";
+  const color = colorFor(post.map_category ?? "haunted");
 
   const images = [post.image_url, post.image_url_2, post.image_url_3].filter(
     (u): u is string => !!u
   );
+
+  const streamSubdomain = process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN;
 
   return (
     <div style={backdrop} onClick={onClose}>
@@ -41,19 +36,45 @@ export default function PostDetailDialog({ post, onClose }: Props) {
           <button type="button" style={closeBtn} onClick={onClose} aria-label="Close">×</button>
         </header>
 
+        {/* 動画（Cloudflare Stream 優先 / なければ直接URL） */}
+        {post.stream_video_id && streamSubdomain ? (
+          <div style={mediaWrap}>
+            <div style={videoBox}>
+              <iframe
+                src={`https://${streamSubdomain}.cloudflarestream.com/${post.stream_video_id}/iframe`}
+                style={{ width: "100%", height: "100%", border: "none" }}
+                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+                loading="lazy"
+                title={post.title}
+              />
+            </div>
+          </div>
+        ) : post.video_url ? (
+          <div style={mediaWrap}>
+            <video
+              src={post.video_url}
+              controls
+              playsInline
+              preload="metadata"
+              style={videoEl}
+            />
+          </div>
+        ) : null}
+
         {images.length > 0 && (
           <div style={imageRow}>
             {images.map((src, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={src} alt={`image-${i}`} style={image} />
+               
+              <img key={i} src={src} alt={`image-${i}`} style={imageStyle} />
             ))}
           </div>
         )}
 
-        {body && <p style={bodyStyle}>{body}</p>}
+        {post.content && <p style={bodyStyle}>{post.content}</p>}
 
         <Link href={postUrl(locale, post.id, post.slug)} style={{ ...linkBtn, background: `${color}CC` }}>
-          全文を読む →
+          投稿ページを開く →
         </Link>
       </div>
     </div>
@@ -81,7 +102,8 @@ const backdrop: React.CSSProperties = {
 const panel: React.CSSProperties = {
   width: "100%",
   maxWidth: 560,
-  maxHeight: "75vh",
+  // 動画・画像・本文全文まで入るので高さを拡張（必要に応じてスクロール）
+  maxHeight: "88vh",
   overflowY: "auto",
   background: "#0b0b0e",
   borderTopLeftRadius: 16,
@@ -115,13 +137,36 @@ const closeBtn: React.CSSProperties = {
   lineHeight: 1,
   padding: 0,
 };
+const mediaWrap: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "center",
+  marginBottom: 12,
+};
+const videoBox: React.CSSProperties = {
+  position: "relative",
+  width: "100%",
+  maxWidth: 340,
+  aspectRatio: "9/16",
+  borderRadius: 8,
+  overflow: "hidden",
+  background: "#000",
+  border: "1px solid rgba(161,102,108,0.18)",
+};
+const videoEl: React.CSSProperties = {
+  width: "100%",
+  maxWidth: 340,
+  aspectRatio: "9/16",
+  borderRadius: 8,
+  background: "#000",
+  border: "1px solid rgba(161,102,108,0.18)",
+};
 const imageRow: React.CSSProperties = {
   display: "flex",
   gap: 8,
   overflowX: "auto",
   marginBottom: 12,
 };
-const image: React.CSSProperties = {
+const imageStyle: React.CSSProperties = {
   width: 140,
   height: 140,
   objectFit: "cover",

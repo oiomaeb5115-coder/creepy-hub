@@ -98,6 +98,7 @@ export default function StoryCreator({ locale, embedded }: Props) {
   // UI状態
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [isSensitive, setIsSensitive] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -490,6 +491,7 @@ export default function StoryCreator({ locale, embedded }: Props) {
       // APIでストーリー作成
       const body: Record<string, unknown> = {
         media_type: mediaType,
+        is_sensitive: isSensitive,
         text_overlays: overlays.map(
           ({ id, scale, fontSize, ...rest }) => ({
             ...rest,
@@ -785,6 +787,21 @@ export default function StoryCreator({ locale, embedded }: Props) {
             type="button"
           >
             {locale === "en" ? "+ Add Text" : "+ テキスト追加"}
+          </button>
+
+          <div className={styles.toolDivider} />
+
+          <button
+            className={`${styles.toolBtn} ${isSensitive ? styles.toolBtnActive : ""}`}
+            onClick={() => setIsSensitive((prev) => !prev)}
+            type="button"
+            title={
+              locale === "en"
+                ? "Mark as sensitive (blur for viewers)"
+                : "センシティブ指定（閲覧者にはモザイク表示）"
+            }
+          >
+            🔞 {isSensitive ? (locale === "en" ? "Sensitive ON" : "センシティブ ON") : (locale === "en" ? "Sensitive" : "センシティブ")}
           </button>
         </div>
 

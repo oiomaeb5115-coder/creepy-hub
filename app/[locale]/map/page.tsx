@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import MapCanvas, { type SpotDatum, type PostDatum, type WikiDatum } from "@/components/map/MapCanvas";
 import SpotDetailDialog from "@/components/map/SpotDetailDialog";
 import PostDetailDialog from "@/components/map/PostDetailDialog";
@@ -14,6 +14,7 @@ import MapFilterBar, {
 import type { SpotCategory } from "@/lib/mapPalettes";
 
 const FILTER_KEY = "creepyhub_map_filter_v1";
+const normalizeLocale = (locale: string) => (locale === "en" ? "en" : "ja");
 
 /**
  * iOS / Android / デスクトップ 共通の地図ページ。
@@ -24,7 +25,18 @@ const FILTER_KEY = "creepyhub_map_filter_v1";
 export default function MapPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
+  const safeLocale = normalizeLocale(locale);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // 投稿詳細ページからの `?focus=<postId>&lat=&lng=` 遷移対応
+  const focusPostId = searchParams?.get("focus");
+  const focusLatRaw = searchParams?.get("lat");
+  const focusLngRaw = searchParams?.get("lng");
+  const focusLat = focusLatRaw != null ? parseFloat(focusLatRaw) : NaN;
+  const focusLng = focusLngRaw != null ? parseFloat(focusLngRaw) : NaN;
+  const hasFocus =
+    !!focusPostId && Number.isFinite(focusLat) && Number.isFinite(focusLng);
 
   const [spots, setSpots] = useState<SpotDatum[]>([]);
   const [posts, setPosts] = useState<PostDatum[]>([]);
@@ -36,6 +48,7 @@ export default function MapPage() {
   const lastBboxRef = useRef<{ north: number; south: number; east: number; west: number } | null>(
     null
   );
+  const focusOpenedRef = useRef(false);
 
   // localStorage からフィルタ復元
   useEffect(() => {
@@ -143,6 +156,17 @@ export default function MapPage() {
     }
   }, [filter.period, fetchPosts, fetchWikis]);
 
+  // 投稿詳細ページから ?focus= 付きで遷移してきた場合、
+  // 対象投稿が posts 配列に含まれたら一度だけ PostDetailDialog を開く
+  useEffect(() => {
+    if (!hasFocus || focusOpenedRef.current) return;
+    const target = posts.find((p) => String(p.id) === focusPostId);
+    if (target) {
+      setSelectedPost(target);
+      focusOpenedRef.current = true;
+    }
+  }, [hasFocus, focusPostId, posts]);
+
   // カテゴリ + ソースフィルタを適用
   // source: "all" は全部表示、それ以外はそのソースだけ
   const filteredSpots = useMemo(() => {
@@ -170,6 +194,9 @@ export default function MapPage() {
         onSelectSpot={setSelectedSpot}
         onSelectPost={setSelectedPost}
         onSelectWiki={setSelectedWiki}
+        {...(hasFocus
+          ? { initialCenter: [focusLng, focusLat] as [number, number], initialZoom: 14 }
+          : {})}
       />
 
       {/* 戻るボタン */}
@@ -185,6 +212,15 @@ export default function MapPage() {
         }}
       >
         ← 戻る
+      </Link>
+
+      {/* ノベル(映子の物語)へ */}
+      <Link href={`/${safeLocale}/novel`} style={novelBtn} aria-label="ノベルを開く">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+        </svg>
+        ノベル
       </Link>
 
       <MapFilterBar value={filter} onChange={setFilter} />
@@ -225,4 +261,24 @@ const backBtn: React.CSSProperties = {
   fontFamily: '"装甲明朝","Soukou Mincho",serif',
   backdropFilter: "blur(4px)",
   WebkitBackdropFilter: "blur(4px)",
+};
+const novelBtn: React.CSSProperties = {
+  // フィルタバー (top:16 left:80~right:16) と被らないよう、画面下部中央に配置
+  position: "absolute",
+  bottom: 16,
+  left: "50%",
+  transform: "translateX(-50%)",
+  zIndex: 20,
+  background: "rgba(0,0,0,0.7)",
+  color: "var(--text-primary, #fff)",
+  border: "1px solid rgba(var(--accent-rgb, 200,40,50), 0.55)",
+  padding: "8px 16px",
+  borderRadius: 999,
+  fontSize: 14,
+  textDecoration: "none",
+  fontFamily: '"装甲明朝","Soukou Mincho",serif',
+  backdropFilter: "blur(4px)",
+  WebkitBackdropFilter: "blur(4px)",
+  display: "inline-flex",
+  alignItems: "center",
 };

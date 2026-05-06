@@ -70,7 +70,8 @@
     "total": "TOTAL",
     "newStoryCta": "+ 怪談を投稿",
     "more": "→ MORE",
-    "visibleCount": "件表示中"
+    "visibleCount": "件表示中",
+    "viewOnMap": "地図全体を表示 →"
   },
   "wiki": {
     "listTitle": "オカルトファイル 一覧",
@@ -147,7 +148,9 @@
     "alertVideoFailed": "動画アップロードに失敗しました: ",
     "alertVideoDuration": "動画は3分以内にしてください",
     "alertVideoFormat": "動画はMP4、WebMまたはMOV形式のみ対応しています",
-    "alertVideoSize": "動画ファイルは75MB以内にしてください"
+    "alertVideoSize": "動画ファイルは75MB以内にしてください",
+    "sensitiveToggle": "センシティブな内容",
+    "sensitiveToggleHelp": "18歳未満に不適切な内容が含まれる場合にONにしてください"
   },
   "authDrawer": {
     "loginTitle": "ログイン",
@@ -693,5 +696,21 @@
     "noScenes": "シーンがありません",
     "confirmDelete": "本当に削除しますか？",
     "backToList": "一覧に戻る"
+  },
+  "sensitive": {
+    "label": "センシティブ",
+    "toggle": "センシティブな内容",
+    "toggleHelp": "18歳未満に不適切な内容が含まれる場合にONにしてください",
+    "reveal": "一時的に表示",
+    "hide": "再度隠す",
+    "overlay": "センシティブな画像です。タップで一時表示",
+    "ageGatePrompt": "このコンテンツは18歳以上を対象としています。あなたは18歳以上ですか？",
+    "ageGateConfirm": "はい（18歳以上）",
+    "ageGateCancel": "いいえ",
+    "adminLabel": "管理者:",
+    "adminOn": "NSFWを設定",
+    "adminOff": "NSFWを解除",
+    "adminUpdating": "更新中...",
+    "adminUpdateError": "更新に失敗しました"
   }
 }

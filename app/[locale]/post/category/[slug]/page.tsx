@@ -11,6 +11,7 @@ import CategoryEditButton from "@/components/CategoryEditButton";
 import CategoryDeleteButton from "@/components/CategoryDeleteButton";
 import FavoriteCategoryButton from "@/components/FavoriteCategoryButton";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
+import InlineCommentForm from "@/components/InlineCommentForm";
 import ViewIcon from "@/components/icons/ViewIcon";
 import ImpressionTracker from "@/components/ImpressionTracker";
 
@@ -331,6 +332,7 @@ export default async function StoryCategoryPage({
                     ) : null}
                     <div className={styles.postFooter}>
                       <InlineVoteButtons postId={post.id} initialScore={score} />
+                      <InlineCommentForm postId={post.id} locale={locale} postTitle={safeTitle} />
                       <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0} {dict.post.views}</span>
                     </div>
                   </div>

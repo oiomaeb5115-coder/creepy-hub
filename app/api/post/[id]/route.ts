@@ -79,6 +79,7 @@ export async function PATCH(
     location_name,
     location_precision,
     map_category,
+    is_sensitive,
   } = body;
 
   // サーバーサイド入力バリデーション
@@ -123,6 +124,9 @@ export async function PATCH(
   ) {
     return NextResponse.json({ error: "map_category が不正です" }, { status: 400 });
   }
+  if (is_sensitive !== undefined && typeof is_sensitive !== "boolean") {
+    return NextResponse.json({ error: "is_sensitive が不正です" }, { status: 400 });
+  }
 
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -143,11 +147,20 @@ export async function PATCH(
   if (location_name !== undefined) updateData.location_name = location_name;
   if (location_precision !== undefined) updateData.location_precision = location_precision;
   if (map_category !== undefined) updateData.map_category = map_category;
+  if (is_sensitive !== undefined) updateData.is_sensitive = is_sensitive;
 
-  const { error } = await adminSupabase
+  let { error } = await adminSupabase
     .from("post")
     .update(updateData)
     .eq("id", postId);
+
+  // is_sensitive カラム不在エラー時は当該キーを除いて再試行（マイグレーション未適用環境対応）
+  if (error && /is_sensitive/.test(error.message ?? "")) {
+    const { is_sensitive: _omit, ...rest } = updateData;
+    void _omit;
+    const retry = await adminSupabase.from("post").update(rest).eq("id", postId);
+    error = retry.error;
+  }
 
   if (error) return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
 

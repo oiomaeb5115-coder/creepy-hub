@@ -28,6 +28,11 @@ const nextConfig: NextConfig = {
       "media-src 'self' https://*.supabase.co",
       // object タグを禁止
       "object-src 'none'",
+      // インラインイベントハンドラや base タグ悪用を抑止
+      "script-src-attr 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      ...(process.env.NODE_ENV === "production" ? ["upgrade-insecure-requests"] : []),
     ].join("; ");
 
     return [

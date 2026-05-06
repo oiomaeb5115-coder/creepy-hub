@@ -82,12 +82,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { media_url, media_type, duration_ms, text_overlays, stream_video_id } = body as {
+  const { media_url, media_type, duration_ms, text_overlays, stream_video_id, is_sensitive } = body as {
     media_url?: string;
     media_type?: string;
     duration_ms?: number;
     text_overlays?: unknown;
     stream_video_id?: string;
+    is_sensitive?: boolean;
   };
 
   // バリデーション
@@ -96,6 +97,9 @@ export async function POST(req: NextRequest) {
   }
   if (stream_video_id !== undefined && typeof stream_video_id !== "string") {
     return NextResponse.json({ error: "Invalid stream_video_id" }, { status: 400 });
+  }
+  if (is_sensitive !== undefined && typeof is_sensitive !== "boolean") {
+    return NextResponse.json({ error: "Invalid is_sensitive" }, { status: 400 });
   }
   if (media_type !== "image" && media_type !== "video") {
     return NextResponse.json({ error: "media_type must be 'image' or 'video'" }, { status: 400 });
@@ -126,12 +130,28 @@ export async function POST(req: NextRequest) {
   if (stream_video_id) {
     insertData.stream_video_id = stream_video_id;
   }
+  if (is_sensitive !== undefined) {
+    insertData.is_sensitive = is_sensitive;
+  }
 
-  const { data: story, error: insertError } = await supabaseAdmin
+  let { data: story, error: insertError } = await supabaseAdmin
     .from("user_stories")
     .insert(insertData)
     .select("id, created_at, expires_at")
     .single();
+
+  // is_sensitive カラム不在エラー時は当該キーを除いて再試行（マイグレーション未適用環境対応）
+  if (insertError && /is_sensitive/.test(insertError.message ?? "")) {
+    const { is_sensitive: _omit, ...rest } = insertData;
+    void _omit;
+    const retry = await supabaseAdmin
+      .from("user_stories")
+      .insert(rest)
+      .select("id, created_at, expires_at")
+      .single();
+    story = retry.data;
+    insertError = retry.error;
+  }
 
   if (insertError) {
     console.error("[POST /api/story]", insertError.message);

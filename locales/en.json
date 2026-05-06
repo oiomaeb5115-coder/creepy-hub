@@ -70,7 +70,8 @@
     "random": "Random",
     "following": "Following",
     "followingEmpty": "No posts from users you follow yet.",
-    "loginToSeeFollowing": "Log in to see posts from users you follow."
+    "loginToSeeFollowing": "Log in to see posts from users you follow.",
+    "viewOnMap": "Open full map →"
   },
   "wiki": {
     "listTitle": "Occult Files",
@@ -147,7 +148,9 @@
     "alertVideoFailed": "Video upload failed: ",
     "alertVideoDuration": "Video must be 3 minutes or less",
     "alertVideoFormat": "Only MP4, WebM, and MOV videos are supported",
-    "alertVideoSize": "Video file must be under 75MB"
+    "alertVideoSize": "Video file must be under 75MB",
+    "sensitiveToggle": "Sensitive content",
+    "sensitiveToggleHelp": "Turn on if this content is inappropriate for users under 18"
   },
   "authDrawer": {
     "loginTitle": "Login",
@@ -693,5 +696,21 @@
     "noScenes": "No scenes",
     "confirmDelete": "Are you sure you want to delete this?",
     "backToList": "Back to list"
+  },
+  "sensitive": {
+    "label": "Sensitive",
+    "toggle": "Sensitive content",
+    "toggleHelp": "Turn on if this content is inappropriate for users under 18",
+    "reveal": "Reveal temporarily",
+    "hide": "Hide again",
+    "overlay": "Sensitive image. Tap to reveal temporarily",
+    "ageGatePrompt": "This content is intended for users aged 18 or older. Are you 18 or older?",
+    "ageGateConfirm": "Yes (18+)",
+    "ageGateCancel": "No",
+    "adminLabel": "Admin:",
+    "adminOn": "Mark NSFW",
+    "adminOff": "Unmark NSFW",
+    "adminUpdating": "Updating...",
+    "adminUpdateError": "Update failed"
   }
 }

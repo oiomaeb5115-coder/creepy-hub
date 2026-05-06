@@ -193,6 +193,11 @@
   color: var(--text-muted-light);
 }
 
+/* ── Mini map container (shown when post has lat/lng) ── */
+.miniMapWrap {
+  padding: 0 16px 12px;
+}
+
 /* ── Action bar ── */
 .actionBar {
   display: flex;

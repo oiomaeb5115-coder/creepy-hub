@@ -11,7 +11,10 @@ import PostVoteButtons from "@/components/PostVoteButtons";
 import PostBookmarkButton from "@/components/PostBookmarkButton";
 import TranslateButton from "@/components/TranslateButton";
 import PostActionButtons from "@/components/PostActionButtons";
+import AdminSensitiveToggle from "@/components/AdminSensitiveToggle";
 import PostReadTracker from "@/components/PostReadTracker";
+import PostMiniMap from "@/components/map/PostMiniMap";
+import type { SpotCategory } from "@/lib/mapPalettes";
 import ReportButton from "@/components/ReportButton";
 import { escapeHtml, linkifyUrls } from "@/lib/linkify-urls";
 import AutoLinkedWikiContent from "@/components/AutoLinkedwikiContent";
@@ -31,12 +34,24 @@ export async function generateMetadata({
 }: StoryPageProps): Promise<Metadata> {
   const { locale, id } = await params;
 
-  const { data: post } = await supabaseAdmin
+  // is_sensitive はマイグレーション未適用のDBでも動くよう個別クエリで取得（失敗時は false 扱い）
+  const sensitiveQuery = supabaseAdmin
     .from("post")
-    .select("title, content, image_url, slug")
+    .select("is_sensitive")
     .eq("id", id)
-    .eq("is_published", true)
-    .single();
+    .maybeSingle()
+    .then((r) => (r.error ? { data: null } : r));
+
+  const [{ data: post }, { data: sensRow }] = await Promise.all([
+    supabaseAdmin
+      .from("post")
+      .select("title, content, image_url, slug")
+      .eq("id", id)
+      .eq("is_published", true)
+      .single(),
+    Promise.resolve(sensitiveQuery).catch(() => ({ data: null })),
+  ]);
+  const isSensitiveMeta = (sensRow as { is_sensitive?: boolean | null } | null)?.is_sensitive ?? false;
 
   if (!post) return {};
 
@@ -99,7 +114,7 @@ export async function generateMetadata({
       url,
       type: "article",
       locale: locale === "en" ? "en_US" : "ja_JP",
-      ...(post.image_url ? { images: [{ url: post.image_url }] } : {}),
+      ...(post.image_url && !isSensitiveMeta ? { images: [{ url: post.image_url }] } : {}),
     },
   };
 }
@@ -118,6 +133,11 @@ type PostRow = {
   view_count: number | null;
   user_id: string | null;
   slug: string | null;
+  is_sensitive: boolean | null;
+  lat: number | null;
+  lng: number | null;
+  location_name: string | null;
+  map_category: string | null;
 };
 
 type ProfileRow = {
@@ -161,7 +181,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   const { data, error } = await supabaseAdmin
     .from("post")
     .select(
-      "id, title, content, created_at, image_url, image_url_2, image_url_3, video_url, stream_video_id, is_published, view_count, user_id, slug"
+      "id, title, content, created_at, image_url, image_url_2, image_url_3, video_url, stream_video_id, is_published, view_count, user_id, slug, lat, lng, location_name, map_category"
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -172,6 +192,20 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
   if (error || !post) {
     notFound();
   }
+
+  // is_sensitive はマイグレーション未適用環境でも動くよう個別取得（カラム不在時は false）
+  let postIsSensitive = false;
+  try {
+    const { data: s } = await supabaseAdmin
+      .from("post")
+      .select("is_sensitive")
+      .eq("id", post.id)
+      .maybeSingle();
+    postIsSensitive = (s as { is_sensitive?: boolean | null } | null)?.is_sensitive ?? false;
+  } catch {
+    postIsSensitive = false;
+  }
+  post.is_sensitive = postIsSensitive;
 
   let author: ProfileRow | null = null;
 
@@ -270,7 +304,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
       name: "creepy hub",
       url: "https://creepyhub.com",
     },
-    ...(post.image_url ? { image: post.image_url } : {}),
+    ...(post.image_url && !postIsSensitive ? { image: post.image_url } : {}),
     url: `${BASE_URL}${postUrl(locale, post.id, post.slug)}`,
     inLanguage: locale === "en" ? "en" : "ja",
   };
@@ -333,18 +367,31 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
               </div>
             </div>
 
-            <PostActionButtons
-              postId={post.id}
-              authorId={post.user_id}
-              locale={locale}
-              labels={{
-                edit: dict.common.edit,
-                delete: dict.common.delete,
-                deleting: dict.common.deleting,
-                deleteConfirm: dict.common.deleteConfirmStory,
-                deleteFailed: dict.common.deleteFailed,
-              }}
-            />
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <PostActionButtons
+                postId={post.id}
+                authorId={post.user_id}
+                locale={locale}
+                labels={{
+                  edit: dict.common.edit,
+                  delete: dict.common.delete,
+                  deleting: dict.common.deleting,
+                  deleteConfirm: dict.common.deleteConfirmStory,
+                  deleteFailed: dict.common.deleteFailed,
+                }}
+              />
+              <AdminSensitiveToggle
+                postId={post.id}
+                initialIsSensitive={post.is_sensitive ?? false}
+                labels={{
+                  adminLabel: dict.sensitive.adminLabel,
+                  on: dict.sensitive.adminOn,
+                  off: dict.sensitive.adminOff,
+                  updating: dict.sensitive.adminUpdating,
+                  updateError: dict.sensitive.adminUpdateError,
+                }}
+              />
+            </div>
           </div>
 
           {/* Post title */}
@@ -353,7 +400,20 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
           {/* Images */}
           {imageUrls.length > 0 && (
             <div className={styles.postImageWrap}>
-              <PostImageGallery imageUrls={imageUrls} title={displayTitle} />
+              <PostImageGallery
+                imageUrls={imageUrls}
+                title={displayTitle}
+                isSensitive={post.is_sensitive ?? false}
+                ownerId={post.user_id}
+                sensitiveDict={{
+                  reveal: dict.sensitive.reveal,
+                  hide: dict.sensitive.hide,
+                  overlay: dict.sensitive.overlay,
+                  ageGatePrompt: dict.sensitive.ageGatePrompt,
+                  ageGateConfirm: dict.sensitive.ageGateConfirm,
+                  ageGateCancel: dict.sensitive.ageGateCancel,
+                }}
+              />
             </div>
           )}
 
@@ -415,6 +475,18 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
               {dict.post.views}: {displayedViewCount}
             </span>
           </div>
+
+          {/* Mini map (only if post has lat/lng) */}
+          {post.lat != null && post.lng != null && (
+            <PostMiniMap
+              lat={post.lat}
+              lng={post.lng}
+              mapCategory={(post.map_category as SpotCategory | null) ?? "haunted"}
+              locationName={post.location_name}
+              mapHref={`/${locale}/map?focus=${post.id}&lat=${post.lat}&lng=${post.lng}`}
+              openLabel={dict.post.viewOnMap}
+            />
+          )}
 
           {/* Action bar */}
           <div className={styles.actionBar}>

@@ -52,6 +52,7 @@ export default function PostNewPage() {
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const [videoUploading, setVideoUploading] = useState(false);
   const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+  const [isSensitive, setIsSensitive] = useState(false);
 
   // ── 位置情報（Web 地図ピッカー）──
   // 表示可否は state を介さず描画時に直接評価（SPA遷移/HMRの影響を回避）
@@ -137,6 +138,7 @@ export default function PostNewPage() {
         setSlugInput(draft.slugInput);
         if (draft.slugInput) setSlugManuallyEdited(true);
       }
+      if (typeof draft.isSensitive === "boolean") setIsSensitive(draft.isSensitive);
       const hasContent = draft.title || draft.body || draft.categoryId || draft.slugInput;
       if (hasContent) setDraftRestored(true);
     } catch { /* ignore */ }
@@ -147,10 +149,10 @@ export default function PostNewPage() {
     if (!userId) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
-      localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, body, slugInput }));
+      localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, body, slugInput, isSensitive }));
     }, 500);
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [userId, categoryId, title, body, slugInput]);
+  }, [userId, categoryId, title, body, slugInput, isSensitive]);
 
   const deleteDraft = () => {
     if (!userId) return;
@@ -160,11 +162,12 @@ export default function PostNewPage() {
     setNewImage1(null); setNewImage2(null); setNewImage3(null);
     setImageUrl1(null); setImageUrl2(null); setImageUrl3(null);
     setNewVideo(null); setVideoPreviewUrl(null);
+    setIsSensitive(false);
   };
 
   const saveDraftManually = () => {
     if (!userId) return;
-    localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, body, slugInput }));
+    localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, body, slugInput, isSensitive }));
     setIsSaved(true);
     if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
     savedTimerRef.current = setTimeout(() => setIsSaved(false), 2000);
@@ -217,30 +220,39 @@ export default function PostNewPage() {
         ? `https://${process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_SUBDOMAIN}.cloudflarestream.com/${streamVideoId}/manifest/video.m3u8`
         : null;
 
-      const { data, error } = await supabase
+      const baseInsert: Record<string, unknown> = {
+        title: title.trim(),
+        content: body.trim(),
+        user_id: user.id,
+        category_id: categoryId ? Number(categoryId) : null,
+        view_count: 0,
+        is_published: true,
+        image_url: imageUrlUp1,
+        image_url_2: imageUrlUp2,
+        image_url_3: imageUrlUp3,
+        stream_video_id: streamVideoId,
+        video_url: videoUrl,
+        slug,
+        lat: locLat,
+        lng: locLng,
+        location_name: locName,
+        // プライバシー保護：保存ラベルも town 以下に正規化（exact を許さない）
+        location_precision: locPrecision ? normalizePrecision(locPrecision) : locPrecision,
+        map_category: mapCategory,
+      };
+
+      // is_sensitive カラムがあれば付与してINSERT。カラム不在エラーならフォールバックで再試行
+      let { data, error } = await supabase
         .from("post")
-        .insert([{
-          title: title.trim(),
-          content: body.trim(),
-          user_id: user.id,
-          category_id: categoryId ? Number(categoryId) : null,
-          view_count: 0,
-          is_published: true,
-          image_url: imageUrlUp1,
-          image_url_2: imageUrlUp2,
-          image_url_3: imageUrlUp3,
-          stream_video_id: streamVideoId,
-          video_url: videoUrl,
-          slug,
-          lat: locLat,
-          lng: locLng,
-          location_name: locName,
-          // プライバシー保護：保存ラベルも town 以下に正規化（exact を許さない）
-          location_precision: locPrecision ? normalizePrecision(locPrecision) : locPrecision,
-          map_category: mapCategory,
-        }])
+        .insert([{ ...baseInsert, is_sensitive: isSensitive }])
         .select()
         .single();
+
+      if (error && /is_sensitive/.test(error.message ?? "")) {
+        const retry = await supabase.from("post").insert([baseInsert]).select().single();
+        data = retry.data;
+        error = retry.error;
+      }
 
       if (error) {
         console.error("[PostNew] INSERT failed:", error.code, error.message, error.details);
@@ -299,6 +311,7 @@ export default function PostNewPage() {
           <Link
             href={`/${locale}?modal=login`}
             style={{ ...linkStyle, display: "inline-block", marginTop: 20 }}
+            rel="nofollow"
           >
             {labels.loginLink}
           </Link>
@@ -421,6 +434,19 @@ export default function PostNewPage() {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* センシティブ設定 */}
+                <div style={groupStyle}>
+                  <label style={{ ...labelStyle, display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      checked={isSensitive}
+                      onChange={(e) => setIsSensitive(e.target.checked)}
+                    />
+                    <span>{labels.sensitiveToggle}</span>
+                  </label>
+                  <small style={slugHintStyle}>{labels.sensitiveToggleHelp}</small>
                 </div>
 
                 {/* 動画 */}

@@ -9,8 +9,8 @@ import BackButton from "@/components/BackButton";
 import CategorySidebar from "@/components/CategorySidebar";
 import FavoriteSidebar from "@/components/FavoriteSidebar";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
+import InlineCommentForm from "@/components/InlineCommentForm";
 import ViewIcon from "@/components/icons/ViewIcon";
-import CommentIcon from "@/components/icons/CommentIcon";
 import ImpressionTracker from "@/components/ImpressionTracker";
 
 export const revalidate = 300;
@@ -365,9 +365,7 @@ export default async function StoryIndex({ params, searchParams }: Props) {
 
                           <div className={styles.postFooter}>
                             <InlineVoteButtons postId={post.id} initialScore={score} />
-                            <span className="stat-icon">
-                              <CommentIcon /> {commentCount}
-                            </span>
+                            <InlineCommentForm postId={post.id} locale={locale} initialCount={commentCount} postTitle={safeTitle} />
                             <span className="stat-icon">
                               <ViewIcon /> {post.view_count ?? 0}
                             </span>
