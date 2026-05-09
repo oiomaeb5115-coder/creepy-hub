@@ -13,7 +13,6 @@ import BottomNav from "./BottomNav";
 import WelcomeVideoModal from "@/components/WelcomeVideoModal";
 import Footer from "@/components/Footer";
 import StorageConsent from "@/components/StorageConsent";
-import PushTokenRegistrar from "@/components/PushTokenRegistrar";
 
 const locales = ["ja", "en"] as const;
 const BASE_URL = "https://creepyhub.com";
@@ -111,7 +110,6 @@ export default async function LocaleLayout({
           privacyLinkText={dict.cookieConsent.privacyLink}
           acceptText={dict.cookieConsent.accept}
         />
-        <PushTokenRegistrar />
       </body>
     </html>
   );
