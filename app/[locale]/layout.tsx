@@ -4,8 +4,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { getDictionary } from "@/lib/getDictionary";
 import SidebarWrapper from "./SidebarWrapper";
-import MapShortcutIcon from "./MapShortcutIcon";
-import NovelShortcutIcon from "./NovelShortcutIcon";
+import TopAppBarShortcuts from "./TopAppBarShortcuts";
 import PageTransition from "./PageTransition";
 import FloatingPostButton from "./FloatingPostButton";
 import AuthDrawer from "./AuthDrawer";
@@ -14,6 +13,7 @@ import BottomNav from "./BottomNav";
 import WelcomeVideoModal from "@/components/WelcomeVideoModal";
 import Footer from "@/components/Footer";
 import StorageConsent from "@/components/StorageConsent";
+import PushTokenRegistrar from "@/components/PushTokenRegistrar";
 
 const locales = ["ja", "en"] as const;
 const BASE_URL = "https://creepyhub.com";
@@ -101,8 +101,7 @@ export default async function LocaleLayout({
         />
 
         <SidebarWrapper locale={locale} labels={dict.sidebar} />
-        <MapShortcutIcon locale={locale} />
-        <NovelShortcutIcon locale={locale} />
+        <TopAppBarShortcuts locale={locale} />
         <FloatingPostButton locale={locale} />
         <AuthDrawer locale={locale} labels={dict.authDrawer} />
         <WelcomeVideoModal videoSrc="/welcome.webm/welcome-1.webm" />
@@ -112,6 +111,7 @@ export default async function LocaleLayout({
           privacyLinkText={dict.cookieConsent.privacyLink}
           acceptText={dict.cookieConsent.accept}
         />
+        <PushTokenRegistrar />
       </body>
     </html>
   );

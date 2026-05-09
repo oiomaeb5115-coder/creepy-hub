@@ -1,0 +1,42 @@
+.row {
+  position: fixed;
+  top: 10px;
+  left: 60px;
+  z-index: 60;
+  display: flex;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.iconBtn {
+  pointer-events: auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  background: var(--bg-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  text-decoration: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.iconBtn:hover {
+  border-color: rgba(var(--accent-rgb), 0.7);
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.18);
+}
+
+@media (max-width: 600px) {
+  .row {
+    top: 10px;
+    left: 50px;
+    gap: 6px;
+  }
+
+  .iconBtn {
+    width: 32px;
+    height: 32px;
+  }
+}

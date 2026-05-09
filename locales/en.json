@@ -574,6 +574,26 @@
     "contactTitle": "Article 12 (Inquiries)",
     "contactBody": "<p>Inquiries regarding this Policy, complaints about the handling of personal information, consultations, requests for disclosure, and all other communications shall be accepted at the following contact:</p><p><strong>Operator</strong>: IMC<br/><strong>Email</strong>: inakurokaisyuubu@gmail.com</p><p>For more details, please visit our <a href=\"/en/contact\">Contact page</a>.</p>"
   },
+  "childSafety": {
+    "metaTitle": "Child Safety Standards",
+    "metaDescription": "creepy.hub Child Sexual Abuse and Exploitation (CSAE) prevention standards and reporting channels — IMC",
+    "title": "Child Safety Standards (CSAE)",
+    "lastUpdated": "Last updated: May 9, 2026",
+    "introTitle": "About These Standards",
+    "introBody": "<p>IMC (\"the Company\") operates the service \"Creepy Hub\" (the \"Service\") and treats child safety as a top priority. We do not tolerate any content or behavior that constitutes Child Sexual Abuse and Exploitation (\"CSAE\") under any circumstances, including fictional or creative contexts.</p><p>These standards comply with Google Play's Child Safety Standards Policy, Japan's Act on Regulation and Punishment of Acts Relating to Child Prostitution and Child Pornography (the \"Anti-Child Pornography Act\"), the Child Welfare Act, and other applicable laws.</p>",
+    "prohibitedTitle": "Prohibited Content and Conduct",
+    "prohibitedBody": "<p>The following content and conduct are strictly prohibited on the Service in any context, including fiction and creative works:</p><ul><li>Child Sexual Abuse Material (CSAM) or content that may constitute CSAM</li><li>Sexualized, suggestive, or exploitative depictions of persons under 18 (or persons reasonably perceivable as under 18)</li><li>Grooming, solicitation, or other exploitation of minors for sexual purposes</li><li>Use of real children's photos, videos, or audio in sexual contexts</li><li>Content that endorses, promotes, or normalizes child sexual exploitation, including under the guise of fiction or creative works</li><li>Content that promotes physical or psychological harm to children, or that may induce imitation</li></ul>",
+    "reportingTitle": "Reporting Channels",
+    "reportingBody": "<p>Users and third parties may report any CSAE-related content or conduct on the Service through any of the following channels at any time:</p><ul><li>The in-app reporting function attached to each post and comment</li><li>Dedicated email: <a href=\"mailto:info@creepyhub.com\">info@creepyhub.com</a></li><li>Contact page: <a href=\"/en/contact\">/en/contact</a></li></ul><p>Please include as much detail as possible (target URL, username, situation description). Anonymous reports are accepted. We strictly protect reporter information and prioritize reporter safety.</p>",
+    "responseTitle": "Our Response Policy",
+    "responseBody": "<p>Upon receiving a report concerning CSAE or potential CSAE, we will:</p><ul><li>Conduct an initial review within 24 hours as a general rule.</li><li>Immediately make non-public or remove content reasonably likely to constitute CSAE, without waiting for full investigation results.</li><li>Suspend the violator's account immediately and, if necessary, impose a permanent ban (including prohibition of re-registration).</li><li>Preserve relevant communication logs, IP addresses, and device information within the retention periods required by law.</li><li>Maintain the ability to explain our CSAE response practices at any time.</li></ul><p>We will continuously implement reasonable measures in the design and operation of the Service to ensure child safety.</p>",
+    "lawEnforcementTitle": "Cooperation with Law Enforcement",
+    "lawEnforcementBody": "<p>When we identify CSAE content, we cooperate with the following authorities and organizations:</p><ul><li>National Police Agency of Japan and prefectural police (in cases of urgency)</li><li>Internet Hotline Center Japan (IHC): <a href=\"https://www.internethotline.jp/\" rel=\"noopener noreferrer\" target=\"_blank\">https://www.internethotline.jp/</a></li><li>Safer Internet Association (SIA)</li><li>For cross-border cases, coordination with international child protection organizations including reporting to the U.S. National Center for Missing &amp; Exploited Children (NCMEC)</li></ul><p>We will provide necessary information to authorities upon receiving lawful disclosure requests, investigation inquiries, or other legitimate requests.</p>",
+    "complianceTitle": "Applicable Laws and Policies",
+    "complianceBody": "<p>These standards comply with the following laws and policies:</p><ul><li>Act on Regulation and Punishment of Acts Relating to Child Prostitution and Child Pornography (Japan)</li><li>Child Welfare Act (Japan)</li><li>Act on the Protection of Personal Information (Japan)</li><li>Google Play Developer Program Policies (Child Safety Standards)</li><li>Apple App Store Review Guideline 1.1.1 (Objectionable Content)</li><li>Other applicable domestic laws and international conventions</li></ul>",
+    "contactTitle": "Dedicated CSAE Contact",
+    "contactBody": "<p>Inquiries, reports, and requests for explanation regarding these standards and our CSAE response shall be accepted at the following contact. Through this channel, we maintain the ability to explain our CSAM prevention measures and compliance at any time.</p><p><strong>Operator</strong>: IMC<br/><strong>Dedicated email</strong>: <a href=\"mailto:info@creepyhub.com\">info@creepyhub.com</a></p>"
+  },
   "terms": {
     "metaTitle": "Terms of Service",
     "metaDescription": "Terms of Service for creepy.hub — IMC",
@@ -614,7 +634,9 @@
     "login": "Login",
     "register": "Sign Up",
     "favPost": "Post Favorites",
-    "favWiki": "File Favorites"
+    "favWiki": "File Favorites",
+    "novel": "Novel",
+    "map": "Spot Map"
   },
   "story": {
     "addStory": "Add Story",

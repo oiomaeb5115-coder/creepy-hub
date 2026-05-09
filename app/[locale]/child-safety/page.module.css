@@ -1,0 +1,70 @@
+.page {
+  min-height: 100vh;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  padding: 32px 20px 100px;
+}
+
+.shell {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header {
+  padding-bottom: 24px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.16);
+}
+
+.breadcrumb {
+  margin: 0 0 14px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.updated {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: var(--text-on-surface);
+  letter-spacing: 0.04em;
+}
+
+.sectionBody {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
+
+.sectionBody ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.sectionBody li {
+  margin-bottom: 4px;
+}
+
+.sectionBody a {
+  color: var(--accent);
+  text-decoration: underline;
+  word-break: break-all;
+}

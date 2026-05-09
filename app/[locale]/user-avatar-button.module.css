@@ -4,13 +4,13 @@
 
 .avatarButton {
   position: fixed;
-  top: 58px;
+  top: 10px;
   left: 14px;
-  z-index: 55;
-  width: 48px;
-  height: 48px;
+  z-index: 60;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  border: 2px solid rgba(var(--accent-rgb), 0.4);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
   background: var(--bg-surface);
   cursor: pointer;
   overflow: hidden;
@@ -68,13 +68,13 @@
 
 @media (max-width: 600px) {
   .avatarButton {
-    width: 44px;
-    height: 44px;
-    top: 54px;
+    width: 32px;
+    height: 32px;
+    top: 10px;
     left: 10px;
   }
 
   .avatarPlaceholder {
-    font-size: 19px;
+    font-size: 16px;
   }
 }

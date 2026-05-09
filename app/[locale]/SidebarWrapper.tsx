@@ -23,6 +23,8 @@ type Labels = {
   register: string;
   favPost: string;
   favWiki: string;
+  novel: string;
+  map: string;
 };
 
 type Props = {
