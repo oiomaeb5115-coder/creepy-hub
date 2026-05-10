@@ -103,8 +103,11 @@ function CallbackInner() {
         }
       }
 
-      // Fallback (no code, no hash)
-      window.location.href = `/${locale}/login?err=${encodeURIComponent("no-code-no-hash")}`;
+      // Fallback (no code, no hash) — include diagnostic URL info
+      const fullUrl = window.location.href;
+      const queryKeys = Array.from(searchParams.keys()).join(",") || "(none)";
+      const diag = `no-code-no-hash;keys=${queryKeys};url=${fullUrl}`;
+      window.location.href = `/${locale}/login?err=${encodeURIComponent(diag)}`;
     };
 
     handleCallback();
