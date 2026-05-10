@@ -85,15 +85,31 @@ function CallbackInner() {
       // Use manual split parsing as a fallback in case URLSearchParams behaves
       // unexpectedly in this Android WebView. We try URLSearchParams first,
       // then fall back to manual key=value parsing on '&' boundaries.
+      const normalizeHash = (h: string): string => {
+        // Android Uri.Builder.fragment(...) percent-encodes the whole fragment
+        // when converting creepyhub:// back to https://, so the WebView can
+        // receive access_token%3D...%26refresh_token%3D... instead of
+        // access_token=...&refresh_token=....
+        if (!h.includes("=") && /%3d/i.test(h)) {
+          try {
+            return decodeURIComponent(h);
+          } catch {
+            return h;
+          }
+        }
+        return h;
+      };
+
       const parseHash = (h: string): Record<string, string> => {
+        const normalized = normalizeHash(h);
         const out: Record<string, string> = {};
         try {
-          const sp = new URLSearchParams(h);
+          const sp = new URLSearchParams(normalized);
           sp.forEach((v, k) => { out[k] = v; });
           if (out.access_token) return out;
         } catch { /* fall through to manual */ }
         // Manual fallback
-        for (const part of h.split("&")) {
+        for (const part of normalized.split("&")) {
           const eq = part.indexOf("=");
           if (eq < 0) continue;
           const k = decodeURIComponent(part.substring(0, eq));
