@@ -51,6 +51,7 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
 
   const modalParam = searchParams.get("modal");
   const isOpen = modalParam === "login" || modalParam === "register";
+  const errParam = searchParams.get("err");
   const [mode, setMode] = useState<Mode>(modalParam === "register" ? "register" : "login");
 
   const [email, setEmail] = useState("");
@@ -229,6 +230,22 @@ function AuthDrawerInner({ locale, labels }: { locale: string; labels: Labels })
         <p className={styles.modeTitle}>
           {mode === "login" ? labels.loginTitle : labels.registerTitle}
         </p>
+        {errParam && (
+          <div
+            style={{
+              background: "#fee",
+              color: "#900",
+              border: "1px solid #c00",
+              padding: "8px 10px",
+              borderRadius: 6,
+              fontSize: 12,
+              wordBreak: "break-all",
+              marginBottom: 8,
+            }}
+          >
+            <strong>OAuth Error:</strong> {errParam}
+          </div>
+        )}
         <div className={styles.tabs}>
           <button
             className={`${styles.tab} ${mode === "login" ? styles.tabActive : ""}`}

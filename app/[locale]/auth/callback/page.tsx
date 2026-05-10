@@ -76,18 +76,35 @@ function CallbackInner() {
       // PKCE flow: code in query params (?code=...)
       const code = searchParams.get("code");
       if (code) {
-        const { data } = await supabase.auth.exchangeCodeForSession(code);
-        clearAuthCache();
-        if (data.session?.user?.id) {
-          await ensureSafeUsername(data.session.user.id);
+        try {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) {
+            console.error("[auth/callback] exchangeCodeForSession error:", error);
+            window.location.href = `/${locale}/login?err=${encodeURIComponent("exchange:" + error.message)}`;
+            return;
+          }
+          if (!data.session) {
+            console.error("[auth/callback] exchangeCodeForSession returned no session");
+            window.location.href = `/${locale}/login?err=${encodeURIComponent("exchange:no-session")}`;
+            return;
+          }
+          clearAuthCache();
+          if (data.session.user?.id) {
+            await ensureSafeUsername(data.session.user.id);
+          }
+          const registered = isRegisterFlow || isNewAccount(data.session.user?.created_at);
+          window.location.href = registered ? `/${locale}?registered=true` : `/${locale}`;
+          return;
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          console.error("[auth/callback] exchangeCodeForSession threw:", e);
+          window.location.href = `/${locale}/login?err=${encodeURIComponent("throw:" + msg)}`;
+          return;
         }
-        const registered = isRegisterFlow || isNewAccount(data.session?.user?.created_at);
-        window.location.href = registered ? `/${locale}?registered=true` : `/${locale}`;
-        return;
       }
 
-      // Fallback
-      window.location.href = `/${locale}/login`;
+      // Fallback (no code, no hash)
+      window.location.href = `/${locale}/login?err=${encodeURIComponent("no-code-no-hash")}`;
     };
 
     handleCallback();
