@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { clearAuthCache } from "@/lib/auth";
@@ -44,8 +44,16 @@ function CallbackInner() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
   const searchParams = useSearchParams();
+  const handledRef = useRef(false);
 
   useEffect(() => {
+    // Guard: ensure this effect only processes the callback once per mount.
+    // React StrictMode or Next.js navigation may otherwise re-run useEffect
+    // and cause the second pass to land on the fallback after the first
+    // pass has already consumed/cleaned the URL tokens.
+    if (handledRef.current) return;
+    handledRef.current = true;
+
     const isNewAccount = (createdAt: string | undefined): boolean => {
       if (!createdAt) return false;
       return Date.now() - new Date(createdAt).getTime() < 2 * 60 * 1000;
@@ -54,26 +62,59 @@ function CallbackInner() {
     const typeParam = searchParams.get("type");
     const isRegisterFlow = typeParam === "register";
 
+    // Read hash directly from href to bypass possible Android WebView quirks
+    // where window.location.hash may report empty even when the URL has #...
+    const href = window.location.href;
+    const hashIdx = href.indexOf("#");
+    const rawHash = hashIdx >= 0 ? href.substring(hashIdx + 1) : "";
+
     const handleCallback = async () => {
-      // Implicit flow: tokens in URL fragment (#access_token=...)
-      const hash = window.location.hash;
-      if (hash) {
-        const hashParams = new URLSearchParams(hash.substring(1));
+      // 0. If a session is already established (e.g. callback re-mounted after
+      //    a successful first pass), skip straight to home.
+      try {
+        const { data: { session: existing } } = await supabase.auth.getSession();
+        if (existing) {
+          window.location.href = `/${locale}`;
+          return;
+        }
+      } catch {
+        // fall through to normal handling
+      }
+
+      // 1. Implicit flow: tokens in URL fragment (#access_token=...)
+      if (rawHash) {
+        const hashParams = new URLSearchParams(rawHash);
         const access_token = hashParams.get("access_token");
         const refresh_token = hashParams.get("refresh_token");
         if (access_token && refresh_token) {
-          const { data } = await supabase.auth.setSession({ access_token, refresh_token });
-          clearAuthCache();
-          if (data.session?.user?.id) {
-            await ensureSafeUsername(data.session.user.id);
+          try {
+            const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
+            if (error) {
+              console.error("[auth/callback] setSession error:", error);
+              window.location.href = `/${locale}/login?err=${encodeURIComponent("setSession:" + error.message)}`;
+              return;
+            }
+            if (!data.session) {
+              window.location.href = `/${locale}/login?err=${encodeURIComponent("setSession:no-session")}`;
+              return;
+            }
+            clearAuthCache();
+            if (data.session.user?.id) {
+              await ensureSafeUsername(data.session.user.id);
+            }
+            const registered = isRegisterFlow || isNewAccount(data.session.user?.created_at);
+            window.location.href = registered ? `/${locale}?registered=true` : `/${locale}`;
+            return;
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            console.error("[auth/callback] setSession threw:", e);
+            window.location.href = `/${locale}/login?err=${encodeURIComponent("setSession-throw:" + msg)}`;
+            return;
           }
-          const registered = isRegisterFlow || isNewAccount(data.session?.user?.created_at);
-          window.location.href = registered ? `/${locale}?registered=true` : `/${locale}`;
-          return;
         }
       }
 
-      // PKCE flow: code in query params (?code=...)
+      // 2. PKCE flow: code in query params (?code=...)
       const code = searchParams.get("code");
       if (code) {
         try {
@@ -84,7 +125,6 @@ function CallbackInner() {
             return;
           }
           if (!data.session) {
-            console.error("[auth/callback] exchangeCodeForSession returned no session");
             window.location.href = `/${locale}/login?err=${encodeURIComponent("exchange:no-session")}`;
             return;
           }
@@ -103,10 +143,10 @@ function CallbackInner() {
         }
       }
 
-      // Fallback (no code, no hash) — include diagnostic URL info
-      const fullUrl = window.location.href;
+      // 3. Fallback (no code, no hash) — include diagnostic URL info
       const queryKeys = Array.from(searchParams.keys()).join(",") || "(none)";
-      const diag = `no-code-no-hash;keys=${queryKeys};url=${fullUrl}`;
+      const hashPresent = rawHash ? `len=${rawHash.length}` : "absent";
+      const diag = `no-code-no-hash;keys=${queryKeys};hash=${hashPresent};url=${href}`;
       window.location.href = `/${locale}/login?err=${encodeURIComponent(diag)}`;
     };
 
