@@ -82,10 +82,31 @@ function CallbackInner() {
       }
 
       // 1. Implicit flow: tokens in URL fragment (#access_token=...)
+      // Use manual split parsing as a fallback in case URLSearchParams behaves
+      // unexpectedly in this Android WebView. We try URLSearchParams first,
+      // then fall back to manual key=value parsing on '&' boundaries.
+      const parseHash = (h: string): Record<string, string> => {
+        const out: Record<string, string> = {};
+        try {
+          const sp = new URLSearchParams(h);
+          sp.forEach((v, k) => { out[k] = v; });
+          if (out.access_token) return out;
+        } catch { /* fall through to manual */ }
+        // Manual fallback
+        for (const part of h.split("&")) {
+          const eq = part.indexOf("=");
+          if (eq < 0) continue;
+          const k = decodeURIComponent(part.substring(0, eq));
+          const v = decodeURIComponent(part.substring(eq + 1));
+          out[k] = v;
+        }
+        return out;
+      };
+
       if (rawHash) {
-        const hashParams = new URLSearchParams(rawHash);
-        const access_token = hashParams.get("access_token");
-        const refresh_token = hashParams.get("refresh_token");
+        const parsed = parseHash(rawHash);
+        const access_token = parsed.access_token;
+        const refresh_token = parsed.refresh_token;
         if (access_token && refresh_token) {
           try {
             const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
@@ -112,6 +133,12 @@ function CallbackInner() {
             return;
           }
         }
+        // Hash present but tokens missing — surface what keys we did find
+        const foundKeys = Object.keys(parsed).join(",") || "(none)";
+        const head = rawHash.substring(0, 60);
+        const diag = `hash-no-tokens;found=${foundKeys};hashHead=${head}`;
+        window.location.href = `/${locale}/login?err=${encodeURIComponent(diag)}`;
+        return;
       }
 
       // 2. PKCE flow: code in query params (?code=...)
