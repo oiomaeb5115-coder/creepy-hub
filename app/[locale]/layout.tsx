@@ -3,8 +3,11 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { getDictionary } from "@/lib/getDictionary";
+import { isCreepyHubAppFromHeaders } from "@/lib/isCreepyHubApp";
 import SidebarWrapper from "./SidebarWrapper";
 import TopAppBarShortcuts from "./TopAppBarShortcuts";
+import NativeBridge from "./NativeBridge";
+import PushTokenRegistrar from "@/components/PushTokenRegistrar";
 import PageTransition from "./PageTransition";
 import FloatingPostButton from "./FloatingPostButton";
 import AuthDrawer from "./AuthDrawer";
@@ -62,9 +65,14 @@ export default async function LocaleLayout({
   }
 
   const dict = await getDictionary(locale);
+  const isAppShell = await isCreepyHubAppFromHeaders();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html
+      lang={locale}
+      suppressHydrationWarning
+      {...(isAppShell ? { "data-app-shell": "true" } : {})}
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -99,8 +107,10 @@ export default async function LocaleLayout({
           rightsClaimLabel={dict.footer.rightsClaim}
         />
 
-        <SidebarWrapper locale={locale} labels={dict.sidebar} />
-        <TopAppBarShortcuts locale={locale} />
+        <SidebarWrapper locale={locale} labels={dict.sidebar} isAppShell={isAppShell} />
+        <TopAppBarShortcuts locale={locale} isAppShell={isAppShell} />
+        {isAppShell && <NativeBridge />}
+        {isAppShell && <PushTokenRegistrar />}
         <FloatingPostButton locale={locale} />
         <AuthDrawer locale={locale} labels={dict.authDrawer} />
         <WelcomeVideoModal videoSrc="/welcome.webm/welcome-1.webm" />

@@ -30,9 +30,18 @@ type Labels = {
 type Props = {
   locale: string;
   labels: Labels;
+  isAppShell?: boolean;
 };
 
-export default function SidebarWrapper({ locale, labels }: Props) {
+export default function SidebarWrapper({ locale, labels, isAppShell = false }: Props) {
+  if (isAppShell) {
+    // Native shell renders its own avatar button + drawer (Phase 2+).
+    return null;
+  }
+  return <SidebarWrapperInner locale={locale} labels={labels} />;
+}
+
+function SidebarWrapperInner({ locale, labels }: Pick<Props, "locale" | "labels">) {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<UserInfo | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);

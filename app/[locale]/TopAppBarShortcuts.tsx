@@ -29,13 +29,24 @@ const armNovelBgmPermission = () => {
   audio.play().catch(() => {});
 };
 
-export default function TopAppBarShortcuts({ locale }: { locale: string }) {
+export default function TopAppBarShortcuts({
+  locale,
+  isAppShell: isAppShellProp = false,
+}: {
+  locale: string;
+  isAppShell?: boolean;
+}) {
   const isAppShell =
-    typeof window !== "undefined" &&
-    ((window as unknown as Record<string, unknown>).__CREEPYHUB_IOS__ === true ||
-      (window as unknown as Record<string, unknown>).__CREEPYHUB_ANDROID__ === true ||
-      isIOSApp());
-  const showMap = MAP_PUBLIC_TO_WEB || isAppShell;
+    isAppShellProp ||
+    (typeof window !== "undefined" &&
+      ((window as unknown as Record<string, unknown>).__CREEPYHUB_IOS__ === true ||
+        (window as unknown as Record<string, unknown>).__CREEPYHUB_ANDROID__ === true ||
+        isIOSApp()));
+
+  // Native shell handles avatar/novel/map in its own toolbar.
+  if (isAppShell) return null;
+
+  const showMap = MAP_PUBLIC_TO_WEB;
 
   return (
     <div className={styles.row}>
