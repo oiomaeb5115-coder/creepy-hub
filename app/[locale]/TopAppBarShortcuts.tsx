@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { MAP_PUBLIC_TO_WEB } from "@/lib/isCreepyHubApp";
-import { isIOSApp } from "@/lib/isIOSApp";
 import styles from "./top-app-bar-shortcuts.module.css";
 
 const NOVEL_BGM_AUDIO = "/audio/novel/bgm/mirror-hall.mp3";
@@ -31,18 +30,11 @@ const armNovelBgmPermission = () => {
 
 export default function TopAppBarShortcuts({
   locale,
-  isAppShell: isAppShellProp = false,
+  isAppShell = false,
 }: {
   locale: string;
   isAppShell?: boolean;
 }) {
-  const isAppShell =
-    isAppShellProp ||
-    (typeof window !== "undefined" &&
-      ((window as unknown as Record<string, unknown>).__CREEPYHUB_IOS__ === true ||
-        (window as unknown as Record<string, unknown>).__CREEPYHUB_ANDROID__ === true ||
-        isIOSApp()));
-
   // Native shell handles avatar/novel/map in its own toolbar.
   if (isAppShell) return null;
 
