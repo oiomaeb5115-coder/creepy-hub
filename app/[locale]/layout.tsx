@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { getDictionary } from "@/lib/getDictionary";
-import { isCreepyHubAppFromHeaders } from "@/lib/isCreepyHubApp";
+import { isAndroidAppShellFromHeaders } from "@/lib/isCreepyHubApp";
 import SidebarWrapper from "./SidebarWrapper";
 import TopAppBarShortcuts from "./TopAppBarShortcuts";
 import NativeBridge from "./NativeBridge";
@@ -65,7 +65,9 @@ export default async function LocaleLayout({
   }
 
   const dict = await getDictionary(locale);
-  const isAppShell = await isCreepyHubAppFromHeaders();
+  // iOS は Native Drawer/Toolbar 未実装のため Web UI を出す必要がある。
+  // Android shell でのみ Web UI を抑止する。
+  const isAppShell = await isAndroidAppShellFromHeaders();
 
   return (
     <html
@@ -110,7 +112,9 @@ export default async function LocaleLayout({
         <SidebarWrapper locale={locale} labels={dict.sidebar} isAppShell={isAppShell} />
         <TopAppBarShortcuts locale={locale} isAppShell={isAppShell} />
         {isAppShell && <NativeBridge />}
-        {isAppShell && <PushTokenRegistrar />}
+        {/* iOS/Android アプリ内のみで動作する（client 側で User-Agent 判定）。
+            ブラウザでは no-op になるので無条件 mount で OK。 */}
+        <PushTokenRegistrar />
         <FloatingPostButton locale={locale} />
         <AuthDrawer locale={locale} labels={dict.authDrawer} />
         <WelcomeVideoModal videoSrc="/welcome.webm/welcome-1.webm" />

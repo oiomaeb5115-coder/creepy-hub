@@ -50,3 +50,17 @@ export async function isCreepyHubAppFromHeaders(): Promise<boolean> {
   const ua = h.get("user-agent") ?? "";
   return ua.includes("CreepyHubApp");
 }
+
+/**
+ * Android 公式アプリ shell 内かを判定する。
+ *
+ * iOS 側はまだ Native Drawer/Toolbar 未実装のため、Web UI（SidebarWrapper /
+ * TopAppBarShortcuts）を非表示にしてしまうと操作不能になる。当面は Android
+ * shell でのみ Web UI を抑止し、iOS では従来通り Web UI を出す。
+ */
+export async function isAndroidAppShellFromHeaders(): Promise<boolean> {
+  const { headers } = await import("next/headers");
+  const h = await headers();
+  const ua = h.get("user-agent") ?? "";
+  return ua.includes("CreepyHubApp") && ua.includes("Android");
+}
