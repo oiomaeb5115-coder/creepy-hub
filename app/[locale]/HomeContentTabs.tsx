@@ -3,14 +3,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import InlineVoteButtons from "@/components/InlineVoteButtons";
+import InlineCommentForm from "@/components/InlineCommentForm";
 import PopularPeriodDropdown from "@/components/PopularPeriodDropdown";
-import CommentIcon from "@/components/icons/CommentIcon";
 import ViewIcon from "@/components/icons/ViewIcon";
 import InlineWikiVoteButtons from "@/components/InlineWikiVoteButtons";
 import { postUrl } from "@/lib/postUrl";
 import ImpressionTracker from "@/components/ImpressionTracker";
 import styles from "./page.module.css";
-import NinjaAd from "@/components/NinjaAd";
+import AdSenseAd from "@/components/AdSenseAd";
 
 type AuthorProfile = {
   username: string | null;
@@ -176,7 +176,7 @@ function StoryCardGrid({
 
         <div className={styles.gridCardFooter}>
           <InlineVoteButtons postId={post.id} initialScore={score} />
-          <span className="stat-icon"><CommentIcon /> {commentCount}</span>
+          <InlineCommentForm postId={post.id} locale={locale} initialCount={commentCount} postTitle={safeTitle} />
           <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0}</span>
         </div>
       </article>
@@ -337,7 +337,7 @@ export default function HomeContentTabs({
                 <React.Fragment key={post.id}>
                   {index > 0 && index % 4 === 0 && (
                     <div style={{ gridColumn: '1 / -1' }}>
-                      <NinjaAd type="sp-banner" />
+                      <AdSenseAd type="sp-banner" />
                     </div>
                   )}
                   <StoryCardGrid
@@ -388,7 +388,7 @@ export default function HomeContentTabs({
                 <React.Fragment key={item.id}>
                   {index > 0 && index % 4 === 0 && (
                     <div style={{ gridColumn: '1 / -1' }}>
-                      <NinjaAd type="sp-banner" />
+                      <AdSenseAd type="sp-banner" />
                     </div>
                   )}
                   <WikiCardGrid

@@ -5,7 +5,7 @@ import styles from "./page.module.css";
 import HomeAuthButtons from "./HomeAuthButtons";
 import HomeContentTabs from "./HomeContentTabs";
 import AdminPendingSection from "@/components/AdminPendingSection";
-import { ResponsiveAd } from "@/components/NinjaAd";
+import { ResponsiveAd } from "@/components/AdSenseAd";
 
 
 export const revalidate = 300;

@@ -19,7 +19,9 @@ import ReportButton from "@/components/ReportButton";
 import { escapeHtml, linkifyUrls } from "@/lib/linkify-urls";
 import AutoLinkedWikiContent from "@/components/AutoLinkedwikiContent";
 import PersonIcon from "@/components/icons/PersonIcon";
-import { ResponsiveAd } from "@/components/NinjaAd";
+import { ResponsiveAd } from "@/components/AdSenseAd";
+import SidebarAd from "@/components/SidebarAd";
+import InArticleAd from "@/components/InArticleAd";
 
 export const revalidate = 300;
 
@@ -60,6 +62,8 @@ export async function generateMetadata({
     ? post.content.replace(/\n+/g, " ").trim().slice(0, 160)
     : undefined;
 
+  let fullContentLength = (post.content ?? "").length;
+
   if (locale === "en") {
     const { data: tr } = await supabaseAdmin
       .from("post_translations")
@@ -78,7 +82,10 @@ export async function generateMetadata({
     }
 
     if (tr.title) title = tr.title;
-    if (tr.content) description = tr.content.replace(/\n+/g, " ").trim().slice(0, 160);
+    if (tr.content) {
+      description = tr.content.replace(/\n+/g, " ").trim().slice(0, 160);
+      fullContentLength = tr.content.length;
+    }
   }
 
   let hasEnTranslation = false;
@@ -94,9 +101,14 @@ export async function generateMetadata({
 
   const url = `${BASE_URL}${postUrl(locale, id, post.slug)}`;
 
+  // 本文 200 文字未満の投稿は薄いコンテンツとして noindex（Google「クロール済み・インデックス未登録」対策）
+  const MIN_INDEXABLE_CONTENT_LENGTH = 200;
+  const isThinContent = fullContentLength < MIN_INDEXABLE_CONTENT_LENGTH;
+
   return {
     title: title ?? undefined,
     description,
+    ...(isThinContent ? { robots: { index: false, follow: true } } : {}),
     alternates: {
       canonical: url,
       languages: hasEnTranslation || locale === "en"
@@ -316,6 +328,7 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <PostReadTracker id={String(post.id)} />
+      <SidebarAd />
 
       <div className={styles.shell}>
         {/* ── Top bar ── */}
@@ -462,6 +475,8 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
           <div className={styles.postContent}>
             <AutoLinkedWikiContent html={postHtml} />
           </div>
+
+          <InArticleAd />
 
           {/* Stats row */}
           <div className={styles.statsRow}>

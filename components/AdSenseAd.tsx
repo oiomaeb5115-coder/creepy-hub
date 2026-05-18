@@ -1,6 +1,6 @@
 'use client'
 
-type AdType = 'leaderboard' | 'sp-banner' | 'rectangle'
+type AdType = 'leaderboard' | 'sp-banner' | 'rectangle' | 'sidebar' | 'sticky-bottom'
 
 const AD_CONFIG: Record<AdType, { path: string; width: number; height: number }> = {
   leaderboard: {
@@ -18,9 +18,19 @@ const AD_CONFIG: Record<AdType, { path: string; width: number; height: number }>
     width: 300,
     height: 250,
   },
+  sidebar: {
+    path: '/ads/sidebar.html',
+    width: 300,
+    height: 600,
+  },
+  'sticky-bottom': {
+    path: '/ads/sticky.html',
+    width: 320,
+    height: 50,
+  },
 }
 
-export default function NinjaAd({ type }: { type: AdType }) {
+export default function AdSenseAd({ type }: { type: AdType }) {
   const config = AD_CONFIG[type]
 
   return (
@@ -46,27 +56,22 @@ export default function NinjaAd({ type }: { type: AdType }) {
   )
 }
 
-/**
- * PC: leaderboard (728x90) or rectangle (300x250)
- * SP: sp-banner (320x100)
- * Switches via CSS media query for SSR compatibility.
- */
 export function ResponsiveAd({ pc, sp }: { pc: AdType; sp: AdType }) {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
-        .ninja-ad-sp { display: none; }
-        .ninja-ad-pc { display: block; }
+        .adsense-ad-sp { display: none; }
+        .adsense-ad-pc { display: block; }
         @media (max-width: 768px) {
-          .ninja-ad-sp { display: block; }
-          .ninja-ad-pc { display: none; }
+          .adsense-ad-sp { display: block; }
+          .adsense-ad-pc { display: none; }
         }
       `}} />
-      <div className="ninja-ad-pc">
-        <NinjaAd type={pc} />
+      <div className="adsense-ad-pc">
+        <AdSenseAd type={pc} />
       </div>
-      <div className="ninja-ad-sp">
-        <NinjaAd type={sp} />
+      <div className="adsense-ad-sp">
+        <AdSenseAd type={sp} />
       </div>
     </>
   )

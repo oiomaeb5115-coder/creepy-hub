@@ -16,6 +16,7 @@ import BottomNav from "./BottomNav";
 import WelcomeVideoModal from "@/components/WelcomeVideoModal";
 import Footer from "@/components/Footer";
 import StorageConsent from "@/components/StorageConsent";
+import StickyBottomAd from "@/components/StickyBottomAd";
 
 const locales = ["ja", "en"] as const;
 const BASE_URL = "https://creepyhub.com";
@@ -100,6 +101,7 @@ export default async function LocaleLayout({
         <PageTransition>{children}</PageTransition>
 
         <BottomNav locale={locale} labels={dict.nav} />
+        <StickyBottomAd />
 
         <Footer
           locale={locale}

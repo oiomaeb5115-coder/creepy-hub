@@ -13,7 +13,9 @@ import WikiRandomButton from "@/components/WikiRandomButton";
 import WikiReadTracker from "@/components/WikiReadTracker";
 import ReportButton from "@/components/ReportButton";
 import WikiVoteButtons from "@/components/WikiVoteButtons";
-import { ResponsiveAd } from "@/components/NinjaAd";
+import { ResponsiveAd } from "@/components/AdSenseAd";
+import SidebarAd from "@/components/SidebarAd";
+import InArticleAd from "@/components/InArticleAd";
 
 export const revalidate = 300;
 
@@ -172,6 +174,7 @@ export default async function WikiDetailPage({
 
   return (
     <main className={styles.wikiPage}>
+      <SidebarAd />
       <div className={styles.wikiArticleShell}>
         <BackButton />
         <header className={styles.wikiHeader}>
@@ -258,6 +261,8 @@ export default async function WikiDetailPage({
               <AutoLinkedWikiContent html={linkedHtml} />
             )}
           </div>
+
+          <InArticleAd />
 
           <div className={styles.inlineLinks}>
             <Link href={`/${locale}/wiki`} className={styles.inlineLink}>
