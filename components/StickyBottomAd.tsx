@@ -6,6 +6,7 @@ const STORAGE_KEY = 'sticky-ad-dismissed'
 
 export default function StickyBottomAd() {
   const [dismissed, setDismissed] = useState(true)
+  const [nearFooter, setNearFooter] = useState(false)
 
   useEffect(() => {
     try {
@@ -15,6 +16,18 @@ export default function StickyBottomAd() {
       setDismissed(false)
     }
   }, [])
+
+  useEffect(() => {
+    if (dismissed) return
+    const footer = document.querySelector('footer')
+    if (!footer) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setNearFooter(entry.isIntersecting),
+      { rootMargin: '0px 0px 0px 0px' },
+    )
+    observer.observe(footer)
+    return () => observer.disconnect()
+  }, [dismissed])
 
   if (dismissed) return null
 
@@ -31,7 +44,7 @@ export default function StickyBottomAd() {
         .sticky-ad-wrap {
           position: fixed;
           left: 50%;
-          bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+          bottom: calc(80px + env(safe-area-inset-bottom, 0px));
           transform: translateX(-50%);
           z-index: 50;
           display: flex;
@@ -41,6 +54,12 @@ export default function StickyBottomAd() {
           border-radius: 6px;
           padding: 2px;
           box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+          transition: opacity 0.2s, transform 0.2s;
+        }
+        .sticky-ad-wrap[data-hidden="true"] {
+          opacity: 0;
+          pointer-events: none;
+          transform: translateX(-50%) translateY(20px);
         }
         .sticky-ad-close {
           appearance: none;
@@ -65,11 +84,16 @@ export default function StickyBottomAd() {
         }
         @media (min-width: 769px) {
           .sticky-ad-wrap {
-            bottom: 16px;
+            bottom: 32px;
           }
         }
       `}} />
-      <div className="sticky-ad-wrap" role="complementary" aria-label="広告">
+      <div
+        className="sticky-ad-wrap"
+        role="complementary"
+        aria-label="広告"
+        data-hidden={nearFooter ? 'true' : 'false'}
+      >
         <iframe
           src="/ads/sticky.html"
           style={{ width: 320, height: 50, border: 'none', overflow: 'hidden', display: 'block' }}
