@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -12,6 +12,7 @@ import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
 import ViewIcon from "@/components/icons/ViewIcon";
 import ImpressionTracker from "@/components/ImpressionTracker";
+import AdSenseAd from "@/components/AdSenseAd";
 
 type ProfileRow = {
   id: string;
@@ -386,7 +387,7 @@ export default function UserProfileClient() {
         <p className={styles.empty}>{emptyMsg}</p>
       )}
       <div className={styles.feed}>
-        {postList.map((post) => {
+        {postList.map((post, idx) => {
           const safeTitle = post.title ?? dict.post.untitled;
           const safeContent = post.content ?? "";
           const excerpt = safeContent.length > 20
@@ -394,8 +395,11 @@ export default function UserProfileClient() {
             : safeContent;
 
           return (
+            <Fragment key={post.id}>
+            {idx > 0 && idx % 5 === 0 && (
+              <AdSenseAd type="sp-banner" />
+            )}
             <Link
-              key={post.id}
               href={postUrl(locale, post.id, post.slug)}
               className={styles.postRow}
             >
@@ -431,6 +435,7 @@ export default function UserProfileClient() {
               </div>
               </ImpressionTracker>
             </Link>
+            </Fragment>
           );
         })}
       </div>

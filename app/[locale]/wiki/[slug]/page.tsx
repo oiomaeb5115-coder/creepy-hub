@@ -16,6 +16,7 @@ import WikiVoteButtons from "@/components/WikiVoteButtons";
 import { ResponsiveAd } from "@/components/AdSenseAd";
 import SidebarAd from "@/components/SidebarAd";
 import InArticleAd from "@/components/InArticleAd";
+import { splitHtmlAtParagraph } from "@/lib/splitHtmlForAds";
 
 export const revalidate = 300;
 
@@ -254,12 +255,22 @@ export default async function WikiDetailPage({
             <p className={styles.summary}>{safePage.summary}</p>
           )}
 
+          <ResponsiveAd pc="rectangle" sp="sp-banner" />
+
           <div className={styles.content}>
             {!safePage.content ? (
               <p>{dict.wiki.noContent}</p>
-            ) : (
-              <AutoLinkedWikiContent html={linkedHtml} />
-            )}
+            ) : (() => {
+              const split = splitHtmlAtParagraph(linkedHtml);
+              if (!split) return <AutoLinkedWikiContent html={linkedHtml} />;
+              return (
+                <>
+                  <AutoLinkedWikiContent html={split[0]} />
+                  <InArticleAd />
+                  <AutoLinkedWikiContent html={split[1]} />
+                </>
+              );
+            })()}
           </div>
 
           <InArticleAd />

@@ -350,6 +350,11 @@ export default function HomeContentTabs({
               ))}
             </div>
           )}
+          {latestStories.length > 0 && (
+            <div style={{ marginTop: 24 }}>
+              <AdSenseAd type="sp-banner" />
+            </div>
+          )}
         </section>
       )}
 
@@ -399,6 +404,11 @@ export default function HomeContentTabs({
                   />
                 </React.Fragment>
               ))}
+            </div>
+          )}
+          {latestWiki.length > 0 && (
+            <div style={{ marginTop: 24 }}>
+              <AdSenseAd type="sp-banner" />
             </div>
           )}
         </section>

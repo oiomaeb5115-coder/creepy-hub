@@ -11,6 +11,7 @@ import ViewIcon from "@/components/icons/ViewIcon";
 import ImpressionTracker from "@/components/ImpressionTracker";
 import InlineWikiVoteButtons from "@/components/InlineWikiVoteButtons";
 import HotkeySearchForm from "@/components/HotkeySearchForm";
+import { ResponsiveAd } from "@/components/AdSenseAd";
 
 export const revalidate = 300;
 
@@ -345,6 +346,8 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
             )}
           </section>
 
+          <ResponsiveAd pc="leaderboard" sp="sp-banner" />
+
           {/* POPULAR section */}
           <section className={styles.card}>
             <div className={styles.sectionHead}>
@@ -367,6 +370,8 @@ export default async function WikiIndexPage({ params, searchParams }: WikiIndexP
               </div>
             )}
           </section>
+
+          <ResponsiveAd pc="rectangle" sp="sp-banner" />
 
           {/* Categories grid (kept) */}
           {categories.length > 0 && (

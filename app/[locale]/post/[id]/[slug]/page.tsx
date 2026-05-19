@@ -22,6 +22,7 @@ import PersonIcon from "@/components/icons/PersonIcon";
 import { ResponsiveAd } from "@/components/AdSenseAd";
 import SidebarAd from "@/components/SidebarAd";
 import InArticleAd from "@/components/InArticleAd";
+import { splitHtmlAtParagraph } from "@/lib/splitHtmlForAds";
 
 export const revalidate = 300;
 
@@ -471,9 +472,21 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
             </div>
           ) : null}
 
+          <ResponsiveAd pc="rectangle" sp="sp-banner" />
+
           {/* Post content */}
           <div className={styles.postContent}>
-            <AutoLinkedWikiContent html={postHtml} />
+            {(() => {
+              const split = splitHtmlAtParagraph(postHtml);
+              if (!split) return <AutoLinkedWikiContent html={postHtml} />;
+              return (
+                <>
+                  <AutoLinkedWikiContent html={split[0]} />
+                  <InArticleAd />
+                  <AutoLinkedWikiContent html={split[1]} />
+                </>
+              );
+            })()}
           </div>
 
           <InArticleAd />
