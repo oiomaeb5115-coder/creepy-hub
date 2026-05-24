@@ -7,12 +7,21 @@ type Props = {
   termsLabel: string;
   contactLabel: string;
   rightsClaimLabel: string;
+  contentRightsNote: string;
 };
 
-export default function Footer({ locale, privacyLabel, termsLabel, contactLabel, rightsClaimLabel }: Props) {
+export default function Footer({
+  locale,
+  privacyLabel,
+  termsLabel,
+  contactLabel,
+  rightsClaimLabel,
+  contentRightsNote,
+}: Props) {
   return (
     <footer className={styles.footer}>
       <div className={styles.footerInner}>
+        <p className={styles.contentRights}>{contentRightsNote}</p>
         <nav className={styles.footerLinks}>
           <Link href={`/${locale}/terms-of-service`} className={styles.footerLink}>
             {termsLabel}
@@ -27,7 +36,6 @@ export default function Footer({ locale, privacyLabel, termsLabel, contactLabel,
             {rightsClaimLabel}
           </Link>
         </nav>
-        <p className={styles.copyright}>&copy; 2026 creepy.hub</p>
       </div>
     </footer>
   );

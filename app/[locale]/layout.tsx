@@ -109,6 +109,7 @@ export default async function LocaleLayout({
           termsLabel={dict.footer.terms}
           contactLabel={dict.footer.contact}
           rightsClaimLabel={dict.footer.rightsClaim}
+          contentRightsNote={dict.footer.contentRightsNote}
         />
 
         <SidebarWrapper locale={locale} labels={dict.sidebar} isAppShell={isAppShell} />
