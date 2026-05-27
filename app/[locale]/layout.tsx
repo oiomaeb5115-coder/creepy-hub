@@ -66,15 +66,15 @@ export default async function LocaleLayout({
   }
 
   const dict = await getDictionary(locale);
-  // iOS は Native Drawer/Toolbar 未実装のため Web UI を出す必要がある。
-  // Android shell でのみ Web UI を抑止する。
-  const isAppShell = await isAndroidAppShellFromHeaders();
+  // Android shell では Native Drawer があるため Sidebar は抑止する。
+  // 右上ショートカットは Web/iOS/Android で共通表示する。
+  const isAndroidAppShell = await isAndroidAppShellFromHeaders();
 
   return (
     <html
       lang={locale}
       suppressHydrationWarning
-      {...(isAppShell ? { "data-app-shell": "true" } : {})}
+      {...(isAndroidAppShell ? { "data-app-shell": "true" } : {})}
     >
       <head>
         <script
@@ -112,9 +112,9 @@ export default async function LocaleLayout({
           contentRightsNote={dict.footer.contentRightsNote}
         />
 
-        <SidebarWrapper locale={locale} labels={dict.sidebar} isAppShell={isAppShell} />
-        <TopAppBarShortcuts locale={locale} isAppShell={isAppShell} />
-        {isAppShell && <NativeBridge />}
+        <SidebarWrapper locale={locale} labels={dict.sidebar} isAppShell={isAndroidAppShell} />
+        <TopAppBarShortcuts locale={locale} />
+        {isAndroidAppShell && <NativeBridge />}
         {/* iOS/Android アプリ内のみで動作する（client 側で User-Agent 判定）。
             ブラウザでは no-op になるので無条件 mount で OK。 */}
         <PushTokenRegistrar />

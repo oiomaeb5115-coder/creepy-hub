@@ -101,10 +101,10 @@
 }
 
 .heroTopButtons {
-  position: fixed;
+  position: absolute;
   top: 12px;
   right: 22px;
-  z-index: 50;
+  z-index: 70;
   display: flex;
   gap: 10px;
   align-items: center;

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MAP_PUBLIC_TO_WEB } from "@/lib/isCreepyHubApp";
 import styles from "./top-app-bar-shortcuts.module.css";
@@ -28,20 +29,49 @@ const armNovelBgmPermission = () => {
   audio.play().catch(() => {});
 };
 
-export default function TopAppBarShortcuts({
-  locale,
-  isAppShell = false,
-}: {
-  locale: string;
-  isAppShell?: boolean;
-}) {
-  // Native shell handles avatar/novel/map in its own toolbar.
-  if (isAppShell) return null;
+export default function TopAppBarShortcuts({ locale }: { locale: string }) {
+  const [authButtonsVisible, setAuthButtonsVisible] = useState(false);
+
+  useEffect(() => {
+    let rafId: number | null = null;
+    let observer: MutationObserver | null = null;
+
+    const updateAuthButtonVisibility = () => {
+      rafId = null;
+      const authButtons = Array.from(document.querySelectorAll<HTMLElement>("[data-home-auth-button='true']"));
+      setAuthButtonsVisible(
+        authButtons.some((button) => {
+          const rect = button.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < window.innerHeight;
+        })
+      );
+    };
+
+    const scheduleUpdate = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(updateAuthButtonVisibility);
+    };
+
+    scheduleUpdate();
+    const initialTimer = window.setTimeout(scheduleUpdate, 500);
+    observer = new MutationObserver(scheduleUpdate);
+    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
+
+    return () => {
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
+      window.clearTimeout(initialTimer);
+      observer?.disconnect();
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+    };
+  }, []);
 
   const showMap = MAP_PUBLIC_TO_WEB;
 
   return (
-    <div className={styles.row}>
+    <>
       <Link
         href={`/${locale}/novel`}
         onClick={armNovelBgmPermission}
@@ -51,28 +81,19 @@ export default function TopAppBarShortcuts({
             armNovelBgmPermission();
           }
         }}
-        className={styles.iconBtn}
-        aria-label="Novel"
+        className={`${styles.iconBtn} ${styles.novelBtn} ${authButtonsVisible ? styles.novelBtnLower : ""}`}
+        aria-label="映子ノベル"
       >
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-        </svg>
+        <img
+          src="/images/inakuro eiko _eye.png"
+          alt=""
+          className={styles.novelImage}
+        />
       </Link>
       {showMap && (
         <Link
           href={`/${locale}/map`}
-          className={styles.iconBtn}
+          className={`${styles.iconBtn} ${styles.mapBtn}`}
           aria-label="Spot Map"
         >
           <svg
@@ -91,6 +112,6 @@ export default function TopAppBarShortcuts({
           </svg>
         </Link>
       )}
-    </div>
+    </>
   );
 }
