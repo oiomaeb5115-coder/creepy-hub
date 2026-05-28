@@ -1,7 +1,7 @@
 .floatingButton {
   position: fixed;
   right: 24px;
-  bottom: 100px;
+  bottom: calc(150px + env(safe-area-inset-bottom, 0px));
   z-index: 20;
   width: 68px;
   height: 68px;
@@ -24,7 +24,7 @@
 @media (max-width: 960px) {
   .floatingButton {
     right: 16px;
-    bottom: 92px;
+    bottom: calc(150px + env(safe-area-inset-bottom, 0px));
     width: 58px;
     height: 58px;
   }
