@@ -90,6 +90,7 @@ function StoryCardGrid({
   const [videoPlaying, setVideoPlaying] = useState(false);
   const safeTitle = post.title ?? storyLabel;
   const safeContent = post.content ?? "";
+  const excerptContent = safeContent.length > 250 ? `${safeContent.slice(0, 250)}...` : safeContent;
   const safeCreatedAt = post.created_at ?? "";
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
   const score = post.vote_score ?? 0;
@@ -171,12 +172,18 @@ function StoryCardGrid({
         )}
 
         <div className={styles.gridCardBody}>
-          <p className={styles.gridCardExcerpt}>{safeContent}</p>
+          <p className={styles.gridCardExcerpt}>{excerptContent}</p>
         </div>
 
         <div className={styles.gridCardFooter}>
           <InlineVoteButtons postId={post.id} initialScore={score} />
-          <InlineCommentForm postId={post.id} locale={locale} initialCount={commentCount} postTitle={safeTitle} />
+          <InlineCommentForm
+            postId={post.id}
+            locale={locale}
+            initialCount={commentCount}
+            postTitle={safeTitle}
+            showCommentAction
+          />
           <span className="stat-icon"><ViewIcon /> {post.view_count ?? 0}</span>
         </div>
       </article>
