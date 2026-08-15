@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/getDictionary";
+import { NOVEL_PUBLIC_ACCESS_ENABLED } from "@/lib/features";
 import { isCreepyHubAppFromHeaders } from "@/lib/isCreepyHubApp";
 import NovelPlayer from "../[episodeId]/NovelPlayer";
 
@@ -8,12 +9,16 @@ type Props = {
 };
 
 export default async function NovelDemoPage({ params }: Props) {
+  const { locale } = await params;
+  if (!NOVEL_PUBLIC_ACCESS_ENABLED) {
+    notFound();
+  }
+
   // ノベル機能は iOS/Android 公式アプリ内でのみ公開。Web ブラウザからは 404。
   if (!(await isCreepyHubAppFromHeaders())) {
     notFound();
   }
 
-  const { locale } = await params;
   const dict = await getDictionary(locale);
 
   const demoScenes = [

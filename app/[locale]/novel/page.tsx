@@ -1,4 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { NOVEL_PUBLIC_ACCESS_ENABLED } from "@/lib/features";
+import { redirect } from "next/navigation";
 import NovelIdleScreen from "./NovelIdleScreen";
 
 type Props = {
@@ -16,6 +18,9 @@ const idleLayers = [
 
 export default async function NovelPage({ params }: Props) {
   const { locale } = await params;
+  if (!NOVEL_PUBLIC_ACCESS_ENABLED) {
+    redirect(`/${locale}`);
+  }
 
   // Fetch all published episodes for lobby list
   // Web/iOS/Android すべてで無料ノベルは公開。課金エピソードは access_tier で判別する。

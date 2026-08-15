@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { NOVEL_PUBLIC_ACCESS_ENABLED } from "@/lib/features";
 import { MAP_PUBLIC_TO_WEB } from "@/lib/isCreepyHubApp";
 import styles from "./top-app-bar-shortcuts.module.css";
 
@@ -72,24 +73,26 @@ export default function TopAppBarShortcuts({ locale }: { locale: string }) {
 
   return (
     <>
-      <Link
-        href={`/${locale}/novel`}
-        onClick={armNovelBgmPermission}
-        onPointerDown={armNovelBgmPermission}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            armNovelBgmPermission();
-          }
-        }}
-        className={`${styles.iconBtn} ${styles.novelBtn} ${authButtonsVisible ? styles.novelBtnLower : ""}`}
-        aria-label="映子ノベル"
-      >
-        <img
-          src="/images/inakuro eiko _eye.png"
-          alt=""
-          className={styles.novelImage}
-        />
-      </Link>
+      {NOVEL_PUBLIC_ACCESS_ENABLED && (
+        <Link
+          href={`/${locale}/novel`}
+          onClick={armNovelBgmPermission}
+          onPointerDown={armNovelBgmPermission}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              armNovelBgmPermission();
+            }
+          }}
+          className={`${styles.iconBtn} ${styles.novelBtn} ${authButtonsVisible ? styles.novelBtnLower : ""}`}
+          aria-label="映子ノベル"
+        >
+          <img
+            src="/images/inakuro eiko _eye.png"
+            alt=""
+            className={styles.novelImage}
+          />
+        </Link>
+      )}
       {showMap && (
         <Link
           href={`/${locale}/map`}

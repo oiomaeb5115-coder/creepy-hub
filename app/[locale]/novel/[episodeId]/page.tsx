@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
+import { NOVEL_PUBLIC_ACCESS_ENABLED } from "@/lib/features";
 import { redirect } from "next/navigation";
 import NovelPlayer from "./NovelPlayer";
 // Lock screen for premium/members-only episodes. Using absolute path
@@ -12,6 +13,10 @@ type Props = {
 
 export default async function NovelEpisodePage({ params }: Props) {
   const { locale, episodeId } = await params;
+  if (!NOVEL_PUBLIC_ACCESS_ENABLED) {
+    redirect(`/${locale}`);
+  }
+
   const dict = await getDictionary(locale);
 
   // Fetch episode — Web/iOS/Android すべて閲覧可。課金判定は access_tier で行う。

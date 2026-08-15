@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { NOVEL_PUBLIC_ACCESS_ENABLED } from "@/lib/features";
 import MapCanvas, { type SpotDatum, type PostDatum, type WikiDatum } from "@/components/map/MapCanvas";
 import SpotDetailDialog from "@/components/map/SpotDetailDialog";
 import PostDetailDialog from "@/components/map/PostDetailDialog";
@@ -214,14 +215,15 @@ export default function MapPage() {
         ← 戻る
       </Link>
 
-      {/* ノベル(映子の物語)へ */}
-      <Link href={`/${safeLocale}/novel`} style={novelBtn} aria-label="ノベルを開く">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-        </svg>
-        ノベル
-      </Link>
+      {NOVEL_PUBLIC_ACCESS_ENABLED && (
+        <Link href={`/${safeLocale}/novel`} style={novelBtn} aria-label="ノベルを開く">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+          </svg>
+          ノベル
+        </Link>
+      )}
 
       <MapFilterBar value={filter} onChange={setFilter} />
 
