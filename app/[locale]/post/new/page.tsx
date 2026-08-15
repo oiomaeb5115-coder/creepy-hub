@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { getAccessToken } from "@/lib/auth";
 import { generateSlug, sanitizeSlug } from "@/lib/slug";
 import { postUrl } from "@/lib/postUrl";
 import { uploadImage } from "@/lib/uploadImage";
@@ -18,10 +17,37 @@ import LocationPickerModal from "@/components/map/LocationPickerModal";
 import type { SpotCategory } from "@/lib/mapPalettes";
 import tabStyles from "./page.module.css";
 
+type Chapter = { id: number; title: string; body: string };
+
+const createEmptyChapter = (id = 1): Chapter => ({ id, title: "", body: "" });
+
+function parseChapters(content: string): Chapter[] {
+  if (!content.trim()) return [createEmptyChapter()];
+  const parts = content.split(/\n\n(?=## )/);
+  return parts.map((part, i) => {
+    const lines = part.split("\n");
+    const titleLine = lines[0] ?? "";
+    const title = titleLine.startsWith("## ") ? titleLine.slice(3) : "";
+    const bodyStartIndex = title ? (lines[1]?.trim() === "" ? 2 : 1) : 0;
+    const body = lines.slice(bodyStartIndex).join("\n").trim();
+    return { id: i + 1, title, body };
+  });
+}
+
+function mergeChapters(chapters: Chapter[]) {
+  return chapters
+    .map((chapter) => {
+      const title = chapter.title.trim();
+      const heading = title ? `## ${title}\n\n` : "";
+      return `${heading}${chapter.body.trim()}`;
+    })
+    .join("\n\n")
+    .trim();
+}
+
 export default function PostNewPage() {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "ja";
-  const router = useRouter();
   const searchParams = useSearchParams();
   // 開発時に位置ピッカーUIを強制表示するためのフラグ（?forceAppUI=1）
   const forceAppUI = searchParams?.get("forceAppUI") === "1";
@@ -34,7 +60,7 @@ export default function PostNewPage() {
   const [categories, setCategories] = useState<{ id: number; name: string; name_en: string | null }[]>([]);
   const [categoryId, setCategoryId] = useState("");
   const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
+  const [chapters, setChapters] = useState<Chapter[]>([createEmptyChapter()]);
   const [slugInput, setSlugInput] = useState("");
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -130,7 +156,25 @@ export default function PostNewPage() {
     try {
       const draft = JSON.parse(raw);
       if (typeof draft.title === "string") setTitle(draft.title);
-      if (typeof draft.body === "string") setBody(draft.body);
+      if (Array.isArray(draft.chapters)) {
+        const draftChapters = draft.chapters as unknown[];
+        const validChapters = draftChapters.filter(
+          (chapter: unknown): chapter is Chapter =>
+            typeof chapter === "object" &&
+            chapter !== null &&
+            typeof (chapter as Chapter).title === "string" &&
+            typeof (chapter as Chapter).body === "string"
+        );
+        if (validChapters.length > 0) {
+          setChapters(validChapters.map((chapter, index) => ({
+            id: typeof chapter.id === "number" ? chapter.id : index + 1,
+            title: chapter.title,
+            body: chapter.body,
+          })));
+        }
+      } else if (typeof draft.body === "string") {
+        setChapters(parseChapters(draft.body));
+      }
       if (typeof draft.categoryId === "string" || typeof draft.categoryId === "number") {
         setCategoryId(String(draft.categoryId));
       }
@@ -139,7 +183,7 @@ export default function PostNewPage() {
         if (draft.slugInput) setSlugManuallyEdited(true);
       }
       if (typeof draft.isSensitive === "boolean") setIsSensitive(draft.isSensitive);
-      const hasContent = draft.title || draft.body || draft.categoryId || draft.slugInput;
+      const hasContent = draft.title || draft.body || draft.chapters || draft.categoryId || draft.slugInput;
       if (hasContent) setDraftRestored(true);
     } catch { /* ignore */ }
   }, [userId]);
@@ -149,16 +193,16 @@ export default function PostNewPage() {
     if (!userId) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
-      localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, body, slugInput, isSensitive }));
+      localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, chapters, slugInput, isSensitive }));
     }, 500);
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [userId, categoryId, title, body, slugInput, isSensitive]);
+  }, [userId, categoryId, title, chapters, slugInput, isSensitive]);
 
   const deleteDraft = () => {
     if (!userId) return;
     localStorage.removeItem(`draft_post_${userId}`);
     setDraftRestored(false);
-    setCategoryId(""); setTitle(""); setBody(""); setSlugInput(""); setSlugManuallyEdited(false);
+    setCategoryId(""); setTitle(""); setChapters([createEmptyChapter()]); setSlugInput(""); setSlugManuallyEdited(false);
     setNewImage1(null); setNewImage2(null); setNewImage3(null);
     setImageUrl1(null); setImageUrl2(null); setImageUrl3(null);
     setNewVideo(null); setVideoPreviewUrl(null);
@@ -167,17 +211,54 @@ export default function PostNewPage() {
 
   const saveDraftManually = () => {
     if (!userId) return;
-    localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, body, slugInput, isSensitive }));
+    localStorage.setItem(`draft_post_${userId}`, JSON.stringify({ categoryId, title, chapters, slugInput, isSensitive }));
     setIsSaved(true);
     if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
     savedTimerRef.current = setTimeout(() => setIsSaved(false), 2000);
   };
 
+  const addChapter = () =>
+    setChapters((prev) => [...prev, createEmptyChapter(Date.now())]);
+
+  const removeChapter = (id: number) => {
+    if (chapters.length === 1) {
+      alert(locale === "en" ? "At least one chapter is required." : "章は最低1つ必要です。");
+      return;
+    }
+    setChapters((prev) => prev.filter((chapter) => chapter.id !== id));
+  };
+
+  const moveChapterUp = (index: number) => {
+    if (index === 0) return;
+    setChapters((prev) => {
+      const next = [...prev];
+      [next[index - 1], next[index]] = [next[index], next[index - 1]];
+      return next;
+    });
+  };
+
+  const moveChapterDown = (index: number) => {
+    if (index === chapters.length - 1) return;
+    setChapters((prev) => {
+      const next = [...prev];
+      [next[index], next[index + 1]] = [next[index + 1], next[index]];
+      return next;
+    });
+  };
+
+  const updateChapter = (index: number, key: "title" | "body", value: string) =>
+    setChapters((prev) =>
+      prev.map((chapter, chapterIndex) =>
+        chapterIndex === index ? { ...chapter, [key]: value } : chapter
+      )
+    );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!labels) return;
     if (!title.trim()) { alert(labels.alertTitleRequired); return; }
-    if (!body.trim()) { alert(labels.alertBodyRequired); return; }
+    const mergedContent = mergeChapters(chapters);
+    if (!chapters.some((chapter) => chapter.body.trim())) { alert(labels.alertBodyRequired); return; }
 
     setIsSubmitting(true);
     try {
@@ -222,7 +303,7 @@ export default function PostNewPage() {
 
       const baseInsert: Record<string, unknown> = {
         title: title.trim(),
-        content: body.trim(),
+        content: mergedContent,
         user_id: user.id,
         category_id: categoryId ? Number(categoryId) : null,
         view_count: 0,
@@ -265,7 +346,7 @@ export default function PostNewPage() {
           post_id: data.id,
           locale: "en",
           title: title.trim(),
-          content: body.trim(),
+          content: mergedContent,
         }]);
       }
 
@@ -560,16 +641,60 @@ export default function PostNewPage() {
                   </div>
                 )}
 
-                {/* 本文 */}
-                <div style={groupStyle}>
-                  <label style={labelStyle}>{labels.bodyLabel}</label>
-                  <textarea
-                    style={{ ...controlStyle, minHeight: 200, resize: "vertical" }}
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    placeholder="..."
-                  />
+                {/* 章構成 */}
+                <div style={{ ...groupStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <h3 style={{ margin: 0, fontSize: 14, color: "#c8b8b0" }}>
+                    {locale === "en" ? "Chapters" : "章構成"}
+                  </h3>
                 </div>
+
+                {chapters.map((chapter, index) => (
+                  <div key={chapter.id} style={chapterCard}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                      <span style={{ fontSize: 13, color: "#a09080", flexShrink: 0 }}>
+                        {locale === "en" ? `Chapter ${index + 1}` : `章 ${index + 1}`}
+                      </span>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                        <button type="button" style={miniBtn} onClick={() => moveChapterUp(index)}>
+                          {locale === "en" ? "Up" : "上へ"}
+                        </button>
+                        <button type="button" style={miniBtn} onClick={() => moveChapterDown(index)}>
+                          {locale === "en" ? "Down" : "下へ"}
+                        </button>
+                        <button
+                          type="button"
+                          style={{ ...miniBtn, color: "#e08080", borderColor: "rgba(180,60,60,0.4)" }}
+                          onClick={() => removeChapter(chapter.id)}
+                        >
+                          {locale === "en" ? "Delete" : "削除"}
+                        </button>
+                      </div>
+                    </div>
+                    <div style={groupStyle}>
+                      <label style={labelStyle}>{locale === "en" ? "Chapter title" : "章タイトル"}</label>
+                      <input
+                        style={controlStyle}
+                        type="text"
+                        value={chapter.title}
+                        onChange={(e) => updateChapter(index, "title", e.target.value)}
+                        placeholder={locale === "en" ? `Chapter ${index + 1}` : `章${index + 1}`}
+                      />
+                    </div>
+                    <div style={groupStyle}>
+                      <label style={labelStyle}>{labels.bodyLabel}</label>
+                      <textarea
+                        style={{ ...controlStyle, height: 180, resize: "vertical" }}
+                        value={chapter.body}
+                        onChange={(e) => updateChapter(index, "body", e.target.value)}
+                        placeholder="..."
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                <button type="button" style={{ ...secondaryBtn, alignSelf: "flex-start" }} onClick={addChapter}>
+                  {locale === "en" ? "Add chapter" : "章を追加"}
+                </button>
 
                 {/* ボタン行 */}
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
@@ -617,8 +742,10 @@ const formStyle: React.CSSProperties = { display: "flex", flexDirection: "column
 const groupStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 6 };
 const labelStyle: React.CSSProperties = { fontSize: 12, color: "#a09080", letterSpacing: "0.05em" };
 const controlStyle: React.CSSProperties = { background: "rgba(20,8,10,0.8)", border: "1px solid rgba(180,100,110,0.3)", color: "#e0d0c8", borderRadius: 4, padding: "8px 12px", fontSize: 14, width: "100%", boxSizing: "border-box" };
+const chapterCard: React.CSSProperties = { background: "rgba(20,5,10,0.5)", border: "1px solid rgba(180,100,110,0.15)", borderRadius: 4, padding: 16 };
 const primaryBtn: React.CSSProperties = { padding: "10px 24px", background: "#6b1a22", border: "1px solid #8b3a42", color: "#f0e0e0", borderRadius: 4, cursor: "pointer", fontSize: 14 };
 const secondaryBtn: React.CSSProperties = { padding: "8px 16px", background: "rgba(40,10,15,0.8)", border: "1px solid rgba(245,200,100,0.25)", color: "rgba(245,200,100,0.6)", borderRadius: 4, cursor: "pointer", fontSize: 12, letterSpacing: "0.08em" };
+const miniBtn: React.CSSProperties = { padding: "3px 8px", background: "rgba(40,10,15,0.6)", border: "1px solid rgba(180,100,110,0.25)", color: "#a09080", borderRadius: 3, cursor: "pointer", fontSize: 11 };
 const slugHintStyle: React.CSSProperties = { fontSize: 10, color: "rgba(200,150,140,0.35)", lineHeight: 1.5, letterSpacing: "0.03em" };
 const draftNoticeStyle: React.CSSProperties = { fontSize: 10, color: "rgba(245,200,100,0.5)", background: "rgba(245,200,100,0.04)", border: "1px solid rgba(245,200,100,0.12)", padding: "8px 12px", letterSpacing: "0.04em", lineHeight: 1.5 };
 const draftRestoredRowStyle: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 8px", background: "rgba(100,180,120,0.04)", border: "1px solid rgba(100,180,120,0.12)" };
