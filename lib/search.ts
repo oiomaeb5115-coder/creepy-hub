@@ -1,16 +1,5 @@
 import { supabase } from "@/lib/supabase";
-
-/**
- * PostgREST フィルタ文字列内で安全に使えるよう、
- * LIKE ワイルドカードおよび PostgREST 構文上の特殊文字をすべてエスケープ/除去する。
- */
-function sanitizeForPostgrest(raw: string): string {
-  return raw
-    .replace(/\\/g, "\\\\") // バックスラッシュを先にエスケープ
-    .replace(/%/g, "\\%")   // LIKE ワイルドカード
-    .replace(/_/g, "\\_")   // LIKE 単一文字ワイルドカード
-    .replace(/[(),.:"`;]/g, ""); // PostgREST 演算子・区切り文字の注入防止
-}
+import { makePostgrestIlikePattern } from "@/lib/postgrestFilter";
 
 export async function searchAll(query: string, locale: string) {
   const trimmed = query.trim();
@@ -18,8 +7,7 @@ export async function searchAll(query: string, locale: string) {
     return { stories: [], wiki: [], storyError: null, wikiError: null };
   }
 
-  const safeQuery = sanitizeForPostgrest(trimmed.slice(0, 200));
-  const keyword = `%${safeQuery}%`;
+  const keyword = makePostgrestIlikePattern(trimmed.slice(0, 200));
 
   const [storiesResult, wikiResult] = await Promise.all([
     supabase

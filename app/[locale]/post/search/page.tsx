@@ -6,6 +6,7 @@ import { getDictionary } from "@/lib/getDictionary";
 import styles from "../page.module.css";
 import BackButton from "@/components/BackButton";
 import { postUrl } from "@/lib/postUrl";
+import { makePostgrestIlikePattern } from "@/lib/postgrestFilter";
 import ViewIcon from "@/components/icons/ViewIcon";
 import ImpressionTracker from "@/components/ImpressionTracker";
 
@@ -47,11 +48,7 @@ export default async function StorySearchPage({ params, searchParams }: Props) {
   const dict = await getDictionary(locale);
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
-  const safeQ = q
-    .replace(/\\/g, "\\\\")
-    .replace(/%/g, "\\%")
-    .replace(/_/g, "\\_");
-  const keyword = `%${safeQ}%`;
+  const keyword = makePostgrestIlikePattern(q.slice(0, 200));
 
   let posts: StoryPost[] = [];
 

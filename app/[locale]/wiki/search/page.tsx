@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getDictionary } from "@/lib/getDictionary";
+import { makePostgrestIlikePattern } from "@/lib/postgrestFilter";
 import styles from "../wiki.module.css";
 import BackButton from "@/components/BackButton";
 import ViewIcon from "@/components/icons/ViewIcon";
@@ -43,11 +44,7 @@ export default async function WikiSearchPage({ params, searchParams }: Props) {
   const dict = await getDictionary(locale);
   const dateLocale = locale === "en" ? "en-US" : "ja-JP";
 
-  const safeQ = q
-    .replace(/\\/g, "\\\\")
-    .replace(/%/g, "\\%")
-    .replace(/_/g, "\\_");
-  const keyword = `%${safeQ}%`;
+  const keyword = makePostgrestIlikePattern(q.slice(0, 200));
 
   const { data } = q
     ? await supabaseAdmin
