@@ -52,7 +52,7 @@ export default function ImpressionTracker({ type, id, children }: ImpressionTrac
   }, [type, id]);
 
   return (
-    <div ref={ref}>
+    <div ref={ref} style={{ width: "100%", minWidth: 0 }}>
       {children}
     </div>
   );

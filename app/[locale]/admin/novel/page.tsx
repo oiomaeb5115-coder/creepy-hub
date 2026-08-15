@@ -8,6 +8,7 @@ import { uploadNovelImage, uploadNovelAudio } from "@/lib/uploadNovelMedia";
 import BackButton from "@/components/BackButton";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
+import styles from "./novel-admin.module.css";
 
 type AccessTier = "free" | "premium" | "members_only";
 type RequiredMembership = "any" | "youtube" | "apple_iap" | "google_play" | "stripe" | null;
@@ -66,6 +67,14 @@ export default function NovelAdminPage() {
   const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
 
+  const loadEpisodes = useCallback(async () => {
+    const { data } = await supabase
+      .from("novel_episodes")
+      .select("*")
+      .order("sort_order", { ascending: true });
+    if (data) setEpisodes(data);
+  }, []);
+
   useEffect(() => {
     (async () => {
       const isAdmin = await getIsAdmin();
@@ -76,15 +85,7 @@ export default function NovelAdminPage() {
       setChecking(false);
       loadEpisodes();
     })();
-  }, [locale, router]);
-
-  const loadEpisodes = useCallback(async () => {
-    const { data } = await supabase
-      .from("novel_episodes")
-      .select("*")
-      .order("sort_order", { ascending: true });
-    if (data) setEpisodes(data);
-  }, []);
+  }, [loadEpisodes, locale, router]);
 
   const loadScenes = useCallback(async (episodeId: string) => {
     const { data } = await supabase
@@ -302,7 +303,7 @@ export default function NovelAdminPage() {
   // ========== EPISODE EDIT VIEW ==========
   if (editingEpisode) {
     return (
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "20px 16px" }}>
+      <div className={styles.page} style={{ maxWidth: 800, margin: "0 auto", padding: "20px 16px" }}>
         <button
           onClick={() => { setEditingEpisode(null); setScenes([]); }}
           style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", marginBottom: 16, fontSize: 14 }}
@@ -336,7 +337,7 @@ export default function NovelAdminPage() {
               <img src={editingEpisode.cover_image_url} alt="cover" style={{ width: 120, height: 80, objectFit: "cover", marginTop: 4, borderRadius: 6 }} />
             )}
           </label>
-          <div style={{ display: "flex", gap: 12 }}>
+          <div className={styles.metadataActions} style={{ display: "flex", gap: 12 }}>
             <button onClick={() => togglePublish(editingEpisode)} style={btnStyle(editingEpisode.is_published ? "#f59e0b" : "#22c55e")}>
               {editingEpisode.is_published ? t.unpublish : t.publish}
             </button>
@@ -437,13 +438,14 @@ export default function NovelAdminPage() {
           const layers = scene.layers ?? [];
           return (
             <div
+              className={styles.sceneCard}
               key={scene.id}
               style={{ border: "1px solid var(--border, #333)", borderRadius: 8, padding: 16, marginBottom: 16, background: "var(--card-bg, #1a1a1a)" }}
             >
               {/* Scene header */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div className={styles.sceneHeader} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <strong>Scene {idx + 1}</strong>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div className={styles.sceneActions} style={{ display: "flex", gap: 6 }}>
                   <button onClick={() => moveScene(scene.id, "up")} disabled={idx === 0} style={smallBtnStyle}>{t.moveUp}</button>
                   <button onClick={() => moveScene(scene.id, "down")} disabled={idx === scenes.length - 1} style={smallBtnStyle}>{t.moveDown}</button>
                   <button onClick={() => deleteScene(scene.id)} style={{ ...smallBtnStyle, color: "#ef4444" }}>{t.deleteScene}</button>
@@ -457,6 +459,7 @@ export default function NovelAdminPage() {
                 </div>
                 {layers.map((layer, li) => (
                   <div
+                    className={styles.layerRow}
                     key={li}
                     style={{
                       display: "flex", alignItems: "center", gap: 8, padding: "6px 8px",
@@ -476,8 +479,8 @@ export default function NovelAdminPage() {
                     />
 
                     {/* Controls */}
-                    <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <div className={styles.layerControls} style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+                      <div className={styles.layerControlsRow} style={{ display: "flex", gap: 6, alignItems: "center" }}>
                         <select
                           value={layer.type}
                           onChange={(e) => updateLayerType(scene.id, layers, li, e.target.value as "bg" | "char")}
@@ -499,7 +502,7 @@ export default function NovelAdminPage() {
                         )}
                         <span style={{ fontSize: 11, color: "var(--muted)" }}>z:{li}</span>
                       </div>
-                      <div style={{ display: "flex", gap: 4 }}>
+                      <div className={styles.layerFileRow} style={{ display: "flex", gap: 4 }}>
                         <button onClick={() => moveLayer(scene.id, layers, li, "up")} disabled={li === 0} style={tinyBtnStyle}>&#9650;</button>
                         <button onClick={() => moveLayer(scene.id, layers, li, "down")} disabled={li === layers.length - 1} style={tinyBtnStyle}>&#9660;</button>
                         <input
@@ -515,7 +518,7 @@ export default function NovelAdminPage() {
                 ))}
 
                 {/* Add layer buttons */}
-                <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                <div className={styles.addLayerActions} style={{ display: "flex", gap: 8, marginTop: 6 }}>
                   <label style={{ ...smallBtnStyle, display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
                     + 背景レイヤー
                     <input
@@ -583,11 +586,11 @@ export default function NovelAdminPage() {
 
   // ========== EPISODE LIST VIEW ==========
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", padding: "20px 16px" }}>
+    <div className={styles.page} style={{ maxWidth: 800, margin: "0 auto", padding: "20px 16px" }}>
       <BackButton />
       <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 20 }}>{t.title}</h1>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+      <div className={styles.createRow} style={{ display: "flex", gap: 8, marginBottom: 24 }}>
         <input
           type="text"
           placeholder={`${t.episodeTitle}（日本語）`}
@@ -605,6 +608,7 @@ export default function NovelAdminPage() {
 
       {episodes.map((ep) => (
         <div
+          className={styles.episodeCard}
           key={ep.id}
           style={{
             border: "1px solid var(--border, #333)", borderRadius: 8, padding: 16, marginBottom: 12,
@@ -614,13 +618,13 @@ export default function NovelAdminPage() {
           {ep.cover_image_url && (
             <img src={ep.cover_image_url} alt="" style={{ width: 60, height: 40, objectFit: "cover", borderRadius: 4, flexShrink: 0 }} />
           )}
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div className={styles.episodeInfo} style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ep.title_ja}</div>
             <div style={{ fontSize: 12, color: "var(--muted)" }}>
               {ep.is_published ? "公開中" : "非公開"} | {new Date(ep.created_at).toLocaleDateString(locale === "en" ? "en-US" : "ja-JP")}
             </div>
           </div>
-          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+          <div className={styles.episodeActions} style={{ display: "flex", gap: 6, flexShrink: 0 }}>
             <button onClick={() => { setEditingEpisode(ep); loadScenes(ep.id); }} style={smallBtnStyle}>{t.editEpisode}</button>
             <button onClick={() => togglePublish(ep)} style={smallBtnStyle}>{ep.is_published ? t.unpublish : t.publish}</button>
           </div>

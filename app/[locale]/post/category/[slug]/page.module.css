@@ -289,8 +289,77 @@
     height: 180px;
   }
 
+  .categoryShell {
+    padding: 24px 14px calc(112px + env(safe-area-inset-bottom, 0px));
+  }
+
   .categoryHeader {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .categoryTitleRow,
+  .postRow,
+  .postContent {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .categoryTitleRow > div {
+    min-width: 0;
+  }
+
+  .categoryIcon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .categoryTitle {
+    font-size: clamp(28px, 10vw, 40px);
+    overflow-wrap: anywhere;
+  }
+
+  .sortTabs {
+    overflow-x: auto;
+  }
+
+  .sortTab {
+    white-space: nowrap;
+  }
+
+  .postContent {
+    padding: 12px;
+  }
+
+  .postAuthorRow {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    column-gap: 8px;
+    row-gap: 0;
+    align-items: center;
+  }
+
+  .postAvatar,
+  .postAvatarPlaceholder {
+    grid-row: 1 / span 2;
+  }
+
+  .postAuthorName {
+    min-width: 0;
+  }
+
+  .postDate {
+    grid-column: 2;
+    margin-left: 0;
+    font-size: 12px;
+  }
+
+  .postFooter {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .postExcerpt {
+    overflow-wrap: anywhere;
   }
 }

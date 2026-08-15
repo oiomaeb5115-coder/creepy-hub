@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
@@ -39,6 +39,12 @@ export const metadata: Metadata = {
       "イナクロ怪集部が運営する怪談・都市伝説・オカルト情報サイト。怖い話の投稿・閲覧や、オカルトWikiが楽しめます。",
     creator: "@inakuro_kaishuu",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

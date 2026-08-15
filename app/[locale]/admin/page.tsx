@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { getIsAdmin, getAccessToken } from "@/lib/auth";
+import { getAccessToken } from "@/lib/auth";
 import { compressImage } from "@/lib/compressImage";
 import BackButton from "@/components/BackButton";
 import en from "@/locales/en.json";
 import ja from "@/locales/ja.json";
+import styles from "./admin.module.css";
 
 type StoryRow = { id: number; title: string | null; created_at: string | null };
 type WikiRow = { slug: string; title: string; updated_at: string | null };
@@ -679,24 +680,24 @@ export default function AdminPage() {
 
   if (checking) {
     return (
-      <main style={pageStyle}>
-        <div style={shellStyle}>{dict.admin.authChecking}</div>
+      <main className={styles.page} style={pageStyle}>
+        <div className={styles.shell} style={shellStyle}>{dict.admin.authChecking}</div>
       </main>
     );
   }
 
   return (
-    <main style={pageStyle}>
-      <div style={shellStyle}>
+    <main className={styles.page} style={pageStyle}>
+      <div className={styles.shell} style={shellStyle}>
         <BackButton />
 
-        <header style={headerStyle}>
+        <header className={styles.header} style={headerStyle}>
           <div>
             <p style={breadcrumbStyle}>ADMIN / DASHBOARD</p>
             <h1 style={titleStyle}>{dict.admin.dashboard}</h1>
             <p style={subtitleStyle}>{dict.admin.subtitle}</p>
           </div>
-          <Link href={`/${locale}`} style={topLinkStyle}>
+          <Link className={styles.topLink} href={`/${locale}`} style={topLinkStyle}>
             {dict.admin.homeLink}
           </Link>
         </header>
@@ -721,9 +722,9 @@ export default function AdminPage() {
         </Link>
 
         {/* 管理者プロフィール */}
-        <section style={profileSectionStyle}>
+        <section className={styles.profileSection} style={profileSectionStyle}>
           <h2 style={sectionTitleStyle}>ADMIN PROFILE</h2>
-          <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+          <div className={styles.profileContent} style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
             {/* アバター */}
             <div style={{ flexShrink: 0 }}>
               {profile?.avatar_url ? (
@@ -738,7 +739,7 @@ export default function AdminPage() {
             </div>
 
             {/* 本体 */}
-            <div style={{ flex: 1 }}>
+            <div className={styles.profileBody} style={{ flex: 1 }}>
               {editing ? (
                 /* ── 編集フォーム ── */
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -815,7 +816,7 @@ export default function AdminPage() {
                     />
                   </div>
 
-                  <div style={{ display: "flex", gap: 8 }}>
+                  <div className={styles.buttonGroup} style={{ display: "flex", gap: 8 }}>
                     <button
                       style={profileSaveBtnStyle}
                       onClick={handleSave}
@@ -861,7 +862,7 @@ export default function AdminPage() {
           {stories.length === 0 ? (
             <p style={emptyStyle}>{dict.admin.allTranslated}</p>
           ) : (
-            <table style={tableStyle}>
+            <table className={styles.responsiveTable} style={tableStyle}>
               <thead>
                 <tr>
                   <th style={thStyle}>{dict.admin.titleCol}</th>
@@ -874,7 +875,7 @@ export default function AdminPage() {
                   const st = storyStatus[story.id] ?? "idle";
                   return (
                     <tr key={story.id} style={trStyle}>
-                      <td style={tdStyle}>
+                      <td data-label={dict.admin.titleCol} style={tdStyle}>
                         <Link
                           href={`/${locale}/post/${story.id}`}
                           style={linkStyle}
@@ -882,12 +883,12 @@ export default function AdminPage() {
                           {story.title ?? `#${story.id}`}
                         </Link>
                       </td>
-                      <td style={tdStyle}>
+                      <td data-label={dict.admin.dateCol} style={tdStyle}>
                         {story.created_at
                           ? new Date(story.created_at).toLocaleDateString(dateLocale)
                           : "—"}
                       </td>
-                      <td style={tdStyle}>
+                      <td data-actions="true" data-label={dict.admin.actionCol} style={tdStyle}>
                         <button
                           style={actionButtonStyle(st)}
                           disabled={st === "loading" || st === "done" || st === "exists"}
@@ -920,7 +921,7 @@ export default function AdminPage() {
           {wikis.length === 0 ? (
             <p style={emptyStyle}>{dict.admin.allTranslated}</p>
           ) : (
-            <table style={tableStyle}>
+            <table className={styles.responsiveTable} style={tableStyle}>
               <thead>
                 <tr>
                   <th style={thStyle}>{dict.admin.titleCol}</th>
@@ -933,7 +934,7 @@ export default function AdminPage() {
                   const st = wikiStatus[wiki.slug] ?? "idle";
                   return (
                     <tr key={wiki.slug} style={trStyle}>
-                      <td style={tdStyle}>
+                      <td data-label={dict.admin.titleCol} style={tdStyle}>
                         <Link
                           href={`/${locale}/wiki/${wiki.slug}`}
                           style={linkStyle}
@@ -941,12 +942,12 @@ export default function AdminPage() {
                           {wiki.title}
                         </Link>
                       </td>
-                      <td style={tdStyle}>
+                      <td data-label={dict.admin.updatedCol} style={tdStyle}>
                         {wiki.updated_at
                           ? new Date(wiki.updated_at).toLocaleDateString(dateLocale)
                           : "—"}
                       </td>
-                      <td style={tdStyle}>
+                      <td data-actions="true" data-label={dict.admin.actionCol} style={tdStyle}>
                         <button
                           style={actionButtonStyle(st)}
                           disabled={st === "loading" || st === "done" || st === "exists"}
@@ -978,7 +979,7 @@ export default function AdminPage() {
           {pendingCategories.length === 0 ? (
             <p style={emptyStyle}>{dict.admin.noPending}</p>
           ) : (
-            <table style={tableStyle}>
+            <table className={styles.responsiveTable} style={tableStyle}>
               <thead>
                 <tr>
                   <th style={thStyle}>{dict.admin.catNameCol}</th>
@@ -994,19 +995,19 @@ export default function AdminPage() {
                   const dst = deleteStatus[cat.id] ?? "idle";
                   return (
                     <tr key={cat.id} style={trStyle}>
-                      <td style={tdStyle}>{cat.name}</td>
-                      <td style={tdStyle}>
+                      <td data-label={dict.admin.catNameCol} style={tdStyle}>{cat.name}</td>
+                      <td data-label={dict.admin.slugCol} style={tdStyle}>
                         <span style={{ color: "#7a6a60", fontFamily: "monospace" }}>
                           {cat.slug}
                         </span>
                       </td>
-                      <td style={tdStyle}>{cat.description ?? "—"}</td>
-                      <td style={tdStyle}>
+                      <td data-label={dict.admin.descCol} style={tdStyle}>{cat.description ?? "—"}</td>
+                      <td data-label={dict.admin.requestDateCol} style={tdStyle}>
                         {cat.created_at
                           ? new Date(cat.created_at).toLocaleDateString(dateLocale)
                           : "—"}
                       </td>
-                      <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
+                      <td data-actions="true" data-label={dict.admin.actionCol} style={{ ...tdStyle, display: "flex", gap: 6 }}>
                         <button
                           style={actionButtonStyle(
                             st === "done" ? "done" : st === "error" ? "error" : "idle"
@@ -1046,7 +1047,7 @@ export default function AdminPage() {
           {pendingWikiCategories.length === 0 ? (
             <p style={emptyStyle}>{dict.admin.noPending}</p>
           ) : (
-            <table style={tableStyle}>
+            <table className={styles.responsiveTable} style={tableStyle}>
               <thead>
                 <tr>
                   <th style={thStyle}>{dict.admin.catNameCol}</th>
@@ -1062,19 +1063,19 @@ export default function AdminPage() {
                   const dst = wikiDeleteStatus[cat.id] ?? "idle";
                   return (
                     <tr key={cat.id} style={trStyle}>
-                      <td style={tdStyle}>{cat.name}</td>
-                      <td style={tdStyle}>
+                      <td data-label={dict.admin.catNameCol} style={tdStyle}>{cat.name}</td>
+                      <td data-label={dict.admin.slugCol} style={tdStyle}>
                         <span style={{ color: "#7a6a60", fontFamily: "monospace" }}>
                           {cat.slug}
                         </span>
                       </td>
-                      <td style={tdStyle}>{cat.description ?? "—"}</td>
-                      <td style={tdStyle}>
+                      <td data-label={dict.admin.descCol} style={tdStyle}>{cat.description ?? "—"}</td>
+                      <td data-label={dict.admin.requestDateCol} style={tdStyle}>
                         {cat.created_at
                           ? new Date(cat.created_at).toLocaleDateString(dateLocale)
                           : "—"}
                       </td>
-                      <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
+                      <td data-actions="true" data-label={dict.admin.actionCol} style={{ ...tdStyle, display: "flex", gap: 6 }}>
                         <button
                           style={actionButtonStyle(
                             st === "done" ? "done" : st === "error" ? "error" : "idle"
@@ -1108,7 +1109,7 @@ export default function AdminPage() {
           {reportedCategories.length === 0 ? (
             <p style={emptyStyle}>{dict.admin.noReports}</p>
           ) : (
-            <table style={tableStyle}>
+            <table className={styles.responsiveTable} style={tableStyle}>
               <thead>
                 <tr>
                   <th style={thStyle}>{dict.admin.catNameCol}</th>
@@ -1122,16 +1123,16 @@ export default function AdminPage() {
                   const dst = deleteStatus[cat.id] ?? "idle";
                   return (
                     <tr key={cat.id} style={trStyle}>
-                      <td style={tdStyle}>{cat.name}</td>
-                      <td style={tdStyle}>
+                      <td data-label={dict.admin.catNameCol} style={tdStyle}>{cat.name}</td>
+                      <td data-label={dict.admin.slugCol} style={tdStyle}>
                         <span style={{ color: "#7a6a60", fontFamily: "monospace" }}>
                           {cat.slug}
                         </span>
                       </td>
-                      <td style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
+                      <td data-label={dict.admin.reportCountCol} style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
                         {cat.reported_count}
                       </td>
-                      <td style={{ ...tdStyle, display: "flex", gap: 8, alignItems: "center" }}>
+                      <td data-actions="true" data-label={dict.admin.actionCol} style={{ ...tdStyle, display: "flex", gap: 8, alignItems: "center" }}>
                         <Link
                           href={`/${locale}/post/category/${cat.slug}`}
                           style={linkStyle}
@@ -1164,7 +1165,7 @@ export default function AdminPage() {
           {reportedPosts.length === 0 ? (
             <p style={emptyStyle}>{dict.admin.noReportedPosts}</p>
           ) : (
-            <table style={tableStyle}>
+            <table className={styles.responsiveTable} style={tableStyle}>
               <thead>
                 <tr>
                   <th style={thStyle}>{dict.admin.titleCol}</th>
@@ -1177,11 +1178,11 @@ export default function AdminPage() {
                   const dst = reportedPostDeleteStatus[post.id] ?? "idle";
                   return (
                     <tr key={post.id} style={trStyle}>
-                      <td style={tdStyle}>{post.title ?? `#${post.id}`}</td>
-                      <td style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
+                      <td data-label={dict.admin.titleCol} style={tdStyle}>{post.title ?? `#${post.id}`}</td>
+                      <td data-label={dict.admin.reportCountCol} style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
                         {post.reported_count}
                       </td>
-                      <td style={{ ...tdStyle, display: "flex", gap: 8, alignItems: "center" }}>
+                      <td data-actions="true" data-label={dict.admin.actionCol} style={{ ...tdStyle, display: "flex", gap: 8, alignItems: "center" }}>
                         <Link
                           href={`/${locale}/post/${post.id}`}
                           style={linkStyle}
@@ -1214,7 +1215,7 @@ export default function AdminPage() {
           {reportedWikis.length === 0 ? (
             <p style={emptyStyle}>{dict.admin.noReportedWikis}</p>
           ) : (
-            <table style={tableStyle}>
+            <table className={styles.responsiveTable} style={tableStyle}>
               <thead>
                 <tr>
                   <th style={thStyle}>{dict.admin.slugCol}</th>
@@ -1228,16 +1229,16 @@ export default function AdminPage() {
                   const dst = reportedWikiDeleteStatus[wiki.id] ?? "idle";
                   return (
                     <tr key={wiki.id} style={trStyle}>
-                      <td style={tdStyle}>
+                      <td data-label={dict.admin.slugCol} style={tdStyle}>
                         <span style={{ color: "#7a6a60", fontFamily: "monospace" }}>
                           {wiki.slug}
                         </span>
                       </td>
-                      <td style={tdStyle}>{wiki.title}</td>
-                      <td style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
+                      <td data-label={dict.admin.catNameCol} style={tdStyle}>{wiki.title}</td>
+                      <td data-label={dict.admin.reportCountCol} style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
                         {wiki.reported_count}
                       </td>
-                      <td style={{ ...tdStyle, display: "flex", gap: 8, alignItems: "center" }}>
+                      <td data-actions="true" data-label={dict.admin.actionCol} style={{ ...tdStyle, display: "flex", gap: 8, alignItems: "center" }}>
                         <Link
                           href={`/${locale}/wiki/${wiki.slug}`}
                           style={linkStyle}
@@ -1270,7 +1271,7 @@ export default function AdminPage() {
           {reportedStreams.length === 0 ? (
             <p style={emptyStyle}>{dict.admin.noReportedStreams}</p>
           ) : (
-            <table style={tableStyle}>
+            <table className={styles.responsiveTable} style={tableStyle}>
               <thead>
                 <tr>
                   <th style={thStyle}>Stream</th>
@@ -1284,7 +1285,7 @@ export default function AdminPage() {
                   const dmst = dismissStreamStatus[stream.id] ?? "idle";
                   return (
                     <tr key={stream.id} style={trStyle}>
-                      <td style={tdStyle}>
+                      <td data-label="Stream" style={tdStyle}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                           {stream.media_url && (
                             <img
@@ -1298,10 +1299,10 @@ export default function AdminPage() {
                           </span>
                         </div>
                       </td>
-                      <td style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
+                      <td data-label={dict.admin.reportCountCol} style={{ ...tdStyle, color: "#e08080", fontWeight: 600 }}>
                         {stream.report_count}
                       </td>
-                      <td style={{ ...tdStyle, display: "flex", gap: 8, alignItems: "center" }}>
+                      <td data-actions="true" data-label={dict.admin.actionCol} style={{ ...tdStyle, display: "flex", gap: 8, alignItems: "center" }}>
                         <Link
                           href={`/${locale}/stream`}
                           style={linkStyle}
@@ -1357,7 +1358,7 @@ export default function AdminPage() {
               <p style={{ fontSize: 12, color: "#9a8a88", marginBottom: 8, letterSpacing: "0.08em" }}>
                 {dict.admin.trashStoriesSec.replace("{count}", String(trashStories.length))}
               </p>
-              <table style={tableStyle}>
+              <table className={styles.responsiveTable} style={tableStyle}>
                 <thead>
                   <tr>
                     <th style={thStyle}>{dict.admin.titleCol}</th>
@@ -1371,12 +1372,12 @@ export default function AdminPage() {
                     const st = trashStoryStatus[s.id] ?? "idle";
                     return (
                       <tr key={s.id} style={trStyle}>
-                        <td style={tdStyle}>{s.title ?? `#${s.id}`}</td>
-                        <td style={tdStyle}>{new Date(s.deleted_at).toLocaleDateString(dateLocale)}</td>
-                        <td style={{ ...tdStyle, color: daysLeft(s.deleted_at) === 0 ? "#e08080" : "#c8b8b0" }}>
+                        <td data-label={dict.admin.titleCol} style={tdStyle}>{s.title ?? `#${s.id}`}</td>
+                        <td data-label={dict.admin.deletedDateCol} style={tdStyle}>{new Date(s.deleted_at).toLocaleDateString(dateLocale)}</td>
+                        <td data-label={dict.admin.remainingCol} style={{ ...tdStyle, color: daysLeft(s.deleted_at) === 0 ? "#e08080" : "#c8b8b0" }}>
                           {daysLeft(s.deleted_at)}{dict.admin.daysLeftUnit}
                         </td>
-                        <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
+                        <td data-actions="true" data-label={dict.admin.actionCol} style={{ ...tdStyle, display: "flex", gap: 6 }}>
                           <button style={restoreButtonStyle} disabled={st !== "idle"} onClick={() => restoreStory(s.id)}>
                             {st === "loading" ? dict.admin.processing : st === "restored" ? dict.admin.restoredStatus : st === "error" ? dict.admin.errorStatus : dict.admin.restoreBtn}
                           </button>
@@ -1398,7 +1399,7 @@ export default function AdminPage() {
               <p style={{ fontSize: 12, color: "#9a8a88", marginBottom: 8, letterSpacing: "0.08em" }}>
                 {dict.admin.trashWikiSec.replace("{count}", String(trashWikis.length))}
               </p>
-              <table style={tableStyle}>
+              <table className={styles.responsiveTable} style={tableStyle}>
                 <thead>
                   <tr>
                     <th style={thStyle}>{dict.admin.titleCol}</th>
@@ -1412,12 +1413,12 @@ export default function AdminPage() {
                     const st = trashWikiStatus[w.slug] ?? "idle";
                     return (
                       <tr key={w.slug} style={trStyle}>
-                        <td style={tdStyle}>{w.title}</td>
-                        <td style={tdStyle}>{new Date(w.deleted_at).toLocaleDateString(dateLocale)}</td>
-                        <td style={{ ...tdStyle, color: daysLeft(w.deleted_at) === 0 ? "#e08080" : "#c8b8b0" }}>
+                        <td data-label={dict.admin.titleCol} style={tdStyle}>{w.title}</td>
+                        <td data-label={dict.admin.deletedDateCol} style={tdStyle}>{new Date(w.deleted_at).toLocaleDateString(dateLocale)}</td>
+                        <td data-label={dict.admin.remainingCol} style={{ ...tdStyle, color: daysLeft(w.deleted_at) === 0 ? "#e08080" : "#c8b8b0" }}>
                           {daysLeft(w.deleted_at)}{dict.admin.daysLeftUnit}
                         </td>
-                        <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
+                        <td data-actions="true" data-label={dict.admin.actionCol} style={{ ...tdStyle, display: "flex", gap: 6 }}>
                           <button style={restoreButtonStyle} disabled={st !== "idle"} onClick={() => restoreWiki(w.slug)}>
                             {st === "loading" ? dict.admin.processing : st === "restored" ? dict.admin.restoredStatus : st === "error" ? dict.admin.errorStatus : dict.admin.restoreBtn}
                           </button>
@@ -1439,7 +1440,7 @@ export default function AdminPage() {
               <p style={{ fontSize: 12, color: "#9a8a88", marginBottom: 8, letterSpacing: "0.08em" }}>
                 {dict.admin.trashCatSec.replace("{count}", String(trashCategories.length))}
               </p>
-              <table style={tableStyle}>
+              <table className={styles.responsiveTable} style={tableStyle}>
                 <thead>
                   <tr>
                     <th style={thStyle}>{dict.admin.catNameCol}</th>
@@ -1453,12 +1454,12 @@ export default function AdminPage() {
                     const st = trashCatStatus[c.id] ?? "idle";
                     return (
                       <tr key={c.id} style={trStyle}>
-                        <td style={tdStyle}>{c.name}</td>
-                        <td style={tdStyle}>{new Date(c.deleted_at).toLocaleDateString(dateLocale)}</td>
-                        <td style={{ ...tdStyle, color: daysLeft(c.deleted_at) === 0 ? "#e08080" : "#c8b8b0" }}>
+                        <td data-label={dict.admin.catNameCol} style={tdStyle}>{c.name}</td>
+                        <td data-label={dict.admin.deletedDateCol} style={tdStyle}>{new Date(c.deleted_at).toLocaleDateString(dateLocale)}</td>
+                        <td data-label={dict.admin.remainingCol} style={{ ...tdStyle, color: daysLeft(c.deleted_at) === 0 ? "#e08080" : "#c8b8b0" }}>
                           {daysLeft(c.deleted_at)}{dict.admin.daysLeftUnit}
                         </td>
-                        <td style={{ ...tdStyle, display: "flex", gap: 6 }}>
+                        <td data-actions="true" data-label={dict.admin.actionCol} style={{ ...tdStyle, display: "flex", gap: 6 }}>
                           <button style={restoreButtonStyle} disabled={st !== "idle"} onClick={() => restoreCategory(c.id)}>
                             {st === "loading" ? dict.admin.processing : st === "restored" ? dict.admin.restoredStatus : st === "error" ? dict.admin.errorStatus : dict.admin.restoreBtn}
                           </button>

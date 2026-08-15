@@ -304,6 +304,10 @@
 }
 
 @media (max-width: 760px) {
+  .submitPage {
+    padding: 24px 14px calc(112px + env(safe-area-inset-bottom, 0px));
+  }
+
   .submitHeader {
     flex-direction: column;
     align-items: stretch;
@@ -316,6 +320,25 @@
 
   .submitRow {
     flex-direction: column;
+  }
+
+  .submitTitle {
+    font-size: clamp(30px, 11vw, 44px);
+  }
+
+  .sectionToolbar,
+  .chapterCardHead {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .chapterActions {
+    flex-wrap: wrap;
+  }
+
+  .chapterCard {
+    padding: 16px;
   }
 }
 

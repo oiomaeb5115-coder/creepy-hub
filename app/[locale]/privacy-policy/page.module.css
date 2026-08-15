@@ -62,3 +62,22 @@
 .sectionBody li {
   margin-bottom: 4px;
 }
+
+.sectionBody a {
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .privacyPage {
+    padding: 24px 14px calc(112px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .privacyTitle {
+    font-size: clamp(26px, 9vw, 36px);
+  }
+
+  .sectionBody ul {
+    padding-left: 18px;
+  }
+}

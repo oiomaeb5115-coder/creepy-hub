@@ -560,6 +560,10 @@
 }
 
 @media (max-width: 640px) {
+  .storyPage {
+    padding: 24px 14px calc(112px + env(safe-area-inset-bottom, 0px));
+  }
+
   .pageHeader {
     flex-direction: column;
     align-items: stretch;
@@ -583,5 +587,33 @@
 
   .postTitle {
     font-size: 15px;
+  }
+
+  .postAuthorRow {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    column-gap: 8px;
+    row-gap: 0;
+    align-items: center;
+  }
+
+  .postAvatar,
+  .postAvatarPlaceholder {
+    grid-row: 1 / span 2;
+  }
+
+  .postAuthorName {
+    min-width: 0;
+  }
+
+  .postDate {
+    grid-column: 2;
+    margin-left: 0;
+    font-size: 12px;
+  }
+
+  .postFooter {
+    flex-wrap: wrap;
+    row-gap: 8px;
   }
 }

@@ -16,11 +16,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const { data: profile } = await supabaseAdmin
     .from("profiles")
-    .select("username, display_name, bio, avatar_url, banner_url")
+    .select("id, username, display_name, bio, avatar_url, banner_url")
     .eq("username", username)
     .single();
 
   if (!profile) return {};
+
+  // 公開投稿の有無を確認（空プロフィールは noindex でクロール予算を節約）
+  let publishedPostCount = 0;
+  if (profile.id) {
+    const { count } = await supabaseAdmin
+      .from("post")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", profile.id)
+      .eq("is_published", true);
+    publishedPostCount = count ?? 0;
+  }
+  const hasBio = !!(profile.bio && profile.bio.trim().length > 0);
+  const isEmptyProfile = publishedPostCount === 0 && !hasBio;
 
   const displayName = profile.display_name || profile.username || username;
   const title = displayName;
@@ -36,6 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
+    ...(isEmptyProfile ? { robots: { index: false, follow: true } } : {}),
     alternates: {
       canonical: url,
       languages: {

@@ -727,7 +727,7 @@
 
 @media (max-width: 640px) {
   .wikiPage {
-    padding: 24px 14px 80px;
+    padding: 24px 14px calc(112px + env(safe-area-inset-bottom, 0px));
   }
 
   .wikiHeader {
@@ -750,6 +750,41 @@
 
   .relatedGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .feedAuthorRow {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    column-gap: 8px;
+    row-gap: 0;
+    align-items: center;
+  }
+
+  .feedAvatar,
+  .feedAvatarPlaceholder {
+    grid-row: 1 / span 2;
+  }
+
+  .feedAuthorName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .feedDate {
+    grid-column: 2;
+    margin-left: 0;
+    font-size: 12px;
+  }
+
+  .articleAuthorRow {
+    flex-wrap: wrap;
+  }
+
+  .articleDate {
+    width: 100%;
+    margin-left: 42px;
   }
 }
 

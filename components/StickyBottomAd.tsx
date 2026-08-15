@@ -49,6 +49,8 @@ export default function StickyBottomAd() {
           z-index: 50;
           display: flex;
           align-items: flex-start;
+          justify-content: center;
+          width: min(calc(100vw - 16px), 344px);
           background: rgba(20, 20, 20, 0.85);
           backdrop-filter: blur(8px);
           border-radius: 6px;
@@ -73,7 +75,11 @@ export default function StickyBottomAd() {
           line-height: 1;
           cursor: pointer;
           padding: 0;
-          margin-left: 4px;
+          position: absolute;
+          top: -10px;
+          right: -2px;
+          z-index: 1;
+          margin-left: 0;
           flex-shrink: 0;
           display: flex;
           align-items: center;
@@ -96,7 +102,7 @@ export default function StickyBottomAd() {
       >
         <iframe
           src="/ads/sticky.html"
-          style={{ width: 320, height: 50, border: 'none', overflow: 'hidden', display: 'block' }}
+          style={{ width: 'min(320px, calc(100vw - 24px))', height: 50, border: 'none', overflow: 'hidden', display: 'block' }}
           scrolling="no"
           title="広告"
         />

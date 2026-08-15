@@ -1,0 +1,130 @@
+.page,
+.layerControls,
+.episodeInfo {
+  min-width: 0;
+}
+
+.page {
+  box-sizing: border-box;
+  width: 100%;
+  padding-right: max(16px, env(safe-area-inset-right)) !important;
+  padding-bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+  padding-left: max(16px, env(safe-area-inset-left)) !important;
+  overflow-x: clip;
+}
+
+.page input,
+.page textarea,
+.page select,
+.page audio {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 16px max(12px, env(safe-area-inset-right)) calc(88px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important;
+  }
+
+  .page h1,
+  .page h2,
+  .page label,
+  .page p,
+  .page strong,
+  .page button {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .page button,
+  .page label {
+    white-space: normal !important;
+  }
+
+  .metadataActions,
+  .sceneActions,
+  .layerControlsRow,
+  .layerFileRow,
+  .addLayerActions {
+    flex-wrap: wrap;
+  }
+
+  .metadataActions > button {
+    flex: 1 1 120px;
+  }
+
+  .sceneCard {
+    padding: 12px !important;
+  }
+
+  .sceneHeader {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px;
+  }
+
+  .sceneActions {
+    width: 100%;
+  }
+
+  .sceneActions > button {
+    flex: 1 1 72px;
+  }
+
+  .layerRow {
+    flex-wrap: wrap;
+    align-items: flex-start !important;
+  }
+
+  .layerControls {
+    flex: 1 1 calc(100% - 60px) !important;
+  }
+
+  .layerControlsRow > select {
+    flex: 1 1 96px;
+    width: auto !important;
+    min-width: 0;
+  }
+
+  .layerFileRow {
+    align-items: center;
+  }
+
+  .layerFileRow input[type="file"] {
+    flex: 1 1 100%;
+    width: 100% !important;
+  }
+
+  .addLayerActions > label {
+    flex: 1 1 130px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .createRow {
+    flex-direction: column;
+  }
+
+  .createRow > button {
+    width: 100%;
+  }
+
+  .episodeCard {
+    flex-wrap: wrap;
+    padding: 12px !important;
+  }
+
+  .episodeInfo {
+    flex: 1 1 calc(100% - 72px) !important;
+  }
+
+  .episodeActions {
+    display: grid !important;
+    flex: 1 0 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .episodeActions > button {
+    width: 100%;
+  }
+}

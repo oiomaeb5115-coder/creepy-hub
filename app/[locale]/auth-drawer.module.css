@@ -46,7 +46,7 @@
   width: 33vw;
   max-width: 260px;
   height: auto;
-  margin: 40px auto 24px;
+  margin: calc(40px + env(safe-area-inset-top, 0px)) auto 24px;
   display: block;
 }
 
@@ -59,7 +59,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 18px 24px;
+  padding: calc(18px + env(safe-area-inset-top, 0px)) 24px 18px;
 }
 
 .drawerTitle {
@@ -108,7 +108,7 @@
 .drawerInner {
   width: 100%;
   max-width: 420px;
-  padding: 0 24px 80px;
+  padding: 0 24px calc(80px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
 }
 

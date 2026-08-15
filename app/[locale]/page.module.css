@@ -30,7 +30,7 @@
   width: min(100%, 1600px);
   margin: 0 auto;
   min-height: 100vh;
-  padding-bottom: 84px;
+  padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
   border-left: 1px solid rgba(var(--accent-rgb), 0.2);
   border-right: 1px solid rgba(var(--accent-rgb), 0.2);
   border-bottom: 1px solid rgba(var(--accent-rgb), 0.2);
@@ -1018,6 +1018,29 @@
 
   .gridCardBody {
     padding: 10px 12px 6px;
+  }
+
+  .gridCardAuthorRow {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    column-gap: 8px;
+    row-gap: 0;
+    align-items: center;
+  }
+
+  .gridCardAvatar,
+  .gridCardAvatarPlaceholder {
+    grid-row: 1 / span 2;
+  }
+
+  .gridCardAuthorName {
+    min-width: 0;
+  }
+
+  .gridCardDate {
+    grid-column: 2;
+    margin-left: 0;
+    font-size: 0.72rem;
   }
 
   .gridCardImageWrap {

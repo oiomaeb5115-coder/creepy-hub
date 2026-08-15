@@ -1,0 +1,149 @@
+.page,
+.shell,
+.profileBody {
+  min-width: 0;
+}
+
+.page {
+  overflow-x: clip;
+  padding-right: max(16px, env(safe-area-inset-right)) !important;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+  padding-left: max(16px, env(safe-area-inset-left)) !important;
+}
+
+.responsiveTable td,
+.responsiveTable a,
+.responsiveTable span {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding-right: max(12px, env(safe-area-inset-right)) !important;
+    padding-left: max(12px, env(safe-area-inset-left)) !important;
+  }
+
+  .shell {
+    width: 100%;
+    padding-top: 16px !important;
+  }
+
+  .header {
+    flex-direction: column !important;
+    gap: 14px;
+    margin-bottom: 24px !important;
+  }
+
+  .topLink {
+    box-sizing: border-box;
+    width: 100%;
+    text-align: center;
+  }
+
+  .profileSection {
+    padding: 16px !important;
+  }
+
+  .profileContent {
+    flex-direction: column !important;
+    gap: 14px !important;
+  }
+
+  .profileBody {
+    width: 100%;
+  }
+
+  .buttonGroup {
+    flex-wrap: wrap;
+  }
+
+  .page section {
+    margin-bottom: 32px !important;
+  }
+
+  .page input,
+  .page textarea,
+  .page select,
+  .page button,
+  .page a {
+    max-width: 100%;
+  }
+
+  .page button,
+  .page a {
+    white-space: normal !important;
+  }
+
+  .responsiveTable,
+  .responsiveTable tbody,
+  .responsiveTable tr,
+  .responsiveTable td {
+    display: block !important;
+    box-sizing: border-box;
+    width: 100% !important;
+  }
+
+  .responsiveTable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .responsiveTable tr {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border: 1px solid rgba(180, 100, 110, 0.2) !important;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .responsiveTable td {
+    min-width: 0;
+    padding: 7px 0 !important;
+    text-align: right;
+    white-space: normal;
+  }
+
+  .responsiveTable td[data-label] {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    gap: 4px !important;
+    text-align: left;
+  }
+
+  .responsiveTable td[data-label]::before {
+    content: attr(data-label);
+    flex: none;
+    width: 100%;
+    color: #7a6a60;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-align: left;
+  }
+
+  .responsiveTable td[data-actions="true"] {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start !important;
+    padding-top: 10px !important;
+    border-top: 1px solid rgba(180, 100, 110, 0.12);
+    text-align: left;
+  }
+
+  .responsiveTable td[data-actions="true"]::before {
+    flex: 0 0 100%;
+  }
+
+  .responsiveTable td[data-actions="true"] > * {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}

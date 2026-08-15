@@ -79,7 +79,8 @@
 .name {
   flex: 1;
   min-width: 0;
-  word-break: break-all;
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 760px) {

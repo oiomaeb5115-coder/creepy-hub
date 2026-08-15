@@ -228,3 +228,31 @@
 .backBtn:hover {
   background: rgba(var(--accent-rgb), 0.15);
 }
+
+@media (max-width: 600px) {
+  .page {
+    padding: 20px 14px calc(112px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .form {
+    padding: 22px 16px;
+  }
+
+  .title {
+    font-size: clamp(26px, 9vw, 36px);
+  }
+
+  .imageRow {
+    flex-direction: column;
+  }
+
+  .fileInputWrap,
+  .fileInput {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .successCard {
+    padding: 28px 18px;
+  }
+}

@@ -37,6 +37,18 @@
   }
 }
 
+/* In native app shell, the avatar/novel/map shortcuts live in the native toolbar, so
+   the left clearance for them is unnecessary. */
+:global([data-app-shell="true"]) .topBar {
+  padding-left: 16px;
+}
+
+@media (max-width: 600px) {
+  :global([data-app-shell="true"]) .topBar {
+    padding-left: 16px;
+  }
+}
+
 .backBtn {
   background: none;
   border: none;
@@ -367,7 +379,7 @@
   }
 
   .commentsWrap {
-    padding: 0 14px 80px;
+    padding: 0 14px calc(112px + env(safe-area-inset-bottom, 0px));
   }
 
   .relatedSection {

@@ -234,6 +234,10 @@
 }
 
 @media (max-width: 760px) {
+  .authPage {
+    padding: 24px 14px calc(112px + env(safe-area-inset-bottom, 0px));
+  }
+
   .authHeader {
     flex-direction: column;
     align-items: stretch;
@@ -246,5 +250,17 @@
 
   .submitRow {
     flex-direction: column;
+  }
+
+  .authCard {
+    padding: 22px 16px;
+  }
+
+  .authTitle {
+    font-size: clamp(30px, 11vw, 44px);
+  }
+
+  .formHeader h2 {
+    font-size: 26px;
   }
 }

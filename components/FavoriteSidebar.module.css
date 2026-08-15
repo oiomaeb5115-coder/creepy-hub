@@ -53,7 +53,8 @@
   border-left: 2px solid rgba(224, 160, 60, 0.3);
   background: rgba(14, 5, 7, 0.4);
   transition: color 0.12s, border-color 0.12s, background 0.12s;
-  word-break: break-all;
+  word-break: normal;
+  overflow-wrap: anywhere;
   line-height: 1.4;
 }
 
