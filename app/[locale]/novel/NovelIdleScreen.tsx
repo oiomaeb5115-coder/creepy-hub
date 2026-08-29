@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/lib/supabase";
+import { NOVEL_CONVERSATION_LIST_ENABLED } from "@/lib/features";
 
 type Layer = {
   type: "bg" | "char";
@@ -58,6 +59,15 @@ type LineMedia = { src: string; alt?: string };
 type Line = { text: string; expr: string; audio?: string; visual?: LineMedia; keepVisual?: boolean };
 type OpeningLine = Line & { audio: string };
 type MembershipProvider = "any" | "youtube" | "apple_iap" | "google_play" | "stripe";
+type ConversationVideoStage = "idle" | "logo-in" | "logo-out" | "clip-loading" | "video-in" | "playing" | "choice" | "ending-out" | "ending-return";
+type ConversationClip = "opening" | "correct" | "incorrect" | "after-choice";
+
+const CONVERSATION_END_CHOICES = [
+  "アスフォルデルの野",
+  "タルタロスの地獄の底",
+  "当時のシベリア",
+] as const;
+type ConversationEndChoice = (typeof CONVERSATION_END_CHOICES)[number];
 
 const AUDIO_BASE = "/audio/novel/opening";
 const WHAT_DO_YOU_DO_AUDIO_BASE = "/audio/novel/what-do-you-do";
@@ -65,8 +75,18 @@ const INAKURO_CLUB_AUDIO_BASE = "/audio/novel/inakuro-club";
 const NO_EXPLANATION_AUDIO_BASE = "/audio/novel/no-explanation";
 const KUTISAKE_ONNA_AUDIO_BASE = "/audio/novel/kutisake-onna";
 const NOVEL_BGM_AUDIO = "/audio/novel/bgm/mirror-hall.mp3";
+const CONVERSATION_CLIPS: Record<ConversationClip, string> = {
+  opening: "/videos/novel/creepyhub-conversation-opening.mp4",
+  correct: "/videos/novel/tartarus-correct.mp4",
+  incorrect: "/videos/novel/tartarus-incorrect.mp4",
+  "after-choice": "/videos/novel/tartarus-after-choice.mp4",
+};
+const CONVERSATION_CHOICE_IMAGE = "/images/novel/media/tartarus-choice.jpg";
+const CONVERSATION_VIDEO_BGM_AUDIO = "/audio/novel/bgm/moonlight.mp3";
 const NOVEL_BGM_VOLUME = 0.08;
+const CONVERSATION_VIDEO_BGM_VOLUME = 0.2;
 const NOVEL_BGM_FADE_MS = 5000;
+const CONVERSATION_VIDEO_BGM_FADE_MS = 550;
 const NOVEL_BGM_ARMED_KEY = "creepyhub_novel_bgm_armed";
 const NOVEL_VOICE_VOLUME_MULTIPLIER = 2;
 const DIALOGUE_AUDIO_PRELOAD_AHEAD = 4;
@@ -807,6 +827,13 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
   const openingPlaybackIdRef = useRef(0);
   const dialoguePlaybackIdRef = useRef(0);
   const bgmAudioRef = useRef<HTMLAudioElement | null>(null);
+  const conversationVideoRef = useRef<HTMLVideoElement | null>(null);
+  const conversationBgmAudioRef = useRef<HTMLAudioElement | null>(null);
+  const conversationBgmFadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const resumeBaseBgmAfterConversationRef = useRef(false);
+  const conversationTransitionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const conversationPlaybackIdRef = useRef(0);
+  const activeConversationClipRef = useRef<ConversationClip>("opening");
   const bgmFadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const bgmFadingOutRef = useRef(false);
   const memberLockCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -821,6 +848,11 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
   const [analogEffect, setAnalogEffect] = useState<AnalogEffect>("crt");
   const [prefsLoaded, setPrefsLoaded] = useState(false);
   const [openingSeenResolved, setOpeningSeenResolved] = useState(false);
+  const [conversationVideoStage, setConversationVideoStage] = useState<ConversationVideoStage>("idle");
+  const [activeConversationClip, setActiveConversationClip] = useState<ConversationClip>("opening");
+  const [conversationVideoError, setConversationVideoError] = useState<string | null>(null);
+  const [selectedConversationChoice, setSelectedConversationChoice] = useState<ConversationEndChoice | null>(null);
+  const isConversationVideoPlaying = conversationVideoStage !== "idle" && conversationVideoStage !== "ending-return";
   const openingSeenKeyRef = useRef("creepyhub_novel_firstvisit:guest");
 
   const mutedRef = useRef(muted);
@@ -832,8 +864,35 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
   useEffect(() => { openingIndexRef.current = openingIndex; }, [openingIndex]);
   useEffect(() => { currentExprRef.current = currentExpr; }, [currentExpr]);
 
+  useEffect(() => {
+    const video = conversationVideoRef.current;
+    if (!video) return;
+    video.muted = muted;
+    video.volume = Math.min(1, volume * NOVEL_VOICE_VOLUME_MULTIPLIER);
+  }, [muted, volume]);
+
+  useEffect(() => {
+    const video = conversationVideoRef.current;
+    if (!video || video.getAttribute("src")) return;
+    video.src = CONVERSATION_CLIPS.opening;
+    video.load();
+  }, []);
+
+  useEffect(() => {
+    const audio = conversationBgmAudioRef.current;
+    if (!audio || (conversationVideoStage !== "video-in" && conversationVideoStage !== "playing")) return;
+    audio.muted = muted;
+    if (!muted) {
+      audio.volume = Math.min(1, volume * CONVERSATION_VIDEO_BGM_VOLUME);
+    }
+  }, [conversationVideoStage, muted, volume]);
+
   const getTargetBgmVolume = useCallback(() => Math.min(1, volumeRef.current * NOVEL_BGM_VOLUME), []);
   const getTargetVoiceVolume = useCallback(() => Math.min(1, volumeRef.current * NOVEL_VOICE_VOLUME_MULTIPLIER), []);
+  const getTargetConversationBgmVolume = useCallback(
+    () => Math.min(1, volumeRef.current * CONVERSATION_VIDEO_BGM_VOLUME),
+    [],
+  );
 
   const preloadDialogueAudio = useCallback((src?: string) => {
     if (!src) return null;
@@ -978,6 +1037,274 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
 
     syncBgmAudio();
   }, [clearBgmFade, fadeBgmTo, getTargetBgmVolume, restartBgmLoop, syncBgmAudio]);
+
+  const clearConversationTransition = useCallback(() => {
+    conversationTransitionTimersRef.current.forEach((timer) => clearTimeout(timer));
+    conversationTransitionTimersRef.current = [];
+  }, []);
+
+  const clearConversationBgmFade = useCallback(() => {
+    if (conversationBgmFadeIntervalRef.current !== null) {
+      clearInterval(conversationBgmFadeIntervalRef.current);
+      conversationBgmFadeIntervalRef.current = null;
+    }
+  }, []);
+
+  const fadeConversationBgmTo = useCallback((targetVolume: number, durationMs: number, onComplete?: () => void) => {
+    const audio = conversationBgmAudioRef.current;
+    if (!audio) return;
+    clearConversationBgmFade();
+    const startVolume = audio.volume;
+    const startedAt = Date.now();
+    conversationBgmFadeIntervalRef.current = setInterval(() => {
+      const current = conversationBgmAudioRef.current;
+      if (!current) {
+        clearConversationBgmFade();
+        return;
+      }
+      const progress = Math.min(1, (Date.now() - startedAt) / durationMs);
+      current.volume = startVolume + (targetVolume - startVolume) * progress;
+      if (progress >= 1) {
+        clearConversationBgmFade();
+        onComplete?.();
+      }
+    }, 50);
+  }, [clearConversationBgmFade]);
+
+  const stopConversationBgm = useCallback(() => {
+    const audio = conversationBgmAudioRef.current;
+    const finishConversationBgm = () => {
+      const current = conversationBgmAudioRef.current;
+      if (!current) return;
+      current.pause();
+      current.currentTime = 0;
+      current.volume = 0;
+    };
+
+    if (audio) {
+      if (audio.paused || audio.muted || audio.volume === 0) {
+        clearConversationBgmFade();
+        finishConversationBgm();
+      } else {
+        fadeConversationBgmTo(0, 350, finishConversationBgm);
+      }
+    }
+
+    const shouldResumeBaseBgm = resumeBaseBgmAfterConversationRef.current;
+    resumeBaseBgmAfterConversationRef.current = false;
+    const baseBgm = bgmAudioRef.current;
+    if (shouldResumeBaseBgm && baseBgm && !mutedRef.current) {
+      baseBgm.muted = false;
+      baseBgm.volume = 0;
+      baseBgm.play().then(() => {
+        fadeBgmTo(getTargetBgmVolume(), 500);
+      }).catch(() => {
+        baseBgm.volume = getTargetBgmVolume();
+      });
+    }
+  }, [clearConversationBgmFade, fadeBgmTo, fadeConversationBgmTo, getTargetBgmVolume]);
+
+  const stopConversationVideo = useCallback(() => {
+    conversationPlaybackIdRef.current += 1;
+    clearConversationTransition();
+    const video = conversationVideoRef.current;
+    if (video) {
+      video.pause();
+      video.currentTime = 0;
+    }
+    stopConversationBgm();
+    setSelectedConversationChoice(null);
+    setConversationVideoStage("idle");
+  }, [clearConversationTransition, stopConversationBgm]);
+
+  const startConversationFollowupClip = useCallback((
+    clip: Exclude<ConversationClip, "opening">,
+    options: { seamless?: boolean } = {},
+  ) => {
+    const video = conversationVideoRef.current;
+    if (!video) return;
+    const seamless = options.seamless === true;
+
+    conversationPlaybackIdRef.current += 1;
+    const playbackId = conversationPlaybackIdRef.current;
+    clearConversationTransition();
+    activeConversationClipRef.current = clip;
+    setActiveConversationClip(clip);
+    setConversationVideoError(null);
+    if (!seamless) {
+      setConversationVideoStage("clip-loading");
+    }
+
+    video.pause();
+    video.src = CONVERSATION_CLIPS[clip];
+    video.load();
+    video.currentTime = 0;
+    video.muted = seamless ? mutedRef.current : true;
+    video.volume = getTargetVoiceVolume();
+    video.play().then(() => {
+      if (conversationPlaybackIdRef.current !== playbackId) return;
+
+      if (seamless) {
+        setConversationVideoStage("playing");
+        return;
+      }
+
+      const videoInTimer = setTimeout(() => {
+        if (conversationPlaybackIdRef.current !== playbackId) return;
+        video.currentTime = 0;
+        video.muted = mutedRef.current;
+        video.volume = getTargetVoiceVolume();
+        setConversationVideoStage("video-in");
+      }, 250);
+      const playingTimer = setTimeout(() => {
+        if (conversationPlaybackIdRef.current === playbackId) {
+          setConversationVideoStage("playing");
+        }
+      }, 800);
+      conversationTransitionTimersRef.current = [videoInTimer, playingTimer];
+    }).catch(() => {
+      if (conversationPlaybackIdRef.current !== playbackId) return;
+      stopConversationVideo();
+      setConversationVideoError("次の動画を再生できませんでした。もう一度お試しください。");
+    });
+  }, [clearConversationTransition, getTargetVoiceVolume, stopConversationVideo]);
+
+  const finishConversationVideo = useCallback(() => {
+    conversationPlaybackIdRef.current += 1;
+    const playbackId = conversationPlaybackIdRef.current;
+    clearConversationTransition();
+    setConversationVideoStage("ending-out");
+    stopConversationBgm();
+
+    const returnTimer = setTimeout(() => {
+      if (conversationPlaybackIdRef.current !== playbackId) return;
+      const video = conversationVideoRef.current;
+      if (video) {
+        video.pause();
+        video.currentTime = 0;
+      }
+      setSelectedConversationChoice(null);
+      setConversationVideoStage("ending-return");
+    }, 850);
+    const idleTimer = setTimeout(() => {
+      if (conversationPlaybackIdRef.current === playbackId) {
+        setConversationVideoStage("idle");
+      }
+    }, 1450);
+    conversationTransitionTimersRef.current = [returnTimer, idleTimer];
+  }, [clearConversationTransition, stopConversationBgm]);
+
+  const handleConversationVideoEnded = useCallback(() => {
+    clearConversationTransition();
+    const finishedClip = activeConversationClipRef.current;
+    if (finishedClip === "opening") {
+      setSelectedConversationChoice(null);
+      setConversationVideoStage("choice");
+      return;
+    }
+    if (finishedClip === "correct" || finishedClip === "incorrect") {
+      startConversationFollowupClip("after-choice", { seamless: true });
+      return;
+    }
+    finishConversationVideo();
+  }, [clearConversationTransition, finishConversationVideo, startConversationFollowupClip]);
+
+  const selectConversationEndChoice = useCallback((choice: ConversationEndChoice) => {
+    if (selectedConversationChoice) return;
+    setSelectedConversationChoice(choice);
+    const branchClip: Exclude<ConversationClip, "opening" | "after-choice"> =
+      choice === "タルタロスの地獄の底" ? "correct" : "incorrect";
+    const branchTimer = setTimeout(() => {
+      startConversationFollowupClip(branchClip);
+    }, 220);
+    conversationTransitionTimersRef.current.push(branchTimer);
+  }, [selectedConversationChoice, startConversationFollowupClip]);
+
+  const startConversationVideo = useCallback(() => {
+    const video = conversationVideoRef.current;
+    if (!video) return;
+
+    conversationPlaybackIdRef.current += 1;
+    const playbackId = conversationPlaybackIdRef.current;
+    clearConversationTransition();
+    activeConversationClipRef.current = "opening";
+    setActiveConversationClip("opening");
+    setConversationVideoError(null);
+    setSelectedConversationChoice(null);
+    setConversationVideoStage("logo-in");
+    video.currentTime = 0;
+    video.src = CONVERSATION_CLIPS.opening;
+    video.load();
+    // Start muted under the logo to preserve the user-gesture playback permission.
+    // The video is rewound and unmuted immediately before it fades into view.
+    video.muted = true;
+    video.volume = getTargetVoiceVolume();
+    const baseBgm = bgmAudioRef.current;
+    resumeBaseBgmAfterConversationRef.current = Boolean(baseBgm && !baseBgm.paused);
+    if (baseBgm) {
+      clearBgmFade();
+      baseBgm.pause();
+    }
+
+    const conversationBgm = conversationBgmAudioRef.current;
+    if (conversationBgm) {
+      clearConversationBgmFade();
+      conversationBgm.currentTime = 0;
+      conversationBgm.volume = 0;
+      conversationBgm.muted = true;
+      conversationBgm.play().catch(() => {});
+    }
+    video.play().then(() => {
+      if (conversationPlaybackIdRef.current !== playbackId) return;
+
+      const logoOutTimer = setTimeout(() => {
+        if (conversationPlaybackIdRef.current === playbackId) {
+          setConversationVideoStage("logo-out");
+        }
+      }, 700);
+      const videoInTimer = setTimeout(() => {
+        if (conversationPlaybackIdRef.current !== playbackId) return;
+        video.currentTime = 0;
+        video.muted = mutedRef.current;
+        video.volume = getTargetVoiceVolume();
+        if (conversationBgm) {
+          conversationBgm.currentTime = 0;
+          conversationBgm.muted = mutedRef.current;
+          conversationBgm.volume = 0;
+          if (conversationBgm.paused) {
+            conversationBgm.play().catch(() => {});
+          }
+          if (!mutedRef.current) {
+            fadeConversationBgmTo(
+              getTargetConversationBgmVolume(),
+              CONVERSATION_VIDEO_BGM_FADE_MS,
+            );
+          }
+        }
+        setConversationVideoStage("video-in");
+      }, 1050);
+      const playingTimer = setTimeout(() => {
+        if (conversationPlaybackIdRef.current === playbackId) {
+          setConversationVideoStage("playing");
+        }
+      }, 1600);
+      conversationTransitionTimersRef.current = [logoOutTimer, videoInTimer, playingTimer];
+    }).catch(() => {
+      if (conversationPlaybackIdRef.current !== playbackId) return;
+      clearConversationTransition();
+      stopConversationBgm();
+      setConversationVideoStage("idle");
+      setConversationVideoError("動画を再生できませんでした。もう一度お試しください。");
+    });
+  }, [
+    clearBgmFade,
+    clearConversationBgmFade,
+    clearConversationTransition,
+    fadeConversationBgmTo,
+    getTargetConversationBgmVolume,
+    getTargetVoiceVolume,
+    stopConversationBgm,
+  ]);
 
   // UI modals
   const [showBacklog, setShowBacklog] = useState(false);
@@ -1386,6 +1713,8 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
   // Cleanup on unmount
   useEffect(() => {
     const dialogueAudioCache = dialogueAudioCacheRef.current;
+    const conversationVideo = conversationVideoRef.current;
+    const conversationBgm = conversationBgmAudioRef.current;
     return () => {
       openingPlaybackIdRef.current += 1;
       dialoguePlaybackIdRef.current += 1;
@@ -1396,6 +1725,15 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
         openingAudioRef.current.pause();
       }
       stopDialogueAudio();
+      conversationPlaybackIdRef.current += 1;
+      clearConversationTransition();
+      if (conversationVideo) {
+        conversationVideo.pause();
+      }
+      clearConversationBgmFade();
+      if (conversationBgm) {
+        conversationBgm.pause();
+      }
       if (bgmAudioRef.current) {
         clearBgmFade();
         bgmAudioRef.current.ontimeupdate = null;
@@ -1409,7 +1747,7 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
       });
       dialogueAudioCache.clear();
     };
-  }, [clearBgmFade, stopDialogueAudio]);
+  }, [clearBgmFade, clearConversationBgmFade, clearConversationTransition, stopDialogueAudio]);
 
   const closeMemberLock = useCallback(() => {
     if (!lockedTopic || isLockClosing) return;
@@ -1737,7 +2075,7 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
       )}
 
       {/* Home button */}
-      {phase !== "loading" && (
+      {phase !== "loading" && !isConversationVideoPlaying && (
         <a
           href={`/${locale}`}
           onClick={(e) => e.stopPropagation()}
@@ -1757,7 +2095,7 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
       )}
 
       {/* Top-right controls */}
-      {phase !== "loading" && (
+      {phase !== "loading" && !isConversationVideoPlaying && (
         <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 8, zIndex: layers.length + 10, animation: "novel-fade-in 0.5s ease" }}>
           {canSkipConversation && (
             <IconButton onClick={(e) => { e.stopPropagation(); skipConversation(); }} title="会話をスキップ">
@@ -1792,6 +2130,197 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
             </svg>
           </IconButton>
+        </div>
+      )}
+
+      {/* Conversation video stays mounted so a user click can start audible inline playback on iOS. */}
+      <video
+        ref={conversationVideoRef}
+        data-testid="conversation-video"
+        data-stage={conversationVideoStage}
+        data-clip={activeConversationClip}
+        playsInline
+        preload="metadata"
+        onClick={(e) => e.stopPropagation()}
+        onEnded={handleConversationVideoEnded}
+        onError={() => {
+          stopConversationVideo();
+          setConversationVideoError("動画ファイルを読み込めませんでした。");
+        }}
+        aria-label="映子との会話動画"
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          background: "#000",
+          zIndex: layers.length + 20,
+          opacity: conversationVideoStage === "video-in" || conversationVideoStage === "playing" || conversationVideoStage === "choice" || conversationVideoStage === "ending-out" ? 1 : 0,
+          visibility: isConversationVideoPlaying ? "visible" : "hidden",
+          pointerEvents: conversationVideoStage === "video-in" || conversationVideoStage === "playing" ? "auto" : "none",
+          transition: "opacity 0.55s ease",
+        }}
+      />
+
+      <audio
+        ref={conversationBgmAudioRef}
+        data-testid="conversation-video-bgm"
+        src={CONVERSATION_VIDEO_BGM_AUDIO}
+        preload="auto"
+        loop
+        aria-label="動画BGM 月の光"
+      />
+
+      {conversationVideoStage !== "idle" && conversationVideoStage !== "playing" && conversationVideoStage !== "choice" && (
+        <div
+          data-testid="conversation-video-transition"
+          data-stage={conversationVideoStage}
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: layers.length + 22,
+            background: "#000",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: conversationVideoStage === "ending-out" || conversationVideoStage === "ending-return" ? "auto" : "none",
+            opacity: conversationVideoStage === "video-in" || conversationVideoStage === "ending-return" ? 0 : 1,
+            animation: conversationVideoStage === "logo-in"
+              ? "novel-video-curtain-in 0.35s ease both"
+              : conversationVideoStage === "ending-out"
+                ? "novel-video-curtain-in 0.65s ease both"
+              : conversationVideoStage === "video-in"
+                ? "novel-video-curtain-out 0.55s ease both"
+                : conversationVideoStage === "ending-return"
+                  ? "novel-video-curtain-out 0.55s ease both"
+                : "none",
+          }}
+        >
+          {conversationVideoStage !== "ending-out" && conversationVideoStage !== "ending-return" && (
+            <img
+              src="/images/ui/auth-logo_2.webp"
+              alt=""
+              style={{
+                width: 128,
+                height: "auto",
+                animation: conversationVideoStage === "logo-in"
+                  ? "novel-video-logo-in 0.45s ease both"
+                  : "novel-video-logo-out 0.35s ease both",
+              }}
+            />
+          )}
+        </div>
+      )}
+
+      {isConversationVideoPlaying && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            stopConversationVideo();
+          }}
+          aria-label="動画を閉じる"
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            zIndex: layers.length + 23,
+            width: 40,
+            height: 40,
+            borderRadius: "50%",
+            border: "1px solid rgba(255,255,255,0.35)",
+            background: "rgba(0,0,0,0.62)",
+            color: "#fff",
+            fontSize: 24,
+            lineHeight: 1,
+            cursor: "pointer",
+            backdropFilter: "blur(4px)",
+            WebkitBackdropFilter: "blur(4px)",
+          }}
+        >
+          ×
+        </button>
+      )}
+
+      {conversationVideoStage === "choice" && (
+        <img
+          src={CONVERSATION_CHOICE_IMAGE}
+          alt=""
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            zIndex: layers.length + 21,
+            animation: "novel-fade-in 0.55s ease both",
+          }}
+        />
+      )}
+
+      {conversationVideoStage === "choice" && (
+        <div
+          role="group"
+          aria-label="行き先を選択"
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: layers.length + 22,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: 10,
+            padding: "24px 16px 42px",
+            background: "linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.5) 58%, rgba(0,0,0,0.94) 100%)",
+            animation: "novel-fade-in 0.55s ease both",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p style={{
+            margin: "0 0 6px",
+            color: "rgba(255,255,255,0.7)",
+            fontFamily: "'SoukouMincho', serif",
+            fontSize: 11,
+            letterSpacing: 5,
+          }}>
+            SELECT
+          </p>
+          {CONVERSATION_END_CHOICES.map((choice) => {
+            const isSelected = selectedConversationChoice === choice;
+            return (
+              <button
+                key={choice}
+                type="button"
+                disabled={selectedConversationChoice !== null}
+                aria-pressed={isSelected}
+                onClick={() => selectConversationEndChoice(choice)}
+                style={{
+                  ...talkButtonStyle,
+                  borderTopColor: isSelected ? "rgba(216,65,65,0.9)" : "rgba(255,255,255,0.18)",
+                  borderBottomColor: isSelected ? "rgba(216,65,65,0.9)" : "rgba(255,255,255,0.18)",
+                  background: isSelected
+                    ? "linear-gradient(90deg, rgba(45,4,10,0.9), rgba(95,10,20,0.82), rgba(45,4,10,0.9))"
+                    : talkButtonStyle.background,
+                  color: isSelected ? "#fff" : talkButtonStyle.color,
+                  opacity: selectedConversationChoice && !isSelected ? 0.55 : 1,
+                }}
+              >
+                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+                  <span aria-hidden="true" style={{ color: isSelected ? "#d84141" : "rgba(198,40,40,0.7)", fontSize: 8 }}>
+                    {isSelected ? "▶" : "◆"}
+                  </span>
+                  <span>{choice}</span>
+                  <span aria-hidden="true" style={{ color: isSelected ? "#d84141" : "rgba(198,40,40,0.7)", fontSize: 8 }}>
+                    {isSelected ? "◀" : "◆"}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -1870,8 +2399,8 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
         </div>
       )}
 
-      {/* Idle: episode list + topic buttons */}
-      {phase === "idle" && (
+      {/* Conversation launcher; legacy catalogue remains available behind its feature flag. */}
+      {phase === "idle" && !isConversationVideoPlaying && (
         <div
           style={{
             position: "absolute", bottom: 24, left: 0, right: 0,
@@ -1885,7 +2414,26 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
             Conversation
             <span aria-hidden="true" style={{ width: 24, height: 1, background: "linear-gradient(to left, transparent, rgba(255,255,255,0.4))" }} />
           </p>
-          {idleTopics.map((topic) => {
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              startConversationVideo();
+            }}
+            style={talkButtonStyle}
+          >
+            <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+              <span aria-hidden="true" style={{ color: "rgba(198,40,40,0.7)", fontSize: 8 }}>◆</span>
+              <span>会話を始める</span>
+              <span aria-hidden="true" style={{ color: "rgba(198,40,40,0.7)", fontSize: 8 }}>◆</span>
+            </span>
+          </button>
+          {conversationVideoError && (
+            <p role="alert" style={{ margin: 0, color: "#ff9b9b", fontSize: 12, textAlign: "center" }}>
+              {conversationVideoError}
+            </p>
+          )}
+          {NOVEL_CONVERSATION_LIST_ENABLED && idleTopics.map((topic) => {
             const isLocked = !canAccessTopic(topic);
             return (
               <button
@@ -2358,6 +2906,16 @@ export default function NovelIdleScreen({ layers, locale, storyHref, speakerName
         }
         @keyframes novel-fade-in { from { opacity: 0; } to { opacity: 1; } }
         @keyframes novel-fade-out { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes novel-video-curtain-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes novel-video-curtain-out { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes novel-video-logo-in {
+          from { opacity: 0; transform: scale(0.94); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes novel-video-logo-out {
+          from { opacity: 1; transform: scale(1); }
+          to { opacity: 0; transform: scale(1.04); }
+        }
         @keyframes novel-logo-pulse { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
         @keyframes novel-fade-to-black { from { opacity: 0; } to { opacity: 1; } }
         @keyframes novel-member-lock-page-in {
